@@ -1,0 +1,37 @@
+services:
+  officebot:
+    build: .
+    image: officebot:latest
+    container_name: officebot
+    # Shared defaults (committed), then local settings and secrets (ignored by git).
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.local
+        required: false
+    # Run as the host user so the bind-mounted data directory stays owned by you.
+    user: "${OFFICEBOT_UID:-1000}:${OFFICEBOT_GID:-1000}"
+    restart: unless-stopped
+    # SIGTERM → graceful shutdown (in-flight saves and jobs finish first)
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      # All data lives visibly in the project directory, no Docker volumes.
+      - ./volumes/officebot:/data
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "/officebot", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

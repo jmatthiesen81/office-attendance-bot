@@ -1,0 +1,9 @@
+.git
+.idea
+.env
+.env.*
+*.db
+*.db-*
+data/
+volumes/
+backup/

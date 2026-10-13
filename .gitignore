@@ -1,0 +1,13 @@
+# Local settings and secrets; .env (shared defaults) and .env.local.example are committed.
+.env.local
+*.db
+*.db-shm
+*.db-wal
+/officebot
+/data/
+backup/
+
+# Runtime data of the containers; only the directory placeholders are tracked.
+/volumes/**
+!/volumes/*/
+!/volumes/*/.gitkeep
