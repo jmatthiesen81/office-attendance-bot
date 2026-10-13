@@ -7,3 +7,11 @@
 data/
 volumes/
 backup/
+
+# Not needed to build the image.
+.github
+docs
+*.md
+compose*.yaml
+Makefile
+LICENSE

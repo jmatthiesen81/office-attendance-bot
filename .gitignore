@@ -11,3 +11,7 @@ backup/
 /volumes/**
 !/volumes/*/
 !/volumes/*/.gitkeep
+
+# Personal deployment notes and per-machine Compose overrides.
+/BUILDING.md
+/compose.override.yaml
