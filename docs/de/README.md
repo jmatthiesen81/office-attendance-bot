@@ -180,29 +180,29 @@ OFFICEBOT_GID=1000
 
 `OFFICEBOT_UID`/`OFFICEBOT_GID` werden in `compose.yaml` selbst eingesetzt. Compose liest solche `${…}`-Werte nur aus `.env` (oder der Shell), also bitte in `.env` ändern, nicht in `.env.local`. Niemals Tokens in `.env` eintragen: Die Datei wird committet.
 
-| Variable                                       | Pflicht         | Standard                | Bedeutung                                                                                                   |
-|------------------------------------------------|-----------------|-------------------------|-------------------------------------------------------------------------------------------------------------|
-| `SLACK_BOT_TOKEN`                              | ja¹             | –                       | Bot User OAuth Token, `xoxb-…`                                                                              |
-| `SLACK_APP_TOKEN`                              | ja¹             | –                       | App-Level Token (`connections:write`), `xapp-…`                                                             |
-| `SLACK_SUMMARY_CHANNEL_ID`                     | ja              | –                       | Ergebnis-Channel                                                                                            |
-| `SLACK_PARTICIPANTS_CHANNEL_ID`                | eins von beiden | –                       | Modus A: Channel-Mitglieder werden befragt                                                                  |
-| `SLACK_USER_IDS`                               | eins von beiden | –                       | Modus B: kommagetrennte User-IDs                                                                            |
-| `SLACK_EXCLUDE_USER_IDS`                       | nein            | –                       | Ausgeschlossene User-IDs                                                                                    |
-| `POLL_WEEKDAY` / `POLL_TIME`                   | nein            | `MONDAY` / `07:00`      | Zeitpunkt der Anfrage. `MONDAY` fragt die laufende Woche ab, jeder andere Tag die kommende (siehe unten).   |
-| `POLL_TIMEZONE`                                | nein            | `Europe/Berlin`         | Zeitzone für alle Zeitangaben                                                                               |
-| `POLL_DEADLINE_WEEKDAY` / `POLL_DEADLINE_TIME` | nein            | `FRIDAY` / `08:00`      | Abgabefrist in der abgefragten Woche. Sie muss nach dem Anfragezeitpunkt liegen.                            |
-| `REMINDER_ENABLED`                             | nein            | `true`                  | Erinnerungen an/aus                                                                                         |
-| `REMINDER_WEEKDAY` / `REMINDER_TIME`           | nein            | `TUESDAY` / `09:00`     | Erinnerungszeitpunkt(e). Es zählen nur Termine zwischen Wochenstart und Frist.                              |
-| `REMINDER_MAX_COUNT`                           | nein            | `1`                     | Maximale Erinnerungen pro Person und Woche                                                                  |
-| `DATABASE_PATH`                                | nein            | `/data/officebot.db`    | SQLite-Datei (Verzeichnis wird mit 0700 angelegt)                                                           |
-| `LOG_LEVEL`                                    | nein            | `info`                  | `debug`, `info`, `warn`, `error`                                                                            |
-| `RETENTION_WEEKS`                              | nein            | `26`                    | Aufbewahrung historischer Abstimmungen                                                                      |
-| `SUMMARY_MAX_NAMES`                            | nein            | `40`                    | Kürzung langer Namenslisten                                                                                 |
-| `SUMMARY_PROJECT_LINK`                         | nein            | `true`                  | Kleiner Hinweis unter „Letzte Aktualisierung“, den Bot auf GitHub zu bewerten; `false` blendet ihn aus |
-| `DRY_RUN`                                      | nein            | `false`                 | Kein Kontakt zu Slack. Alle Nachrichten landen im Log.                                                      |
+| Variable                                       | Pflicht         | Standard                | Bedeutung                                                                                                                                                               |
+|------------------------------------------------|-----------------|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `SLACK_BOT_TOKEN`                              | ja¹             | –                       | Bot User OAuth Token, `xoxb-…`                                                                                                                                          |
+| `SLACK_APP_TOKEN`                              | ja¹             | –                       | App-Level Token (`connections:write`), `xapp-…`                                                                                                                         |
+| `SLACK_SUMMARY_CHANNEL_ID`                     | ja              | –                       | Ergebnis-Channel                                                                                                                                                        |
+| `SLACK_PARTICIPANTS_CHANNEL_ID`                | eins von beiden | –                       | Modus A: Channel-Mitglieder werden befragt                                                                                                                              |
+| `SLACK_USER_IDS`                               | eins von beiden | –                       | Modus B: kommagetrennte User-IDs                                                                                                                                        |
+| `SLACK_EXCLUDE_USER_IDS`                       | nein            | –                       | Ausgeschlossene User-IDs                                                                                                                                                |
+| `POLL_WEEKDAY` / `POLL_TIME`                   | nein            | `MONDAY` / `07:00`      | Zeitpunkt der Anfrage. `MONDAY` fragt die laufende Woche ab, jeder andere Tag die kommende (siehe unten).                                                               |
+| `POLL_TIMEZONE`                                | nein            | `Europe/Berlin`         | Zeitzone für alle Zeitangaben                                                                                                                                           |
+| `POLL_DEADLINE_WEEKDAY` / `POLL_DEADLINE_TIME` | nein            | `FRIDAY` / `08:00`      | Abgabefrist in der abgefragten Woche. Sie muss nach dem Anfragezeitpunkt liegen.                                                                                        |
+| `REMINDER_ENABLED`                             | nein            | `true`                  | Erinnerungen an/aus                                                                                                                                                     |
+| `REMINDER_WEEKDAY` / `REMINDER_TIME`           | nein            | `TUESDAY` / `09:00`     | Erinnerungszeitpunkt(e). Es zählen nur Termine zwischen Wochenstart und Frist.                                                                                          |
+| `REMINDER_MAX_COUNT`                           | nein            | `1`                     | Maximale Erinnerungen pro Person und Woche                                                                                                                              |
+| `DATABASE_PATH`                                | nein            | `/data/officebot.db`    | SQLite-Datei (Verzeichnis wird mit 0700 angelegt)                                                                                                                       |
+| `LOG_LEVEL`                                    | nein            | `info`                  | `debug`, `info`, `warn`, `error`                                                                                                                                        |
+| `RETENTION_WEEKS`                              | nein            | `26`                    | Aufbewahrung historischer Abstimmungen                                                                                                                                  |
+| `SUMMARY_MAX_NAMES`                            | nein            | `40`                    | Kürzung langer Namenslisten                                                                                                                                             |
+| `SUMMARY_PROJECT_LINK`                         | nein            | `true`                  | Kleiner Hinweis unter „Letzte Aktualisierung“, den Bot auf GitHub zu bewerten; `false` blendet ihn aus                                                                  |
+| `DRY_RUN`                                      | nein            | `false`                 | Kein Kontakt zu Slack. Alle Nachrichten landen im Log.                                                                                                                  |
 | `BOT_LANGUAGE`                                 | nein            | `en`                    | Sprache aller Slack-Nachrichten: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`; zum Spaß auch `nerd_<sprache>`, `pirate_<sprache>` |
-| `HEALTH_FILE`                                  | nein            | `/tmp/officebot.health` | Heartbeat-Datei für den Healthcheck                                                                         |
-| `OFFICEBOT_UID` / `OFFICEBOT_GID`              | nein            | `1000` / `1000`         | Nur Compose: Benutzer, unter dem der Container läuft, und damit Besitzer der Daten in `./volumes/officebot` |
+| `HEALTH_FILE`                                  | nein            | `/tmp/officebot.health` | Heartbeat-Datei für den Healthcheck                                                                                                                                     |
+| `OFFICEBOT_UID` / `OFFICEBOT_GID`              | nein            | `1000` / `1000`         | Nur Compose: Benutzer, unter dem der Container läuft, und damit Besitzer der Daten in `./volumes/officebot`                                                             |
 
 ¹ Nicht nötig bei `DRY_RUN=true`.
 
@@ -225,10 +225,12 @@ REMINDER_TIME=07:00            # der Standard TUESDAY käme hier zu spät
 
 ```bash
 # .env.local anlegen (siehe oben) und dann:
-docker compose up -d --build
+docker compose up -d              # fertiges Image von ghcr.io (make pull)
 docker compose logs -f officebot
-docker compose ps            # STATUS zeigt (healthy) nach ca. 15–60 s
+docker compose ps                 # STATUS zeigt (healthy) nach ca. 15–60 s
 ```
+
+**Fertiges Image oder selbst bauen:** `compose.yaml` verweist auf `ghcr.io/jmatthiesen81/office-attendance-bot:1`, ein Multi-Arch-Image für amd64 und arm64. Für den Betrieb genügen dann `compose.yaml`, `.env`, `.env.local` und das Verzeichnis `volumes/officebot/`, ein Klon des Repos ist nicht nötig. Der Tag `:1` bekommt Fehlerbehebungen und neue Funktionen, aber keine inkompatiblen Änderungen. Für eine feste Version `:1.2.3` eintragen, für den neuesten ungetesteten Stand `:edge` (siehe [Entwicklung](#entwicklung)). Updates: `docker compose up -d`. Wegen `pull_policy: always` lädt Compose dabei jedes Mal das neueste Image zum Tag. Mit `docker compose up -d --build` (`make up`) baut Compose stattdessen aus dem Quellcode. Das passiert auch automatisch, wenn sich das Image nicht laden lässt. `docker compose exec officebot /officebot version` zeigt die laufende Version.
 
 Eigenschaften des Containers:
 
@@ -292,6 +294,7 @@ Alle Befehle laufen im Container mit derselben Konfiguration: `docker compose ex
 | `backup <datei>`                                   | Konsistente Kopie der DB (`VACUUM INTO`), auch im laufenden Betrieb                       |
 | `migrate`                                          | Migrationen anwenden und beenden                                                          |
 | `healthcheck`                                      | Healthcheck-Probe                                                                         |
+| `version`                                          | Version ausgeben (`dev` bei lokalen Builds ohne Version)                                  |
 
 ---
 
@@ -347,6 +350,14 @@ Die Tests decken ab: ISO-Wochen und Jahreswechsel (inkl. 53-Wochen-Jahre und DST
 Übersetzungen: Alle Texte, die der Bot an Slack schickt, liegen in `internal/i18n/locales/<sprache>.json`. Datums- und Zeitformate stehen dort als Go-Layouts (`layout.*`). Für eine neue Sprache die Datei `en.json` kopieren und übersetzen; der Dateiname ist der Wert für `BOT_LANGUAGE`. Für Nerd- und Piratenvariante kommen `nerd_<sprache>.json` und `pirate_<sprache>.json` dazu. Go gibt Monats- und Wochentagsnamen in Layouts immer englisch aus, deshalb nutzen alle nicht englischen Sprachen numerische Datumsformate (Nerd-Varianten: ISO 8601). Tests prüfen, dass jede Sprache alle Schlüssel mit denselben Platzhaltern enthält und keine englischen Namen in ihren Layouts verwendet.
 
 Architekturentscheidungen liegen unter [adr/](adr/), z. B. [ADR 0001: Konfigurierbare Arbeitstage](adr/0001-konfigurierbare-arbeitstage.md) und [ADR 0002: Sprache pro Person](adr/0002-sprache-pro-person.md).
+
+Releases: Der Workflow `.github/workflows/release.yml` führt bei Pull Requests gofmt, `go vet`, die Tests und einen Test-Build aus, ohne etwas zu veröffentlichen. Jeder Push auf einen Versionsbranch wie `1.0` veröffentlicht nach erfolgreichen Tests den aktuellen Stand als `edge` und `sha-<commit>`. Das ist zum Ausprobieren auf einem Testserver gedacht, nicht für den Produktivbetrieb. `officebot version` zeigt dort `edge-<commit>`. Ein Git-Tag `v*` veröffentlicht ein Release:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0   # → Tags 1.0.0, 1.0, 1 und latest
+```
+
+Vorabversionen wie `v1.1.0-rc.1` bekommen nur ihren eigenen Tag, `0.x`-Versionen keinen Major-Tag. Das Image enthält SBOM und Build-Provenance. Nach dem ersten Release ist das Paket auf GitHub privat. Es muss einmalig unter *Package settings* → *Change visibility* auf **Public** gestellt werden.
 
 Neue Migrationen: Datei mit der nächsten freien Nummer anlegen, z. B. `internal/storage/migrations/0004_….sql`. Sie wird beim Start einmalig in einer Transaktion angewendet.
 

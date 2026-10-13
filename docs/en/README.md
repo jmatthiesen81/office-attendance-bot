@@ -200,7 +200,7 @@ OFFICEBOT_GID=1000
 | `LOG_LEVEL`                                    | no          | `info`                  | `debug`, `info`, `warn`, `error`                                                                                                                                |
 | `RETENTION_WEEKS`                              | no          | `26`                    | Retention of past polls                                                                                                                                         |
 | `SUMMARY_MAX_NAMES`                            | no          | `40`                    | Truncation of long name lists                                                                                                                                   |
-| `SUMMARY_PROJECT_LINK`                         | no          | `true`                  | Small note below "Last updated" inviting people to rate the bot on GitHub; `false` hides it |
+| `SUMMARY_PROJECT_LINK`                         | no          | `true`                  | Small note below "Last updated" inviting people to rate the bot on GitHub; `false` hides it                                                                     |
 | `DRY_RUN`                                      | no          | `false`                 | No contact with Slack. All messages go to the log.                                                                                                              |
 | `BOT_LANGUAGE`                                 | no          | `en`                    | Language of all Slack messages: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`; for fun also `nerd_<lang>`, `pirate_<lang>` |
 | `HEALTH_FILE`                                  | no          | `/tmp/officebot.health` | Heartbeat file for the health check                                                                                                                             |
@@ -227,10 +227,12 @@ REMINDER_TIME=07:00            # the default TUESDAY would be too late here
 
 ```bash
 # create .env.local (see above), then:
-docker compose up -d --build
+docker compose up -d              # published image from ghcr.io (make pull)
 docker compose logs -f officebot
-docker compose ps            # STATUS shows (healthy) after about 15–60 s
+docker compose ps                 # STATUS shows (healthy) after about 15–60 s
 ```
+
+**Published image or own build:** `compose.yaml` refers to `ghcr.io/jmatthiesen81/office-attendance-bot:1`, a multi-arch image for amd64 and arm64. To run the bot, you only need `compose.yaml`, `.env`, `.env.local` and the `volumes/officebot/` directory; no clone of the repository. The `:1` tag gets fixes and new features, but no breaking changes. For a fixed version, use `:1.2.3`; for the latest untested state, `:edge` (see [Development](#development)). Updates: `docker compose up -d`. Because of `pull_policy: always`, Compose pulls the newest image for the tag every time. With `docker compose up -d --build` (`make up`), Compose builds from source instead. This also happens automatically if the image cannot be pulled. `docker compose exec officebot /officebot version` shows the running version.
 
 Container properties:
 
@@ -294,6 +296,7 @@ All commands run inside the container with the same configuration: `docker compo
 | `backup <file>`                                    | Consistent copy of the database (`VACUUM INTO`), also while running               |
 | `migrate`                                          | Apply migrations and exit                                                         |
 | `healthcheck`                                      | Health check probe                                                                |
+| `version`                                          | Print the version (`dev` for local builds without a version)                      |
 
 ---
 
@@ -349,6 +352,14 @@ The tests cover: ISO weeks and year boundaries (incl. 53-week years and DST), ti
 Translations: all texts the bot sends to Slack live in `internal/i18n/locales/<language>.json`. Date and time formats are stored there as Go layouts (`layout.*`). To add a language, copy `en.json` and translate it; the file name is the value for `BOT_LANGUAGE`. Add `nerd_<language>.json` and `pirate_<language>.json` for the nerd and pirate variants. Go always renders month and weekday names in layouts in English, so all non-English languages use numeric date formats (nerd variants: ISO 8601). Tests check that every language contains all keys with the same placeholders and uses no English names in its layouts.
 
 Architecture decisions are recorded in [adr/](adr/), e.g. [ADR 0001: Configurable work days](adr/0001-configurable-work-days.md) and [ADR 0002: Per-person language](adr/0002-per-user-language.md).
+
+Releases: for pull requests, the workflow `.github/workflows/release.yml` runs gofmt, `go vet`, the tests and a test build without publishing anything. Every push to a version branch such as `1.0` publishes the current state as `edge` and `sha-<commit>` once the tests pass. This is meant for trying things out on a test server, not for production. `officebot version` shows `edge-<commit>` there. A Git tag `v*` publishes a release:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0   # → tags 1.0.0, 1.0, 1 and latest
+```
+
+Pre-releases such as `v1.1.0-rc.1` only get their own tag, and `0.x` versions get no major tag. The image includes an SBOM and build provenance. After the first release, the package is private on GitHub. Set it to **Public** once under *Package settings* → *Change visibility*.
 
 New migrations: add a file with the next free number, e.g. `internal/storage/migrations/0004_….sql`. It is applied once, in a transaction, at startup.
 

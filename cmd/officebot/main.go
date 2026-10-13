@@ -14,6 +14,7 @@
 //	officebot migrate                                            apply database migrations and exit
 //	officebot backup /data/backup.db                             write a consistent database copy (safe while running)
 //	officebot healthcheck                                        container health probe
+//	officebot version                                            print the version
 package main
 
 import (
@@ -45,6 +46,9 @@ import (
 	"officebot/internal/worker"
 )
 
+// version is set at build time (-ldflags "-X main.version=1.2.3").
+var version = "dev"
+
 func main() {
 	cmd := "run"
 	args := os.Args[1:]
@@ -53,6 +57,10 @@ func main() {
 	}
 	if cmd == "healthcheck" {
 		os.Exit(healthcheck())
+	}
+	if cmd == "version" {
+		fmt.Println(version)
+		return
 	}
 
 	load := config.Load
@@ -145,7 +153,7 @@ func setup(ctx context.Context, cfg *config.Config, log *slog.Logger) (*app, err
 }
 
 func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
-	log.Info("starting officebot", "config", cfg)
+	log.Info("starting officebot", "version", version, "config", cfg)
 	a, err := setup(ctx, cfg, log)
 	if err != nil {
 		return err

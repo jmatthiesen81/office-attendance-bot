@@ -3,7 +3,7 @@ GO_IMAGE ?= golang:1.27
 DOCKER_GO = docker run --rm -u "$$(id -u):$$(id -g)" -e HOME=/tmp -e GOCACHE=/tmp/gocache \
 	-v "$(CURDIR)":/src -w /src $(GO_IMAGE)
 
-.PHONY: test vet fmt build up down logs status backup
+.PHONY: test vet fmt build up pull down logs status backup
 
 test:
 	$(DOCKER_GO) go test -race -count=1 ./...
@@ -19,6 +19,10 @@ build:
 
 up:
 	docker compose up -d --build
+
+# Run the published image from ghcr.io instead of building from source.
+pull:
+	docker compose up -d
 
 down:
 	docker compose down

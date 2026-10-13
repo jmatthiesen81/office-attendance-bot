@@ -1,13 +1,18 @@
 # syntax=docker/dockerfile:1
 
 # ---- build -------------------------------------------------------------
-FROM golang:1.27-alpine AS build
+# Runs on the build machine's platform and cross-compiles for the target, so
+# multi-arch images build fast without emulation.
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build
+ARG TARGETOS TARGETARCH
+ARG VERSION=dev
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 # Pure-Go SQLite driver: no cgo, fully static binary.
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/officebot ./cmd/officebot
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o /out/officebot ./cmd/officebot
 
 # ---- runtime -----------------------------------------------------------
 FROM gcr.io/distroless/static-debian12:nonroot

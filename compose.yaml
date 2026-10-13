@@ -1,7 +1,11 @@
 services:
   officebot:
+    # Published image (major version 1, gets fixes and features but no breaking
+    # changes). Every `docker compose up -d` pulls the newest one; `--build`
+    # builds from source instead, which also happens if the pull fails.
+    image: ghcr.io/jmatthiesen81/office-attendance-bot:1
+    pull_policy: always
     build: .
-    image: officebot:latest
     container_name: officebot
     # Shared defaults (committed), then local settings and secrets (ignored by git).
     env_file:
