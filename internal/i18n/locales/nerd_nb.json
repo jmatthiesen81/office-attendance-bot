@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Levering feilet (host unreachable): {names}",
   "summary.more": " … og {count} til (truncated)",
   "summary.updated": "*Siste sync:* {time}",
+  "summary.project": "⭐ Består boten alle testene dine? <{url}|Gi den en star på GitHub>",
   "summary.deadline": "Svar før {deadline}",
   "summary.closed": "🔒 Undersøkelsen er lukket – exit code 0",
   "summary.fallback": "{title}: {answered} av {total} svar",

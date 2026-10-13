@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Messaggio perso in mare, impossibile raggiungere: {names}",
   "summary.more": " … e altri {count} della ciurma",
   "summary.updated": "*Ultimo aggiornamento:* {time}",
+  "summary.project": "⭐ Ti piace questo bot, mozzo? <{url}|Dagli una stella su GitHub>",
   "summary.deadline": "Rispondete entro {deadline}, filibustieri",
   "summary.closed": "🔒 Sondaggio chiuso – boccaporti sbarrati",
   "summary.fallback": "{title}: {answered} risposte su {total}",

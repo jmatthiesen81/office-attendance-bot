@@ -18,6 +18,10 @@ import (
 // maxSectionChars stays below Slack's 3000 character limit for section text.
 const maxSectionChars = 2800
 
+// ProjectURL is the project repository, linked below the summary footer
+// unless SUMMARY_PROJECT_LINK=false.
+const ProjectURL = "https://github.com/jmatthiesen81/office-attendance-bot"
+
 // Stats is the aggregated poll state.
 type Stats struct {
 	Days        [domain.NumDays][]domain.Participant
@@ -71,6 +75,8 @@ type Renderer struct {
 	Loc      *time.Location
 	MaxNames int
 	T        *i18n.Translator
+	// ProjectLink adds a link to the project repository below the footer.
+	ProjectLink bool
 }
 
 func (r Renderer) title(p *domain.Poll) string {
@@ -135,6 +141,9 @@ func (r Renderer) Render(snap *storage.Snapshot, now time.Time) slack.Message {
 		footer += " · " + r.T.T("summary.closed")
 	}
 	blocks = append(blocks, goslack.NewContextBlock("", md(footer)))
+	if r.ProjectLink {
+		blocks = append(blocks, goslack.NewContextBlock("", md(r.T.T("summary.project", "url", ProjectURL))))
+	}
 	if open {
 		// For anyone who did not get (or cannot find) their DM, and for
 		// people who joined the target group after the weekly start.

@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Message lost at sea, couldn't reach: {names}",
   "summary.more": " … and {count} more o' the crew",
   "summary.updated": "*Last updated:* {time}",
+  "summary.project": "⭐ Fancy this bot, matey? <{url}|Award it a star on GitHub>",
   "summary.deadline": "Answer by {deadline}, me hearties",
   "summary.closed": "🔒 Poll closed – hatches battened",
   "summary.fallback": "{title}: {answered} of {total} answers",

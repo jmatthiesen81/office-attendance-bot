@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Delivery failed (host unreachable): {names}",
   "summary.more": " … and {count} more (truncated)",
   "summary.updated": "*Last sync:* {time}",
+  "summary.project": "⭐ Bot passes all your tests? <{url}|git star it on GitHub>",
   "summary.deadline": "Respond before {deadline}",
   "summary.closed": "🔒 Poll closed – exit code 0",
   "summary.fallback": "{title}: {answered} of {total} responses",

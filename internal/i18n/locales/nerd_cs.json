@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Doručení selhalo (host unreachable): {names}",
   "summary.more": " … a další ({count}, truncated)",
   "summary.updated": "*Poslední sync:* {time}",
+  "summary.project": "⭐ Projde bot všemi tvými testy? <{url}|Dej mu star na GitHubu>",
   "summary.deadline": "Odpovědi do {deadline}",
   "summary.closed": "🔒 Anketa uzavřena – exit code 0",
   "summary.fallback": "{title}: odpovědi {answered} z {total}",

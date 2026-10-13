@@ -153,7 +153,7 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 	defer a.store.Close()
 
 	outbox := worker.NewOutbox(a.store, a.svc, log)
-	updater := summary.NewUpdater(a.store, a.api, summary.Renderer{Loc: cfg.Location, MaxNames: cfg.SummaryMaxNames, T: cfg.Translator}, log)
+	updater := summary.NewUpdater(a.store, a.api, summary.Renderer{Loc: cfg.Location, MaxNames: cfg.SummaryMaxNames, T: cfg.Translator, ProjectLink: cfg.SummaryProjectLink}, log)
 	a.svc.SetNotifiers(outbox, updater)
 	sched := poll.NewScheduler(a.svc, log)
 

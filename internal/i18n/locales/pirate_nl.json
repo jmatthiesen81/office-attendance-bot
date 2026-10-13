@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Bericht verloren op zee, niet bezorgd aan: {names}",
   "summary.more": " … en nog {count} van de bemanning",
   "summary.updated": "*Laatst bijgewerkt:* {time}",
+  "summary.project": "⭐ Bevalt de bot je, matroos? <{url}|Geef hem een ster op GitHub>",
   "summary.deadline": "Antwoorden tot {deadline}, maatjes",
   "summary.closed": "🔒 Peiling gesloten – luiken dicht",
   "summary.fallback": "{title}: {answered} van {total} antwoorden",

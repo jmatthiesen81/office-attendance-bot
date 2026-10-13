@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Не вдалося доставити повідомлення: {names}",
   "summary.more": " … і ще {count}",
   "summary.updated": "*Оновлено:* {time}",
+  "summary.project": "⭐ Подобається цей бот? <{url}|Постав йому зірку на GitHub>",
   "summary.deadline": "Відповісти до {deadline}",
   "summary.closed": "🔒 Опитування закрито",
   "summary.fallback": "{title}: відповіді {answered} з {total}",

@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Leverans misslyckades (host unreachable): {names}",
   "summary.more": " … och {count} till (truncated)",
   "summary.updated": "*Senaste sync:* {time}",
+  "summary.project": "⭐ Klarar boten alla dina tester? <{url}|Ge den en star på GitHub>",
   "summary.deadline": "Svara före {deadline}",
   "summary.closed": "🔒 Enkäten stängd – exit code 0",
   "summary.fallback": "{title}: {answered} av {total} svar",

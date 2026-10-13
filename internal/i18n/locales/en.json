@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Message could not be delivered to: {names}",
   "summary.more": " … and {count} more",
   "summary.updated": "*Last updated:* {time}",
+  "summary.project": "⭐ Like this bot? <{url}|Rate it on GitHub>",
   "summary.deadline": "Respond by {deadline}",
   "summary.closed": "🔒 Poll closed",
   "summary.fallback": "{title}: {answered} of {total} responses",

@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Bericht kon niet worden bezorgd aan: {names}",
   "summary.more": " … en nog {count}",
   "summary.updated": "*Laatst bijgewerkt:* {time}",
+  "summary.project": "⭐ Vind je deze bot handig? <{url}|Geef hem een ster op GitHub>",
   "summary.deadline": "Antwoorden tot {deadline}",
   "summary.closed": "🔒 Peiling gesloten",
   "summary.fallback": "{title}: {answered} van {total} antwoorden",

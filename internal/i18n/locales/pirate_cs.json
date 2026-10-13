@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Zpráva se ztratila na moři, nedoplula k: {names}",
   "summary.more": " … a další z posádky ({count})",
   "summary.updated": "*Naposledy aktualizováno:* {time}",
+  "summary.project": "⭐ Líbí se ti bot, plavčíku? <{url}|Dej mu hvězdičku na GitHubu>",
   "summary.deadline": "Odpovědi do {deadline}, posádko!",
   "summary.closed": "🔒 Anketa uzavřena – poklopy zavřené",
   "summary.fallback": "{title}: odpovědi {answered} z {total}",

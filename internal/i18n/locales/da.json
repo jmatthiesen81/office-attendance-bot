@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Beskeden kunne ikke leveres til: {names}",
   "summary.more": " … og {count} andre",
   "summary.updated": "*Senest opdateret:* {time}",
+  "summary.project": "⭐ Kan du lide botten? <{url}|Giv den en stjerne på GitHub>",
   "summary.deadline": "Svar senest {deadline}",
   "summary.closed": "🔒 Afstemningen er lukket",
   "summary.fallback": "{title}: {answered} af {total} svar",

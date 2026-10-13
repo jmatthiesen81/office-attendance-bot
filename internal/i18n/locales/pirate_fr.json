@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Message perdu en mer, impossible de joindre : {names}",
   "summary.more": " … et {count} autre(s) matelot(s)",
   "summary.updated": "*Dernière mise à jour :* {time}",
+  "summary.project": "⭐ Ce bot te plaît, moussaillon ? <{url}|Donne-lui une étoile sur GitHub>",
   "summary.deadline": "Répondre avant le {deadline}, matelots !",
   "summary.closed": "🔒 Sondage clôturé – écoutilles fermées",
   "summary.fallback": "{title} : {answered} réponses sur {total}",

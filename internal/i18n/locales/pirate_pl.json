@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Wiadomość przepadła w morzu, nie dotarła do: {names}",
   "summary.more": " … i jeszcze {count} z załogi",
   "summary.updated": "*Ostatnia aktualizacja:* {time}",
+  "summary.project": "⭐ Podoba ci się bot, majtku? <{url}|Daj mu gwiazdkę na GitHubie>",
   "summary.deadline": "Odpowiedzi do {deadline}, załogo!",
   "summary.closed": "🔒 Ankieta zamknięta – luki zaryglowane",
   "summary.fallback": "{title}: odpowiedzi {answered} z {total}",

@@ -169,6 +169,7 @@ DATABASE_PATH=/data/officebot.db
 LOG_LEVEL=info                 # debug, info, warn, error
 RETENTION_WEEKS=26             # older polls are deleted
 SUMMARY_MAX_NAMES=40           # names per list, then "… und N weitere" (… and N more)
+SUMMARY_PROJECT_LINK=true      # false = no GitHub link below the summary
 BOT_LANGUAGE=en                # language of Slack messages (see table)
 DRY_RUN=false                  # true = send nothing to Slack, only log
 
@@ -199,6 +200,7 @@ OFFICEBOT_GID=1000
 | `LOG_LEVEL`                                    | no          | `info`                  | `debug`, `info`, `warn`, `error`                                                                                                                                |
 | `RETENTION_WEEKS`                              | no          | `26`                    | Retention of past polls                                                                                                                                         |
 | `SUMMARY_MAX_NAMES`                            | no          | `40`                    | Truncation of long name lists                                                                                                                                   |
+| `SUMMARY_PROJECT_LINK`                         | no          | `true`                  | Small note below "Last updated" inviting people to rate the bot on GitHub; `false` hides it |
 | `DRY_RUN`                                      | no          | `false`                 | No contact with Slack. All messages go to the log.                                                                                                              |
 | `BOT_LANGUAGE`                                 | no          | `en`                    | Language of all Slack messages: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`; for fun also `nerd_<lang>`, `pirate_<lang>` |
 | `HEALTH_FILE`                                  | no          | `/tmp/officebot.health` | Heartbeat file for the health check                                                                                                                             |

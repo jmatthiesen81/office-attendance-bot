@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Flaschenpost verloren, nicht zustellbar an: {names}",
   "summary.more": " … und {count} weitere Seeleute",
   "summary.updated": "*Letzte Aktualisierung:* {time}",
+  "summary.project": "⭐ Gefällt dir der Bot, Landratte? <{url}|Gib ihm einen Stern auf GitHub>",
   "summary.deadline": "Antworten bis {deadline}, ihr Seebären!",
   "summary.closed": "🔒 Abstimmung geschlossen – Luken dicht",
   "summary.fallback": "{title}: {answered} von {total} Antworten",

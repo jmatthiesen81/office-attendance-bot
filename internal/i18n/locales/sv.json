@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Meddelandet kunde inte levereras till: {names}",
   "summary.more": " … och {count} till",
   "summary.updated": "*Senast uppdaterad:* {time}",
+  "summary.project": "⭐ Gillar du boten? <{url}|Ge den en stjärna på GitHub>",
   "summary.deadline": "Svara senast {deadline}",
   "summary.closed": "🔒 Enkäten är stängd",
   "summary.fallback": "{title}: {answered} av {total} svar",

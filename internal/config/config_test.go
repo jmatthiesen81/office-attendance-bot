@@ -118,6 +118,17 @@ func TestLanguage(t *testing.T) {
 	}
 }
 
+func TestProjectLink(t *testing.T) {
+	if c, err := LoadFrom(env(valid())); err != nil || !c.SummaryProjectLink {
+		t.Fatalf("project link not on by default: %v", err)
+	}
+	m := valid()
+	m["SUMMARY_PROJECT_LINK"] = "false"
+	if c, err := LoadFrom(env(m)); err != nil || c.SummaryProjectLink {
+		t.Fatalf("project link not disabled: %v", err)
+	}
+}
+
 func TestSetupModeSkipsTargets(t *testing.T) {
 	m := valid()
 	m["SLACK_SUMMARY_CHANNEL_ID"], m["SLACK_USER_IDS"] = "", ""

@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Meldingen gikk tapt på havet, nådde ikke frem til: {names}",
   "summary.more": " … og {count} til av mannskapet",
   "summary.updated": "*Sist oppdatert:* {time}",
+  "summary.project": "⭐ Liker du boten, skipsgutt? <{url}|Gi den en stjerne på GitHub>",
   "summary.deadline": "Svar senest {deadline}, gutter",
   "summary.closed": "🔒 Undersøkelsen er stengt – lukene skalket",
   "summary.fallback": "{title}: {answered} av {total} svar",

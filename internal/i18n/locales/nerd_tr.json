@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Teslim edilemedi (host unreachable): {names}",
   "summary.more": " … ve {count} kişi daha (truncated)",
   "summary.updated": "*Son sync:* {time}",
+  "summary.project": "⭐ Bot tüm testlerini geçiyor mu? <{url}|GitHub'da star ver>",
   "summary.deadline": "Timeout: {deadline}",
   "summary.closed": "🔒 Anket kapandı – exit code 0",
   "summary.fallback": "{title}: {answered}/{total} yanıt",

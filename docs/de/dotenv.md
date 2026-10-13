@@ -41,6 +41,8 @@ LOG_LEVEL=info
 RETENTION_WEEKS=26
 # Maximum names shown per list in the summary before "… and N more"
 SUMMARY_MAX_NAMES=40
+# Show a small link to the project on GitHub below the summary footer
+SUMMARY_PROJECT_LINK=true
 DRY_RUN=false
 
 # --- Docker Compose ------------------------------------------------------

@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Meddelandet försvann i havet, nådde inte fram till: {names}",
   "summary.more": " … och {count} till ur besättningen",
   "summary.updated": "*Senast uppdaterad:* {time}",
+  "summary.project": "⭐ Gillar du boten, landkrabba? <{url}|Ge den en stjärna på GitHub>",
   "summary.deadline": "Svara senast {deadline}, mina gossar",
   "summary.closed": "🔒 Enkäten stängd – luckorna skalkade",
   "summary.fallback": "{title}: {answered} av {total} svar",

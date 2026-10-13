@@ -48,6 +48,9 @@ type Config struct {
 	DryRun          bool
 	RetentionWeeks  int
 	SummaryMaxNames int
+	// SummaryProjectLink shows a link to the project repository below the
+	// summary footer.
+	SummaryProjectLink bool
 
 	// Translator renders all texts sent to Slack in the configured language.
 	Translator *i18n.Translator
@@ -88,6 +91,7 @@ func load(get func(string) string, requireTargets bool) (*Config, error) {
 		DryRun:                p.boolean("DRY_RUN", false),
 		RetentionWeeks:        p.integer("RETENTION_WEEKS", 26),
 		SummaryMaxNames:       p.integer("SUMMARY_MAX_NAMES", 40),
+		SummaryProjectLink:    p.boolean("SUMMARY_PROJECT_LINK", true),
 		Translator:            p.language("BOT_LANGUAGE", i18n.DefaultLanguage),
 	}
 	c.validate(&p)

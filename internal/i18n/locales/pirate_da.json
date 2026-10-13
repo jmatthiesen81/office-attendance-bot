@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Beskeden gik tabt på havet og nåede ikke frem til: {names}",
   "summary.more": " … og {count} andre fra besætningen",
   "summary.updated": "*Senest opdateret:* {time}",
+  "summary.project": "⭐ Kan du lide botten, landkrabbe? <{url}|Giv den en stjerne på GitHub>",
   "summary.deadline": "Svar senest {deadline}, gutter",
   "summary.closed": "🔒 Afstemningen er lukket – lugerne skalket",
   "summary.fallback": "{title}: {answered} af {total} svar",

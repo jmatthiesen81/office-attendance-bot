@@ -65,6 +65,7 @@
   "summary.unreachable": "📭 Доставка не вдалася (host unreachable): {names}",
   "summary.more": " … і ще {count} (truncated)",
   "summary.updated": "*Останній sync:* {time}",
+  "summary.project": "⭐ Бот проходить усі твої тести? <{url}|Постав йому star на GitHub>",
   "summary.deadline": "Відповісти до {deadline}",
   "summary.closed": "🔒 Опитування закрито – exit code 0",
   "summary.fallback": "{title}: відповіді {answered} з {total}",

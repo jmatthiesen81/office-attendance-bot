@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Mesaj iletilemedi: {names}",
   "summary.more": " … ve {count} kişi daha",
   "summary.updated": "*Son güncelleme:* {time}",
+  "summary.project": "⭐ Bu botu beğendin mi? <{url}|GitHub'da yıldız ver>",
   "summary.deadline": "Son yanıt tarihi: {deadline}",
   "summary.closed": "🔒 Anket kapandı",
   "summary.fallback": "{title}: {answered}/{total} yanıt",

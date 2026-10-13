@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Bezorging mislukt (host unreachable): {names}",
   "summary.more": " … en nog {count} (truncated)",
   "summary.updated": "*Laatste sync:* {time}",
+  "summary.project": "⭐ Slaagt de bot voor al je tests? <{url}|Geef hem een star op GitHub>",
   "summary.deadline": "Antwoorden vóór {deadline}",
   "summary.closed": "🔒 Peiling gesloten – exit code 0",
   "summary.fallback": "{title}: {answered} van {total} antwoorden",

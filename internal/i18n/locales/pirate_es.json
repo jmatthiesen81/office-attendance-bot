@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Mensaje perdido en alta mar, no llegó a: {names}",
   "summary.more": " … y {count} más de la tripulación",
   "summary.updated": "*Última actualización:* {time}",
+  "summary.project": "⭐ ¿Te gusta este bot, grumete? <{url}|Dale una estrella en GitHub>",
   "summary.deadline": "Responded antes del {deadline}, ¡bucaneros!",
   "summary.closed": "🔒 Encuesta cerrada – escotillas cerradas",
   "summary.fallback": "{title}: {answered} de {total} respuestas",

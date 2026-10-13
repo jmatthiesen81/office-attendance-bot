@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Zustellung fehlgeschlagen (Host unreachable): {names}",
   "summary.more": " … und {count} weitere (truncated)",
   "summary.updated": "*Letzter Sync:* {time}",
+  "summary.project": "⭐ Bot besteht all deine Tests? <{url}|Gib ihm einen Star auf GitHub>",
   "summary.deadline": "Antworten bis {deadline}, danach Timeout",
   "summary.closed": "🔒 Abstimmung geschlossen – Exit-Code 0",
   "summary.fallback": "{title}: {answered} von {total} ACKs",

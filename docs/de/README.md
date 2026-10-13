@@ -167,6 +167,7 @@ DATABASE_PATH=/data/officebot.db
 LOG_LEVEL=info                 # debug, info, warn, error
 RETENTION_WEEKS=26             # ältere Abstimmungen werden gelöscht
 SUMMARY_MAX_NAMES=40           # Namen pro Liste, danach „… und N weitere“
+SUMMARY_PROJECT_LINK=true      # false = kein GitHub-Hinweis unter der Übersicht
 BOT_LANGUAGE=en                # Sprache der Slack-Nachrichten (siehe Tabelle)
 DRY_RUN=false                  # true = nichts an Slack senden, nur loggen
 
@@ -197,6 +198,7 @@ OFFICEBOT_GID=1000
 | `LOG_LEVEL`                                    | nein            | `info`                  | `debug`, `info`, `warn`, `error`                                                                            |
 | `RETENTION_WEEKS`                              | nein            | `26`                    | Aufbewahrung historischer Abstimmungen                                                                      |
 | `SUMMARY_MAX_NAMES`                            | nein            | `40`                    | Kürzung langer Namenslisten                                                                                 |
+| `SUMMARY_PROJECT_LINK`                         | nein            | `true`                  | Kleiner Hinweis unter „Letzte Aktualisierung“, den Bot auf GitHub zu bewerten; `false` blendet ihn aus |
 | `DRY_RUN`                                      | nein            | `false`                 | Kein Kontakt zu Slack. Alle Nachrichten landen im Log.                                                      |
 | `BOT_LANGUAGE`                                 | nein            | `en`                    | Sprache aller Slack-Nachrichten: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`; zum Spaß auch `nerd_<sprache>`, `pirate_<sprache>` |
 | `HEALTH_FILE`                                  | nein            | `/tmp/officebot.health` | Heartbeat-Datei für den Healthcheck                                                                         |

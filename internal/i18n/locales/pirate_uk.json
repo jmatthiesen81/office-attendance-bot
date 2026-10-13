@@ -65,6 +65,7 @@
   "summary.unreachable": "📜 Пляшка з листом загубилася в морі й не дісталася до: {names}",
   "summary.more": " … і ще {count} з екіпажу",
   "summary.updated": "*Оновлено:* {time}",
+  "summary.project": "⭐ Подобається бот, юнго? <{url}|Постав йому зірку на GitHub>",
   "summary.deadline": "Відповіді до {deadline}, екіпаже!",
   "summary.closed": "🔒 Опитування закрито – люки задраєно",
   "summary.fallback": "{title}: відповіді {answered} з {total}",

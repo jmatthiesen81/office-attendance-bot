@@ -131,6 +131,20 @@ func TestRenderAway(t *testing.T) {
 	}
 }
 
+func TestRenderProjectLink(t *testing.T) {
+	snap := snapshot(1, nil)
+	r := Renderer{Loc: loc, MaxNames: 40, T: i18n.MustNew("de")}
+	if text := slack.RenderPlain(r.Render(snap, t0).Blocks); strings.Contains(text, ProjectURL) {
+		t.Errorf("project link shown although disabled:\n%s", text)
+	}
+	r.ProjectLink = true
+	text := slack.RenderPlain(r.Render(snap, t0).Blocks)
+	link := "⭐ Gefällt dir der Bot? <" + ProjectURL + "|Bewerte ihn auf GitHub>"
+	if !strings.Contains(text, link) || strings.Index(text, link) < strings.Index(text, "Letzte Aktualisierung") {
+		t.Errorf("project link missing or not below the footer:\n%s", text)
+	}
+}
+
 func TestRenderLargeTeam(t *testing.T) {
 	resp := map[string]domain.Days{}
 	for i := 1; i <= 400; i++ {

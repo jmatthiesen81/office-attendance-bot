@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Falha na entrega (host unreachable): {names}",
   "summary.more": " … e mais {count} (truncado)",
   "summary.updated": "*Última sincronização:* {time}",
+  "summary.project": "⭐ O bot passa em todos os teus testes? <{url}|Dá-lhe uma star no GitHub>",
   "summary.deadline": "Responder até {deadline}",
   "summary.closed": "🔒 Votação encerrada – exit code 0",
   "summary.fallback": "{title}: {answered} de {total} respostas",

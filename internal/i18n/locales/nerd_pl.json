@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Dostarczenie nieudane (host unreachable): {names}",
   "summary.more": " … i jeszcze {count} (truncated)",
   "summary.updated": "*Ostatni sync:* {time}",
+  "summary.project": "⭐ Bot przechodzi wszystkie twoje testy? <{url}|Daj mu star na GitHubie>",
   "summary.deadline": "Odpowiedzi do {deadline}",
   "summary.closed": "🔒 Ankieta zamknięta – exit code 0",
   "summary.fallback": "{title}: odpowiedzi {answered} z {total}",

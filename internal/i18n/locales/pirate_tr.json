@@ -65,6 +65,7 @@
   "summary.unreachable": "⚠️ Mesaj denizde kayboldu, ulaşılamadı: {names}",
   "summary.more": " … ve {count} tayfa daha",
   "summary.updated": "*Son güncelleme:* {time}",
+  "summary.project": "⭐ Botu beğendin mi, miço? <{url}|GitHub'da yıldız ver>",
   "summary.deadline": "Son tarih: {deadline}, yiğitler",
   "summary.closed": "🔒 Anket kapandı – ambar kapakları mühürlendi",
   "summary.fallback": "{title}: {answered}/{total} yanıt",
