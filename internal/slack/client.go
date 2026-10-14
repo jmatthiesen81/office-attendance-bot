@@ -28,6 +28,7 @@ type User struct {
 	TeamID    string
 	Name      string // display name, falling back to real name and handle
 	RealName  string
+	Locale    string // Slack language, e.g. "de-DE" (users.info sends include_locale)
 	Deleted   bool
 	IsBot     bool
 	IsAppUser bool
@@ -53,6 +54,8 @@ type API interface {
 	OpenView(ctx context.Context, triggerID string, view goslack.ModalViewRequest) error
 	// UpdateView replaces an open modal with the given content.
 	UpdateView(ctx context.Context, viewID string, view goslack.ModalViewRequest) error
+	// PushView opens a modal on top of the modal in which triggerID was created.
+	PushView(ctx context.Context, triggerID string, view goslack.ModalViewRequest) error
 }
 
 // Metadata event types used to recognise our own messages.
@@ -108,7 +111,7 @@ func toUser(u *goslack.User) User {
 	if name == "" {
 		name = u.Name
 	}
-	return User{ID: u.ID, TeamID: u.TeamID, Name: name, RealName: u.RealName, Deleted: u.Deleted, IsBot: u.IsBot, IsAppUser: u.IsAppUser}
+	return User{ID: u.ID, TeamID: u.TeamID, Name: name, RealName: u.RealName, Locale: u.Locale, Deleted: u.Deleted, IsBot: u.IsBot, IsAppUser: u.IsAppUser}
 }
 
 func (c *Client) UserInfo(ctx context.Context, userID string) (*User, error) {
@@ -194,6 +197,11 @@ func (c *Client) OpenView(ctx context.Context, triggerID string, view goslack.Mo
 	return err
 }
 
+func (c *Client) PushView(ctx context.Context, triggerID string, view goslack.ModalViewRequest) error {
+	_, err := c.api.PushViewContext(ctx, triggerID, view)
+	return err
+}
+
 func (c *Client) UpdateView(ctx context.Context, viewID string, view goslack.ModalViewRequest) error {
 	// No hash: the view is always replaced with the current database state.
 	_, err := c.api.UpdateViewContext(ctx, view, "", "", viewID)
@@ -255,6 +263,11 @@ func (d *DryRun) OpenView(_ context.Context, triggerID string, v goslack.ModalVi
 	return nil
 }
 
+func (d *DryRun) PushView(_ context.Context, triggerID string, v goslack.ModalViewRequest) error {
+	d.Log.Info("dry-run: views.push", "trigger", triggerID, "blocks", RenderPlain(v.Blocks.BlockSet))
+	return nil
+}
+
 func (d *DryRun) UpdateView(_ context.Context, viewID string, v goslack.ModalViewRequest) error {
 	d.Log.Info("dry-run: views.update", "view", viewID, "blocks", RenderPlain(v.Blocks.BlockSet))
 	return nil
@@ -277,8 +290,19 @@ func RenderPlain(blocks []goslack.Block) string {
 			}
 		case *goslack.InputBlock:
 			sb.WriteString(b.Label.Text + ": ")
-			if dp, ok := b.Element.(*goslack.DatePickerBlockElement); ok {
-				sb.WriteString(dp.InitialDate)
+			switch e := b.Element.(type) {
+			case *goslack.DatePickerBlockElement:
+				sb.WriteString(e.InitialDate)
+			case *goslack.SelectBlockElement:
+				if e.InitialOption != nil {
+					sb.WriteString(e.InitialOption.Text.Text)
+				}
+				for _, g := range e.OptionGroups {
+					sb.WriteString("\n  " + g.Label.Text + ":")
+					for _, o := range g.Options {
+						sb.WriteString(" " + o.Text.Text + ";")
+					}
+				}
 			}
 			sb.WriteString("\n")
 		case *goslack.ContextBlock:

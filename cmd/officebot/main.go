@@ -8,6 +8,9 @@
 //	officebot away list [--user U]                               list upcoming time off
 //	officebot away add --user U --from D --to D                  add time off (YYYY-MM-DD, days included)
 //	officebot away remove --user U --from D --to D | --id N      remove days or one entry of time off
+//	officebot lang list                                          list the language choices of people
+//	officebot lang set --user U <language>                       set a person's language, e.g. de or pirate_en
+//	officebot lang reset --user U                                back to the team default
 //	officebot delete-week --week W --yes                         delete a week's poll from the database (testing)
 //	officebot simulate-save --user U --days mon,wed [--week W]   dry-run only: answer as a user
 //	officebot simulate-request --user U [--week W]               dry-run only: click "Abfrage an mich senden"
@@ -37,6 +40,7 @@ import (
 
 	"officebot/internal/config"
 	"officebot/internal/domain"
+	"officebot/internal/i18n"
 	"officebot/internal/isoweek"
 	"officebot/internal/participants"
 	"officebot/internal/poll"
@@ -79,7 +83,7 @@ func main() {
 	switch cmd {
 	case "run":
 		err = run(ctx, cfg, log)
-	case "start-week", "resync", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away":
+	case "start-week", "resync", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away", "lang":
 		err = cli(ctx, cmd, args, cfg, log)
 	default:
 		err = fmt.Errorf("unknown command %q", cmd)
@@ -172,7 +176,7 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 
 	connected := func() bool { return true }
 	if !cfg.DryRun {
-		socket := slack.NewSocket(a.raw, a.svc, cfg.Translator, log)
+		socket := slack.NewSocket(a.raw, a.svc, log)
 		connected = socket.Connected
 		goRun(func() {
 			if err := socket.Run(ctx); err != nil {
@@ -277,8 +281,11 @@ func healthcheck() int {
 
 func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log *slog.Logger) error {
 	var sub string
-	if cmd == "away" {
+	if cmd == "away" || cmd == "lang" {
 		if len(args) == 0 || strings.HasPrefix(args[0], "-") {
+			if cmd == "lang" {
+				return errors.New("usage: officebot lang list|set|reset [flags]")
+			}
 			return errors.New("usage: officebot away list|add|remove [flags]")
 		}
 		sub, args = args[0], args[1:]
@@ -286,7 +293,7 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 	fs := flag.NewFlagSet(cmd, flag.ContinueOnError)
 	weekFlag := fs.String("week", "", "ISO week, e.g. 2026-W43 (default: current target week)")
 	yes := fs.Bool("yes", false, "confirm destructive operation")
-	user := fs.String("user", "", "Slack user ID (simulate-save, simulate-request, away)")
+	user := fs.String("user", "", "Slack user ID (simulate-save, simulate-request, away, lang)")
 	from := fs.String("from", "", "first day of time off, YYYY-MM-DD (away)")
 	to := fs.String("to", "", "last day of time off, YYYY-MM-DD (away)")
 	id := fs.Int64("id", 0, "ID of a time-off entry as shown by 'away list' (away remove)")
@@ -374,6 +381,8 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 		return status(ctx, a, cfg.Location)
 	case "away":
 		return away(ctx, a, sub, *user, *from, *to, *id, cfg.Location)
+	case "lang":
+		return lang(ctx, a, sub, *user, fs.Arg(0), cfg.Location)
 	case "delete-week":
 		p, err := findPoll()
 		if err != nil {
@@ -572,5 +581,64 @@ func away(ctx context.Context, a *app, sub, user, fromFlag, toFlag string, id in
 		return err
 	}
 	fmt.Println("the running bot updates DMs and the summary within 30 s")
+	return nil
+}
+
+// lang manages the language people chose for their DMs (ADR 0002). Changes
+// are only written to the database; the running bot re-renders open poll DMs
+// within 30 s.
+func lang(ctx context.Context, a *app, sub, user, language string, loc *time.Location) error {
+	switch sub {
+	case "list":
+		langs, err := a.store.ListUserLanguages(ctx, a.teamID)
+		if err != nil {
+			return err
+		}
+		if len(langs) == 0 {
+			fmt.Println("nobody has chosen a language; everyone gets the team default")
+			return nil
+		}
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "USER\tLANGUAGE\tNAME\tCHANGED")
+		for _, l := range langs {
+			name := "(not available, team default applies)"
+			if tr, err := i18n.New(l.Language); err == nil {
+				name = tr.T("language.name")
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", l.SlackUserID, l.Language, name, l.UpdatedAt.In(loc).Format(time.DateTime))
+		}
+		return w.Flush()
+	case "set":
+		if user == "" || language == "" {
+			return errors.New("usage: officebot lang set --user U <language>")
+		}
+		tr, err := i18n.New(language)
+		if err != nil {
+			return err
+		}
+		if err := a.store.SetUserLanguage(ctx, a.teamID, user, tr.Lang(), time.Now()); err != nil {
+			return err
+		}
+		fmt.Printf("language of %s set to %s (%s)\n", user, tr.Lang(), tr.T("language.name"))
+	case "reset":
+		if user == "" {
+			return errors.New("usage: officebot lang reset --user U")
+		}
+		changed, err := a.store.ResetUserLanguage(ctx, a.teamID, user)
+		if err != nil {
+			return err
+		}
+		if !changed {
+			fmt.Printf("%s has not chosen a language\n", user)
+			return nil
+		}
+		fmt.Printf("language of %s reset to the team default\n", user)
+	default:
+		return fmt.Errorf("unknown lang command %q (use list, set or reset)", sub)
+	}
+	if err := a.svc.LanguageChanged(ctx, user); err != nil {
+		return err
+	}
+	fmt.Println("the running bot updates open poll DMs within 30 s")
 	return nil
 }

@@ -80,6 +80,30 @@ func TestFunVariants(t *testing.T) {
 	}
 }
 
+// Every language is listed by its name in the language form, so the names
+// must be distinct.
+func TestLanguageNamesUnique(t *testing.T) {
+	seen := map[string]string{}
+	for _, lang := range Languages() {
+		name := MustNew(lang).T("language.name")
+		if other, dup := seen[name]; dup {
+			t.Errorf("%s and %s are both called %q", lang, other, name)
+		}
+		seen[name] = lang
+	}
+}
+
+func TestFromLocale(t *testing.T) {
+	for locale, want := range map[string]string{
+		"de-DE": "de", "pt-BR": "pt", "en-GB": "en", "ja-JP": "ja", "no-NO": "nb", "ES-la": "es",
+		"ko-KR": "", "zh-CN": "", "": "", "nerd-DE": "",
+	} {
+		if got := FromLocale(locale); got != want {
+			t.Errorf("FromLocale(%q) = %q, want %q", locale, got, want)
+		}
+	}
+}
+
 func TestNew(t *testing.T) {
 	if tr, err := New(" EN "); err != nil || tr.Lang() != "en" {
 		t.Errorf("New(EN) = %v, %v", tr, err)

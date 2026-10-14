@@ -53,7 +53,12 @@ type Config struct {
 	SummaryProjectLink bool
 
 	// Translator renders all texts sent to Slack in the configured language.
+	// It is the team default: people can choose their own language for
+	// everything only they see (ADR 0002).
 	Translator *i18n.Translator
+	// LanguageFromSlack uses a person's Slack language when they have not
+	// chosen one and a catalog exists for it.
+	LanguageFromSlack bool
 }
 
 // Load reads the configuration from the process environment.
@@ -93,6 +98,7 @@ func load(get func(string) string, requireTargets bool) (*Config, error) {
 		SummaryMaxNames:       p.integer("SUMMARY_MAX_NAMES", 40),
 		SummaryProjectLink:    p.boolean("SUMMARY_PROJECT_LINK", true),
 		Translator:            p.language("BOT_LANGUAGE", i18n.DefaultLanguage),
+		LanguageFromSlack:     p.boolean("BOT_LANGUAGE_FROM_SLACK", false),
 	}
 	c.validate(&p)
 	if len(p.errs) > 0 {
@@ -171,6 +177,7 @@ func (c *Config) LogValue() slog.Value {
 		slog.Int("user_ids", len(c.UserIDs)),
 		slog.String("poll", fmt.Sprintf("%s %s %s offset=%d", c.PollWeekday, c.PollTime, c.Location, c.TargetWeekOffset())),
 		slog.String("language", c.Translator.Lang()),
+		slog.Bool("language_from_slack", c.LanguageFromSlack),
 		slog.String("deadline", fmt.Sprintf("%s %s", c.DeadlineWeekday, c.DeadlineTime)),
 		slog.Bool("reminder", c.ReminderEnabled),
 		slog.String("database", c.DatabasePath),

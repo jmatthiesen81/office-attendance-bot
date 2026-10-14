@@ -26,10 +26,12 @@ type Update struct {
 	Msg     slack.Message
 }
 
-// View is a recorded views.open (ViewID empty) or views.update.
+// View is a recorded views.open or views.push (ViewID empty, Pushed set for
+// views.push) or views.update.
 type View struct {
 	TriggerID string
 	ViewID    string
+	Pushed    bool
 	View      goslack.ModalViewRequest
 }
 
@@ -228,6 +230,16 @@ func (f *Fake) OpenView(_ context.Context, triggerID string, v goslack.ModalView
 		return err
 	}
 	f.Views = append(f.Views, View{TriggerID: triggerID, View: v})
+	return nil
+}
+
+func (f *Fake) PushView(_ context.Context, triggerID string, v goslack.ModalViewRequest) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if err := f.fail("views.push", ""); err != nil {
+		return err
+	}
+	f.Views = append(f.Views, View{TriggerID: triggerID, Pushed: true, View: v})
 	return nil
 }
 

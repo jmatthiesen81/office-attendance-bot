@@ -1,6 +1,6 @@
 # ADR 0002: Sprache pro Person für private Nachrichten
 
-- **Status:** Vorgeschlagen (für später geplant, nicht umgesetzt)
+- **Status:** Angenommen, umgesetzt am 2026-10-14
 - **Datum:** 2026-10-13
 
 ## Kontext
@@ -17,7 +17,7 @@ Mit 14 Sprachen samt Nerd- und Piratenvarianten (`internal/i18n/locales/`) liegt
 
 Die Übersetzungsschicht ist dafür schon vorbereitet. DM-Blöcke, Formular und Datumsformate bekommen den `Translator` als Parameter und greifen nicht auf eine globale Sprache zu.
 
-## Entscheidung (geplant)
+## Entscheidung
 
 Jede Person kann selbst festlegen, in welcher Sprache der Bot ihr private Nachrichten schreibt. Die Übersicht im Kanal bleibt bei `BOT_LANGUAGE`.
 
@@ -68,6 +68,17 @@ Wie `away` schreibt die CLI nur in die Datenbank und legt `update_dm`-Jobs an. D
 - **Zeitzone und Formate:** Uhrzeiten werden weiterhin in `POLL_TIMEZONE` angezeigt. Datums- und Uhrzeitformate kommen aus dem Katalog der gewählten Sprache. Eine Zeitzone pro Person (`tz` aus Slack) wäre ein eigener Schritt.
 - **Übersicht:** Sie bleibt einsprachig. Mehrsprachige Übersichten oder eine Übersicht pro Sprache würden den Kanal überladen.
 - **Datenschutz:** Gespeichert wird nur ein Sprachcode pro Person. Der Cleanup-Job (`Service.Cleanup`) löscht Einträge von Personen, die seit `RETENTION_WEEKS` an keiner Abfrage mehr teilgenommen haben. Die Datenschutzhinweise in der README werden entsprechend ergänzt.
+
+### Hinweise zur Umsetzung
+
+Wo die Umsetzung vom Plan oben abweicht oder ihn genauer fasst:
+
+- **Speicher:** Statt `UserLanguages(ctx, ws, userIDs)` gibt es `ListUserLanguages(ctx, ws)` für `lang list`. Erinnerungen werden als ein Job pro Person verschickt, eine Sammelabfrage war deshalb nicht nötig.
+- **Slack-Sprache:** Die Migration `0004_user_settings.sql` legt zusätzlich `participants.slack_locale` an. slack-go (v0.30.1) schickt `include_locale=true` bei `users.info` standardmäßig mit. Es gilt die Slack-Sprache aus der jüngsten Abfrage der Person.
+- **Standardoption:** Kommt die Sprache ohne eigene Wahl aus Slack, heißt die Option „Slack-Sprache (English)“ statt „Teamstandard (Deutsch)“, damit sie nennt, was tatsächlich gilt.
+- **Abwesenheitsformular:** Dort sitzt der Button neben dem Einleitungstext, und das Sprachformular öffnet sich per `views.push` über dem Abwesenheitsformular.
+- **Kataloge:** Neben `language.name` bekommt jeder Katalog die Texte des Formulars (`language.*`). Die Buttons beider Formulare nutzen die gemeinsamen Schlüssel `modal.submit` und `modal.close` (vorher `timeoff.submit` und `timeoff.close`).
+- **Aufräumen:** Die Wahl einer Person wird gelöscht, sobald sie an keiner gespeicherten Abfrage mehr teilnimmt und sie seit `RETENTION_WEEKS` nicht geändert hat.
 
 ## Betrachtete Alternativen
 

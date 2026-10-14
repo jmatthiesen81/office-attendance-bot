@@ -103,7 +103,7 @@ func (s *Service) HandleAway(ctx context.Context, req slack.Interaction) {
 	}
 	if err != nil {
 		log.Error("change absence", "err", err)
-		s.RejectInteraction(ctx, req, s.tr().T("reply.save_failed"))
+		s.RejectInteraction(ctx, req, s.trFor(ctx, req.UserID).T("reply.save_failed"))
 		return
 	}
 	log.Info("away state changed from poll DM")
@@ -120,7 +120,7 @@ func (s *Service) timeOffModal(ctx context.Context, userID string) (*slack.Modal
 	if err != nil {
 		return nil, err
 	}
-	v := slack.TimeOffModal(s.tr(), upcoming, today)
+	v := slack.TimeOffModal(s.trFor(ctx, userID), upcoming, today)
 	return &v, nil
 }
 
@@ -137,7 +137,7 @@ func (s *Service) HandleOpenTimeOff(ctx context.Context, req slack.Interaction) 
 	}
 	if err != nil {
 		log.Error("open time-off form", "err", err)
-		s.RejectInteraction(ctx, req, s.tr().T("reply.try_again"))
+		s.RejectInteraction(ctx, req, s.trFor(ctx, req.UserID).T("reply.try_again"))
 	}
 }
 
@@ -179,7 +179,7 @@ func (s *Service) SubmitTimeOff(ctx context.Context, req slack.Interaction) map[
 		log.Warn("interaction from foreign workspace rejected", "team", req.TeamID)
 		return nil
 	}
-	tr := s.tr()
+	tr := s.trFor(ctx, req.UserID)
 	errs := map[string]string{}
 	today := s.today()
 	switch {

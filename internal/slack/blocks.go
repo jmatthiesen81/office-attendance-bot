@@ -2,6 +2,7 @@ package slack
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	goslack "github.com/slack-go/slack"
@@ -21,6 +22,7 @@ const (
 	ActionUndoAway      = "undo_away"      // poll DM: not away after all
 	ActionTimeOff       = "timeoff_open"   // poll DM and summary: open the time-off form
 	ActionTimeOffDelete = "timeoff_delete" // time-off form: delete one entry
+	ActionLanguage      = "language_open"  // poll DM, summary and time-off form: open the language form
 )
 
 // ModalView is a modal such as the time-off form.
@@ -42,11 +44,15 @@ func timeOffButton(tr *i18n.Translator) *goslack.ButtonBlockElement {
 	return goslack.NewButtonBlockElement(ActionTimeOff, "open", plain(tr.T("timeoff.button")))
 }
 
+func languageButton(tr *i18n.Translator) *goslack.ButtonBlockElement {
+	return goslack.NewButtonBlockElement(ActionLanguage, "open", plain(tr.T("language.button")))
+}
+
 // RequestDMBlock holds the buttons below the channel summary: anyone can
-// (re)request their poll DM or plan their time off.
+// (re)request their poll DM, plan their time off or choose their language.
 func RequestDMBlock(tr *i18n.Translator, pollID int64) goslack.Block {
 	btn := goslack.NewButtonBlockElement(ActionRequestDM, fmt.Sprint(pollID), plain(tr.T("summary.request_dm")))
-	return goslack.NewActionBlock(fmt.Sprintf("request:%d", pollID), btn, timeOffButton(tr))
+	return goslack.NewActionBlock(fmt.Sprintf("request:%d", pollID), btn, timeOffButton(tr), languageButton(tr))
 }
 
 // DMView is everything needed to render a participant's poll DM.
@@ -121,7 +127,7 @@ func PollDM(v DMView) Message {
 		undo := goslack.NewButtonBlockElement(ActionUndoAway, fmt.Sprint(v.PollID), plain(v.T.T("dm.away.undo")))
 		blocks = append(blocks,
 			goslack.NewSectionBlock(mrkdwn(v.T.T("dm.away")), nil, nil),
-			goslack.NewActionBlock(awayBlockID, undo, timeOffButton(v.T)),
+			goslack.NewActionBlock(awayBlockID, undo, timeOffButton(v.T), languageButton(v.T)),
 			goslack.NewContextBlock("status", mrkdwn(v.T.T("dm.away.hint", "deadline", v.dateTime(v.Deadline)))),
 		)
 		return Message{Text: v.title(), Blocks: blocks}
@@ -158,7 +164,7 @@ func PollDM(v DMView) Message {
 		mrkdwn(v.T.T("dm.hint", "deadline", v.dateTime(v.Deadline))),
 	))
 	away := goslack.NewButtonBlockElement(ActionAway, fmt.Sprint(v.PollID), plain(v.T.T("dm.away.button")))
-	blocks = append(blocks, goslack.NewActionBlock(awayBlockID, away, timeOffButton(v.T)))
+	blocks = append(blocks, goslack.NewActionBlock(awayBlockID, away, timeOffButton(v.T), languageButton(v.T)))
 	return Message{Text: v.title(), Blocks: blocks}
 }
 
@@ -180,7 +186,7 @@ func TimeOffModal(tr *i18n.Translator, upcoming []domain.Absence, today domain.D
 		return goslack.NewInputBlock(block, plain(label), nil, dp)
 	}
 	blocks := []goslack.Block{
-		goslack.NewSectionBlock(mrkdwn(tr.T("timeoff.intro")), nil, nil),
+		goslack.NewSectionBlock(mrkdwn(tr.T("timeoff.intro")), nil, goslack.NewAccessory(languageButton(tr))),
 		date(TimeOffStartBlock, TimeOffStartAction, tr.T("timeoff.start")),
 		date(TimeOffEndBlock, TimeOffEndAction, tr.T("timeoff.end")),
 		goslack.NewDividerBlock(),
@@ -202,9 +208,61 @@ func TimeOffModal(tr *i18n.Translator, upcoming []domain.Absence, today domain.D
 		Type:       goslack.VTModal,
 		CallbackID: CallbackTimeOff,
 		Title:      plain(tr.T("timeoff.title")),
-		Submit:     plain(tr.T("timeoff.submit")),
-		Close:      plain(tr.T("timeoff.close")),
+		Submit:     plain(tr.T("modal.submit")),
+		Close:      plain(tr.T("modal.close")),
 		Blocks:     goslack.Blocks{BlockSet: blocks},
+	}
+}
+
+// IDs of the language form.
+const (
+	CallbackLanguage = "language"
+	LanguageBlock    = "language"
+	LanguageAction   = "language_select"
+	// LanguageDefault is the option that clears the person's choice.
+	LanguageDefault = "default"
+)
+
+// LanguageModal renders the language form in tr. current is the person's
+// chosen language ("" = none); fallback names the language that applies
+// without a choice, fromSlack whether it is the person's Slack language.
+func LanguageModal(tr *i18n.Translator, current string, fallback *i18n.Translator, fromSlack bool) goslack.ModalViewRequest {
+	option := func(value, text string) *goslack.OptionBlockObject {
+		return goslack.NewOptionBlockObject(value, plain(text), nil)
+	}
+	defaultKey := "language.default"
+	if fromSlack {
+		defaultKey = "language.default.slack"
+	}
+	initial := option(LanguageDefault, tr.T(defaultKey, "language", fallback.T("language.name")))
+	groups := map[string][]*goslack.OptionBlockObject{"": {initial}}
+	for _, lang := range i18n.Languages() {
+		style, _, _ := strings.Cut(lang, "_")
+		if style == lang {
+			style = ""
+		}
+		o := option(lang, i18n.MustNew(lang).T("language.name"))
+		if lang == current {
+			initial = o
+		}
+		groups[style] = append(groups[style], o)
+	}
+	sel := goslack.NewOptionsGroupSelectBlockElement(goslack.OptTypeStatic, nil, LanguageAction,
+		goslack.NewOptionGroupBlockElement(plain(tr.T("language.group.languages")), groups[""]...),
+		goslack.NewOptionGroupBlockElement(plain(tr.T("language.group.nerd")), groups["nerd"]...),
+		goslack.NewOptionGroupBlockElement(plain(tr.T("language.group.pirate")), groups["pirate"]...),
+	)
+	sel.InitialOption = initial
+	return goslack.ModalViewRequest{
+		Type:       goslack.VTModal,
+		CallbackID: CallbackLanguage,
+		Title:      plain(tr.T("language.title")),
+		Submit:     plain(tr.T("modal.submit")),
+		Close:      plain(tr.T("modal.close")),
+		Blocks: goslack.Blocks{BlockSet: []goslack.Block{
+			goslack.NewSectionBlock(mrkdwn(tr.T("language.intro")), nil, nil),
+			goslack.NewInputBlock(LanguageBlock, plain(tr.T("language.label")), nil, sel),
+		}},
 	}
 }
 

@@ -31,6 +31,12 @@ type InteractionHandler interface {
 	// SubmitTimeOff stores a submitted time-off form. It returns error
 	// messages per input block, or nil if the form may close.
 	SubmitTimeOff(ctx context.Context, req Interaction) map[string]string
+	// HandleOpenLanguage opens the language form.
+	HandleOpenLanguage(ctx context.Context, req Interaction)
+	// SubmitLanguage stores a submitted language form, like SubmitTimeOff.
+	SubmitLanguage(ctx context.Context, req Interaction) map[string]string
+	// TranslatorFor returns the translator for texts only userID sees.
+	TranslatorFor(ctx context.Context, userID string) *i18n.Translator
 }
 
 // submitTimeout keeps form validation within Slack's 3 s acknowledgement limit.
@@ -40,7 +46,6 @@ const submitTimeout = 2500 * time.Millisecond
 type Socket struct {
 	client    *socketmode.Client
 	handler   InteractionHandler
-	tr        *i18n.Translator
 	log       *slog.Logger
 	connected atomic.Bool
 	seen      *recentSet
@@ -48,11 +53,10 @@ type Socket struct {
 }
 
 // NewSocket creates a Socket Mode listener. api must be created with the app-level token.
-func NewSocket(api *goslack.Client, handler InteractionHandler, tr *i18n.Translator, log *slog.Logger) *Socket {
+func NewSocket(api *goslack.Client, handler InteractionHandler, log *slog.Logger) *Socket {
 	return &Socket{
 		client:  socketmode.New(api),
 		handler: handler,
-		tr:      tr,
 		log:     log,
 		seen:    newRecentSet(512),
 	}
@@ -136,7 +140,7 @@ func (s *Socket) dispatch(cb *goslack.InteractionCallback) {
 		s.async(func(ctx context.Context) {
 			if err != nil {
 				s.log.Warn("invalid save interaction", "user", req.UserID, "poll", req.PollID, "err", err)
-				s.handler.RejectInteraction(ctx, req, s.tr.T("reply.unreadable"))
+				s.handler.RejectInteraction(ctx, req, s.handler.TranslatorFor(ctx, req.UserID).T("reply.unreadable"))
 				return
 			}
 			s.handler.HandleSave(ctx, req)
@@ -183,6 +187,16 @@ func (s *Socket) dispatch(cb *goslack.InteractionCallback) {
 		})
 		return
 	}
+	if req, ok, err := ParseOpenLanguage(cb); ok {
+		s.async(func(ctx context.Context) {
+			if err != nil {
+				s.log.Warn("invalid language interaction", "user", req.UserID, "err", err)
+				return
+			}
+			s.handler.HandleOpenLanguage(ctx, req)
+		})
+		return
+	}
 	// Anything else (checkbox ticks etc.) is only acknowledged: nothing is
 	// persisted before "Speichern".
 }
@@ -190,17 +204,25 @@ func (s *Socket) dispatch(cb *goslack.InteractionCallback) {
 // submit handles a form submission and returns the acknowledgement payload:
 // nil closes the form, an errors response keeps it open.
 func (s *Socket) submit(cb *goslack.InteractionCallback) any {
-	req, ok, err := ParseTimeOffSubmit(cb)
-	if !ok {
-		return nil
-	}
-	if err != nil {
-		s.log.Warn("invalid time-off submission", "user", req.UserID, "err", err)
-		return goslack.NewErrorsViewSubmissionResponse(map[string]string{TimeOffEndBlock: s.tr.T("timeoff.error.failed")})
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), submitTimeout)
 	defer cancel()
-	if errs := s.handler.SubmitTimeOff(ctx, req); len(errs) > 0 {
+	var errs map[string]string
+	if req, ok, err := ParseTimeOffSubmit(cb); ok {
+		if err != nil {
+			s.log.Warn("invalid time-off submission", "user", req.UserID, "err", err)
+			errs = map[string]string{TimeOffEndBlock: s.handler.TranslatorFor(ctx, req.UserID).T("timeoff.error.failed")}
+		} else {
+			errs = s.handler.SubmitTimeOff(ctx, req)
+		}
+	} else if req, ok, err := ParseLanguageSubmit(cb); ok {
+		if err != nil {
+			s.log.Warn("invalid language submission", "user", req.UserID, "err", err)
+			errs = map[string]string{LanguageBlock: s.handler.TranslatorFor(ctx, req.UserID).T("reply.try_again")}
+		} else {
+			errs = s.handler.SubmitLanguage(ctx, req)
+		}
+	}
+	if len(errs) > 0 {
 		return goslack.NewErrorsViewSubmissionResponse(errs)
 	}
 	return nil

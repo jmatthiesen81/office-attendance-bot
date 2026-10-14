@@ -1,6 +1,6 @@
 # ADR 0002: Per-person language for private messages
 
-- **Status:** Proposed (planned for later, not implemented)
+- **Status:** Accepted, implemented on 2026-10-14
 - **Date:** 2026-10-13
 
 ## Context
@@ -17,7 +17,7 @@ With 14 languages plus nerd and pirate variants (`internal/i18n/locales/`), mixe
 
 The translation layer is already prepared for this. DM blocks, the form and date formats receive the `Translator` as a parameter and do not use a global language.
 
-## Decision (planned)
+## Decision
 
 Each person can choose the language the bot uses for their private messages. The channel summary stays in `BOT_LANGUAGE`.
 
@@ -68,6 +68,17 @@ Like `away`, the CLI only writes to the database and enqueues `update_dm` jobs. 
 - **Time zone and formats:** times are still shown in `POLL_TIMEZONE`. Date and time formats come from the catalog of the chosen language. A per-person time zone (`tz` from Slack) would be a separate step.
 - **Summary:** it stays in one language. Multilingual summaries, or one summary per language, would clutter the channel.
 - **Privacy:** only one language code per person is stored. The cleanup job (`Service.Cleanup`) deletes entries of people who have not taken part in any poll for `RETENTION_WEEKS`. The privacy notes in the README are extended accordingly.
+
+### Implementation notes
+
+Where the implementation differs from or refines the plan above:
+
+- **Storage:** instead of `UserLanguages(ctx, ws, userIDs)` there is `ListUserLanguages(ctx, ws)` for `lang list`. Reminders are sent as one job per person, so a batch lookup was not needed.
+- **Slack locale:** migration `0004_user_settings.sql` also adds `participants.slack_locale`. slack-go (v0.30.1) sends `include_locale=true` for `users.info` by default. The locale of the person's latest poll applies.
+- **Default option:** if the language without own choice comes from Slack, the option reads "Slack language (Deutsch)" instead of "Team default (English)", so it names what actually applies.
+- **Time-off form:** there, the button sits next to the intro text and the language form is opened with `views.push` on top of the time-off form.
+- **Catalogs:** besides `language.name`, every catalog gets the texts of the form (`language.*`). The buttons of both forms use the shared keys `modal.submit` and `modal.close` (formerly `timeoff.submit` and `timeoff.close`).
+- **Cleanup:** the choice of a person is deleted once they take part in no stored poll and have not changed it for `RETENTION_WEEKS`.
 
 ## Alternatives considered
 

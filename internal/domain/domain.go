@@ -91,6 +91,7 @@ type Participant struct {
 	PollID              int64
 	SlackUserID         string
 	DisplayName         string
+	SlackLocale         string // Slack language, e.g. "de-DE"; "" if unknown
 	DMChannelID         string
 	DMMessageTS         string
 	DMGeneration        int // bumped on every re-requested DM

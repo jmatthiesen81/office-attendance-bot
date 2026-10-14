@@ -96,7 +96,7 @@ func (s *Service) Resolve(ctx context.Context) ([]domain.Participant, error) {
 			s.log.Debug("skipping user", "user", id, "reason", reason)
 			continue
 		}
-		out = append(out, domain.Participant{SlackUserID: id, DisplayName: u.Name})
+		out = append(out, domain.Participant{SlackUserID: id, DisplayName: u.Name, SlackLocale: u.Locale})
 	}
 	return out, nil
 }
@@ -129,7 +129,7 @@ func (s *Service) Eligible(ctx context.Context, userID string) (*domain.Particip
 	if reason := s.Exclusion(u); reason != "" {
 		return nil, reason, nil
 	}
-	return &domain.Participant{SlackUserID: userID, DisplayName: u.Name}, "", nil
+	return &domain.Participant{SlackUserID: userID, DisplayName: u.Name, SlackLocale: u.Locale}, "", nil
 }
 
 func contains(list []string, v string) bool {

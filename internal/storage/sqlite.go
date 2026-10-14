@@ -235,8 +235,8 @@ func (s *Store) CreatePoll(ctx context.Context, p *domain.Poll, participants []d
 		p.Status, p.CreatedAt, p.SummaryVersion = domain.PollOpen, now.UTC().Truncate(time.Second), 1
 		for _, part := range participants {
 			var pid int64
-			if err := tx.QueryRowContext(ctx, `INSERT INTO participants (poll_id, slack_user_id, display_name) VALUES (?, ?, ?) RETURNING id`,
-				p.ID, part.SlackUserID, part.DisplayName).Scan(&pid); err != nil {
+			if err := tx.QueryRowContext(ctx, `INSERT INTO participants (poll_id, slack_user_id, display_name, slack_locale) VALUES (?, ?, ?, ?) RETURNING id`,
+				p.ID, part.SlackUserID, part.DisplayName, part.SlackLocale).Scan(&pid); err != nil {
 				return err
 			}
 			if err := enqueue(ctx, tx, JobSendDM, p.ID, pid, "", now); err != nil {
@@ -342,13 +342,13 @@ func (s *Store) DeletePoll(ctx context.Context, id int64) error {
 // --------------------------------------------------------- participants
 
 const participantCols = `id, poll_id, slack_user_id, display_name, dm_channel_id, dm_message_ts,
-	delivery_status, last_delivery_attempt, reminder_count, dm_generation`
+	delivery_status, last_delivery_attempt, reminder_count, dm_generation, slack_locale`
 
 func scanParticipant(r scanner) (*domain.Participant, error) {
 	var p domain.Participant
 	var last int64
 	err := r.Scan(&p.ID, &p.PollID, &p.SlackUserID, &p.DisplayName, &p.DMChannelID, &p.DMMessageTS,
-		&p.DeliveryStatus, &last, &p.ReminderCount, &p.DMGeneration)
+		&p.DeliveryStatus, &last, &p.ReminderCount, &p.DMGeneration, &p.SlackLocale)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -434,8 +434,8 @@ func (s *Store) RequestNewDM(ctx context.Context, participantID int64, now time.
 func (s *Store) AddParticipant(ctx context.Context, pollID int64, p domain.Participant, now time.Time) (created bool, err error) {
 	err = s.tx(ctx, func(tx *sql.Tx) error {
 		var id int64
-		err := tx.QueryRowContext(ctx, `INSERT INTO participants (poll_id, slack_user_id, display_name, last_delivery_attempt) VALUES (?, ?, ?, ?)
-			ON CONFLICT (poll_id, slack_user_id) DO NOTHING RETURNING id`, pollID, p.SlackUserID, p.DisplayName, unix(now)).Scan(&id)
+		err := tx.QueryRowContext(ctx, `INSERT INTO participants (poll_id, slack_user_id, display_name, slack_locale, last_delivery_attempt) VALUES (?, ?, ?, ?, ?)
+			ON CONFLICT (poll_id, slack_user_id) DO NOTHING RETURNING id`, pollID, p.SlackUserID, p.DisplayName, p.SlackLocale, unix(now)).Scan(&id)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}

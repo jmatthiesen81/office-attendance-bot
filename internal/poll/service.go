@@ -74,7 +74,8 @@ func NewService(store *storage.Store, api slack.API, participants Resolver, cfg 
 		outbox: outbox, summary: summary, log: log, Now: time.Now}
 }
 
-// tr returns the translator for all texts sent to Slack.
+// tr returns the translator of the team default language, used for the
+// channel summary. Texts only one person sees use trFor.
 func (s *Service) tr() *i18n.Translator { return s.cfg.Translator }
 
 // SetNotifiers wires the outbox worker and summary updater after construction.
@@ -173,6 +174,13 @@ func (s *Service) Cleanup(ctx context.Context, now time.Time) error {
 	if err == nil && n > 0 {
 		s.log.Info("deleted old absences", "count", n)
 	}
+	if err != nil {
+		return err
+	}
+	n, err = s.store.DeleteUserSettingsBefore(ctx, now.AddDate(0, 0, -7*s.cfg.RetentionWeeks))
+	if err == nil && n > 0 {
+		s.log.Info("deleted settings of people no longer polled", "count", n)
+	}
 	return err
 }
 
@@ -244,7 +252,7 @@ func (s *Service) HandleSave(ctx context.Context, req slack.Interaction) {
 	resp, changed, err := s.store.SaveResponse(ctx, p.ID, req.UserID, req.Days, now)
 	if err != nil {
 		log.Error("save response", "err", err)
-		s.RejectInteraction(ctx, req, s.tr().T("reply.save_failed"))
+		s.RejectInteraction(ctx, req, s.trFor(ctx, req.UserID).T("reply.save_failed"))
 		return
 	}
 	log.Info("response saved", "days", resp.Days.Count(), "revision", resp.Revision, "changed", changed)
@@ -262,36 +270,37 @@ func (s *Service) dmInteraction(ctx context.Context, req slack.Interaction, log 
 		log.Warn("interaction from foreign workspace rejected", "team", req.TeamID)
 		return nil, nil, false
 	}
+	tr := s.trFor(ctx, req.UserID)
 	p, err := s.store.GetPoll(ctx, req.PollID)
 	if errors.Is(err, storage.ErrNotFound) || (err == nil && p.WorkspaceID != req.TeamID) {
 		log.Warn("interaction for unknown poll rejected")
-		s.RejectInteraction(ctx, req, s.tr().T("reply.poll_gone"))
+		s.RejectInteraction(ctx, req, tr.T("reply.poll_gone"))
 		return nil, nil, false
 	}
 	if err != nil {
 		log.Error("load poll", "err", err)
-		s.RejectInteraction(ctx, req, s.tr().T("reply.save_unavailable"))
+		s.RejectInteraction(ctx, req, tr.T("reply.save_unavailable"))
 		return nil, nil, false
 	}
 	part, err := s.store.GetParticipant(ctx, p.ID, req.UserID)
 	if errors.Is(err, storage.ErrNotFound) {
 		log.Warn("interaction from non-participant rejected")
-		s.RejectInteraction(ctx, req, s.tr().T("reply.not_participant"))
+		s.RejectInteraction(ctx, req, tr.T("reply.not_participant"))
 		return nil, nil, false
 	}
 	if err != nil {
 		log.Error("load participant", "err", err)
-		s.RejectInteraction(ctx, req, s.tr().T("reply.save_unavailable"))
+		s.RejectInteraction(ctx, req, tr.T("reply.save_unavailable"))
 		return nil, nil, false
 	}
 	if (part.DMChannelID != "" && req.ChannelID != part.DMChannelID) || (part.DMMessageTS != "" && req.MessageTS != part.DMMessageTS) {
 		log.Warn("interaction from unexpected message rejected", "channel", req.ChannelID, "ts", req.MessageTS)
-		s.RejectInteraction(ctx, req, s.tr().T("reply.stale_dm"))
+		s.RejectInteraction(ctx, req, tr.T("reply.stale_dm"))
 		return nil, nil, false
 	}
 	if !p.IsAcceptingResponses(s.Now()) {
 		log.Info("interaction after deadline rejected")
-		s.RejectInteraction(ctx, req, s.tr().T("reply.closed_no_changes", "deadline", s.tr().DateTime(p.Deadline.In(s.cfg.Location))))
+		s.RejectInteraction(ctx, req, tr.T("reply.closed_no_changes", "deadline", tr.DateTime(p.Deadline.In(s.cfg.Location))))
 		s.refreshOrEnqueue(ctx, part)
 		return nil, nil, false
 	}
@@ -330,12 +339,13 @@ func (s *Service) HandleRequestDM(ctx context.Context, req slack.Interaction) {
 		return
 	}
 	reply := func(text string) { s.RejectInteraction(ctx, req, text) }
-	tryAgain := s.tr().T("reply.try_again")
+	tr := s.trFor(ctx, req.UserID)
+	tryAgain := tr.T("reply.try_again")
 
 	p, err := s.store.GetPoll(ctx, req.PollID)
 	if errors.Is(err, storage.ErrNotFound) || (err == nil && p.WorkspaceID != req.TeamID) {
 		log.Warn("request for unknown poll rejected")
-		reply(s.tr().T("reply.poll_gone"))
+		reply(tr.T("reply.poll_gone"))
 		return
 	}
 	if err != nil {
@@ -345,18 +355,18 @@ func (s *Service) HandleRequestDM(ctx context.Context, req slack.Interaction) {
 	}
 	if req.ChannelID != p.SummaryChannelID || req.MessageTS != p.SummaryMessageTS {
 		log.Warn("request from unexpected message rejected", "channel", req.ChannelID, "ts", req.MessageTS)
-		reply(s.tr().T("reply.stale_summary"))
+		reply(tr.T("reply.stale_summary"))
 		return
 	}
 	now := s.Now()
 	if !p.IsAcceptingResponses(now) {
-		reply(s.tr().T("reply.closed", "deadline", s.tr().DateTime(p.Deadline.In(s.cfg.Location))))
+		reply(tr.T("reply.closed", "deadline", tr.DateTime(p.Deadline.In(s.cfg.Location))))
 		return
 	}
 
 	part, err := s.store.GetParticipant(ctx, p.ID, req.UserID)
 	if errors.Is(err, storage.ErrNotFound) {
-		s.addLateJoiner(ctx, p, req, reply)
+		s.addLateJoiner(ctx, p, req, tr, reply)
 		return
 	}
 	if err != nil {
@@ -370,16 +380,16 @@ func (s *Service) HandleRequestDM(ctx context.Context, req slack.Interaction) {
 	defer mu.Unlock()
 	switch {
 	case part.DMMessageTS == "" && part.DeliveryStatus == domain.DeliveryPending:
-		reply(s.tr().T("reply.dm_pending"))
+		reply(tr.T("reply.dm_pending"))
 		return
 	case part.DeliveryStatus != domain.DeliveryAway && now.Sub(part.LastDeliveryAttempt) < RequestDMCooldown:
-		reply(s.tr().T("reply.dm_cooldown"))
+		reply(tr.T("reply.dm_cooldown"))
 		return
 	}
 	if part.DMMessageTS != "" {
 		resp, err := s.store.GetResponse(ctx, p.ID, part.SlackUserID)
 		if err == nil {
-			err = s.api.UpdateMessage(ctx, part.DMChannelID, part.DMMessageTS, slack.SupersededDM(s.view(p, resp, false, now)))
+			err = s.api.UpdateMessage(ctx, part.DMChannelID, part.DMMessageTS, slack.SupersededDM(s.view(p, resp, false, now, tr)))
 		}
 		if err != nil && !slack.IsMessageGone(err) {
 			// Not critical: saves on the old message are rejected anyway.
@@ -393,26 +403,26 @@ func (s *Service) HandleRequestDM(ctx context.Context, req slack.Interaction) {
 	}
 	log.Info("poll DM re-requested")
 	s.outbox.Notify()
-	reply(s.tr().T("reply.dm_resent"))
+	reply(tr.T("reply.dm_resent"))
 }
 
-func (s *Service) addLateJoiner(ctx context.Context, p *domain.Poll, req slack.Interaction, reply func(string)) {
+func (s *Service) addLateJoiner(ctx context.Context, p *domain.Poll, req slack.Interaction, tr *i18n.Translator, reply func(string)) {
 	log := s.log.With("user", req.UserID, "poll", p.ID)
 	part, reason, err := s.participants.Eligible(ctx, req.UserID)
 	if err != nil {
 		log.Error("check late joiner", "err", err)
-		reply(s.tr().T("reply.try_again"))
+		reply(tr.T("reply.try_again"))
 		return
 	}
 	if reason != "" {
 		log.Info("request from user outside the target group", "reason", reason)
-		reply(s.tr().T("reply.not_eligible"))
+		reply(tr.T("reply.not_eligible"))
 		return
 	}
 	created, err := s.store.AddParticipant(ctx, p.ID, *part, s.Now())
 	if err != nil {
 		log.Error("add late joiner", "err", err)
-		reply(s.tr().T("reply.try_again"))
+		reply(tr.T("reply.try_again"))
 		return
 	}
 	if created {
@@ -420,12 +430,12 @@ func (s *Service) addLateJoiner(ctx context.Context, p *domain.Poll, req slack.I
 		s.outbox.Notify()
 		s.summary.Trigger()
 	}
-	reply(s.tr().T("reply.late_joiner_added"))
+	reply(tr.T("reply.late_joiner_added"))
 }
 
 // ------------------------------------------------------------------- DM jobs
 
-func (s *Service) view(p *domain.Poll, resp *domain.Response, away bool, now time.Time) slack.DMView {
+func (s *Service) view(p *domain.Poll, resp *domain.Response, away bool, now time.Time, tr *i18n.Translator) slack.DMView {
 	return slack.DMView{
 		PollID:    p.ID,
 		Week:      isoweek.Week{Year: p.ISOYear, Week: p.ISOWeek},
@@ -437,7 +447,7 @@ func (s *Service) view(p *domain.Poll, resp *domain.Response, away bool, now tim
 		Closed:    !p.IsAcceptingResponses(now),
 		Away:      away,
 		Loc:       s.cfg.Location,
-		T:         s.tr(),
+		T:         tr,
 	}
 }
 
@@ -544,7 +554,7 @@ func (s *Service) sendDM(ctx context.Context, job *storage.Job) error {
 		}
 	}
 
-	msg := slack.PollDM(s.view(p, resp, away, now))
+	msg := slack.PollDM(s.view(p, resp, away, now, s.trFor(ctx, part.SlackUserID)))
 	msg.Metadata = slack.NewMetadata(slack.MetaPollDM, key)
 	ts, err := s.api.PostMessage(ctx, channel, msg)
 	if err != nil {
@@ -580,7 +590,7 @@ func (s *Service) RefreshDM(ctx context.Context, participantID int64) error {
 	if err != nil {
 		return err
 	}
-	msg := slack.PollDM(s.view(p, resp, away, s.Now()))
+	msg := slack.PollDM(s.view(p, resp, away, s.Now(), s.trFor(ctx, part.SlackUserID)))
 	msg.Metadata = slack.NewMetadata(slack.MetaPollDM, dmMetadataKey(p, part))
 	if err := s.api.UpdateMessage(ctx, part.DMChannelID, part.DMMessageTS, msg); err != nil {
 		if slack.IsMessageGone(err) {
@@ -611,7 +621,7 @@ func (s *Service) sendReminder(ctx context.Context, job *storage.Job) error {
 	if err != nil {
 		s.log.Debug("permalink failed", "err", err)
 	}
-	if _, err := s.api.PostMessage(ctx, part.DMChannelID, slack.Reminder(s.view(p, nil, false, now), link)); err != nil {
+	if _, err := s.api.PostMessage(ctx, part.DMChannelID, slack.Reminder(s.view(p, nil, false, now, s.trFor(ctx, part.SlackUserID)), link)); err != nil {
 		return fmt.Errorf("post reminder: %w", err)
 	}
 	s.log.Info("reminder sent", "user", part.SlackUserID, "poll", p.ID)

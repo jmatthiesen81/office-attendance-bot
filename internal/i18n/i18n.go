@@ -58,6 +58,19 @@ func Languages() []string {
 	return out
 }
 
+// FromLocale returns the language for a Slack locale such as "de-DE" or
+// "pt-BR", or "" if there is no catalog for it.
+func FromLocale(locale string) string {
+	lang, _, _ := strings.Cut(strings.ToLower(strings.TrimSpace(locale)), "-")
+	if lang == "no" || lang == "nn" {
+		lang = "nb" // only Bokmål is available
+	}
+	if _, ok := catalogs[lang]; !ok || lang == "" {
+		return ""
+	}
+	return lang
+}
+
 // New returns the translator for lang ("de", "en", …).
 func New(lang string) (*Translator, error) {
 	lang = strings.ToLower(strings.TrimSpace(lang))

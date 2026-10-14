@@ -14,8 +14,8 @@ import (
 // Interaction is a parsed button click. TeamID and UserID come from the
 // Slack-authenticated payload; PollID, ChannelID and MessageTS are only
 // lookup keys and must be validated against the database by the handler.
-// Days is only set for save clicks, Away for away/undo clicks, the remaining
-// fields only for time-off interactions.
+// Days is only set for save clicks, Away for away/undo clicks, Language for
+// the submitted language form, the remaining fields only for form interactions.
 type Interaction struct {
 	TeamID    string
 	UserID    string
@@ -25,9 +25,10 @@ type Interaction struct {
 	Days      domain.Days
 	Away      bool
 
-	TriggerID string      // opens the time-off form
-	ViewID    string      // the open time-off form
+	TriggerID string      // opens a form
+	ViewID    string      // the open form; for a click in a form, the form it came from
 	AbsenceID int64       // entry to delete
+	Language  string      // chosen language code or LanguageDefault
 	Start     domain.Date // submitted form; zero if not chosen
 	End       domain.Date
 }
@@ -203,4 +204,43 @@ func ParseTimeOffSubmit(cb *goslack.InteractionCallback) (req Interaction, ok bo
 	}
 	req.End, err = pick(TimeOffEndBlock, TimeOffEndAction)
 	return req, true, err
+}
+
+// ParseOpenLanguage extracts a click on "Language" (poll DM, channel summary
+// or time-off form). ViewID is set if the click came from a form, on top of
+// which the language form is pushed.
+func ParseOpenLanguage(cb *goslack.InteractionCallback) (req Interaction, ok bool, err error) {
+	if findAction(cb, ActionLanguage) == nil {
+		return req, false, nil
+	}
+	if req, err = userOf(cb); err != nil {
+		return req, true, err
+	}
+	req.TriggerID = cb.TriggerID
+	if cb.Container.Type == "view" {
+		req.ViewID = cb.View.ID
+	}
+	if req.TriggerID == "" {
+		return req, true, errors.New("language click without trigger_id")
+	}
+	return req, true, nil
+}
+
+// ParseLanguageSubmit extracts the submitted language form. The value is only
+// checked for presence; the handler checks that the language exists.
+func ParseLanguageSubmit(cb *goslack.InteractionCallback) (req Interaction, ok bool, err error) {
+	if cb.Type != goslack.InteractionTypeViewSubmission || cb.View.CallbackID != CallbackLanguage {
+		return req, false, nil
+	}
+	if req, err = userOf(cb); err != nil {
+		return req, true, err
+	}
+	req.ViewID = cb.View.ID
+	if cb.View.State != nil {
+		req.Language = cb.View.State.Values[LanguageBlock][LanguageAction].SelectedOption.Value
+	}
+	if req.Language == "" {
+		return req, true, errors.New("language form without selection")
+	}
+	return req, true, nil
 }

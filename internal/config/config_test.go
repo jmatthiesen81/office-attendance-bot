@@ -108,12 +108,13 @@ func TestTargetWeekFollowsPollWeekday(t *testing.T) {
 
 func TestLanguage(t *testing.T) {
 	c, err := LoadFrom(env(valid()))
-	if err != nil || c.Translator.Lang() != "en" {
+	if err != nil || c.Translator.Lang() != "en" || c.LanguageFromSlack {
 		t.Fatalf("default language: %v %v", c, err)
 	}
 	m := valid()
 	m["BOT_LANGUAGE"] = "de"
-	if c, err = LoadFrom(env(m)); err != nil || c.Translator.Lang() != "de" {
+	m["BOT_LANGUAGE_FROM_SLACK"] = "true"
+	if c, err = LoadFrom(env(m)); err != nil || c.Translator.Lang() != "de" || !c.LanguageFromSlack {
 		t.Fatalf("de: %v", err)
 	}
 }
