@@ -39,7 +39,7 @@ Step 2 is off by default. Otherwise, a German team whose members use Slack in En
   - the languages,
   - the nerd variants,
   - the pirate variants.
-- Each language is listed in its own language: "Deutsch", "Français", "Українська", "Nerd (Deutsch)". For this, every catalog gets a new `language.name` key. With 42 entries, the list stays below Slack's limit of 100 options.
+- Each language is listed in its own language: "Deutsch", "Français", "Українська", "Nerd (Deutsch)". For this, every catalog gets a new `language.name` key. With 45 entries, the list stays below Slack's limit of 100 options.
 - After saving, the bot immediately re-renders the current DM of every open poll in the new language, as an `update_dm` job just like for time off. If the time-off form is open at that moment, it stays in the old language until it is opened again.
 - The same button also appears in the time-off form and below the channel summary, next to "📩 Send me the poll". That way, people without a current DM can reach the setting too.
 

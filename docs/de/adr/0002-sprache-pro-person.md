@@ -39,7 +39,7 @@ Stufe 2 ist standardmäßig aus. Sonst bekäme ein deutsches Team, dessen Mitgli
   - die Sprachen,
   - die Nerd-Varianten,
   - die Piraten-Varianten.
-- Jede Sprache steht in ihrer eigenen Sprache in der Liste: „Deutsch“, „Français“, „Українська“, „Nerd (Deutsch)“. Dafür bekommt jeder Katalog einen neuen Schlüssel `language.name`. Bei 42 Einträgen bleibt die Liste unter Slacks Grenze von 100 Optionen.
+- Jede Sprache steht in ihrer eigenen Sprache in der Liste: „Deutsch“, „Français“, „Українська“, „Nerd (Deutsch)“. Dafür bekommt jeder Katalog einen neuen Schlüssel `language.name`. Bei 45 Einträgen bleibt die Liste unter Slacks Grenze von 100 Optionen.
 - Nach dem Speichern rendert der Bot die aktuelle DM jeder offenen Abfrage sofort neu in der neuen Sprache, als `update_dm`-Job wie bei Abwesenheiten. Ist das Abwesenheitsformular gerade offen, bleibt es bis zum nächsten Öffnen in der alten Sprache.
 - Derselbe Button steht auch im Abwesenheitsformular und unter der Übersicht im Kanal neben „📩 Abfrage an mich senden“. So kommen auch Personen ohne aktuelle DM an die Einstellung.
 

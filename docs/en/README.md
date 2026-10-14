@@ -6,7 +6,7 @@ A small, self-contained Slack app for weekly office attendance planning.
 - Answers are accepted until the deadline (default: **Friday 08:00** of the polled week) and can be changed as often as needed.
 - The results channel contains **exactly one summary message per calendar week**, which is updated via `chat.update` on every change.
 - Optionally, people who have not answered yet receive reminders.
-- Slack messages are in English (default), German, French, Spanish, Italian, Portuguese, Dutch, Danish, Swedish, Norwegian (Bokmål), Polish, Czech, Turkish or Ukrainian, configurable via `BOT_LANGUAGE`. For fun, every language also exists in nerd and pirate speak: `nerd_<lang>` and `pirate_<lang>`, e.g. `nerd_de` or `pirate_en`.
+- Slack messages are in English (default), German, French, Spanish, Italian, Portuguese, Dutch, Danish, Swedish, Norwegian (Bokmål), Polish, Czech, Turkish, Ukrainian or Japanese, configurable via `BOT_LANGUAGE`. For fun, every language also exists in nerd and pirate speak: `nerd_<lang>` and `pirate_<lang>`, e.g. `nerd_de` or `pirate_en`.
 - Below the summary, a **📩 Abfrage an mich senden** (*send the poll to me*) button re-sends the DM to anyone who missed or lost it. People who joined the target group after the weekly start can use it to add themselves.
 - **Time off**: people who are away for a whole week get neither the poll nor reminders, and the summary lists them as away. They enter it with **🌴 I'm away this week** in the DM, with the **🌴 Plan time off** form (in the DM and the summary), or an admin does it via the CLI.
 
@@ -202,7 +202,7 @@ OFFICEBOT_GID=1000
 | `SUMMARY_MAX_NAMES`                            | no          | `40`                    | Truncation of long name lists                                                                                                                                   |
 | `SUMMARY_PROJECT_LINK`                         | no          | `true`                  | Small note below "Last updated" inviting people to rate the bot on GitHub; `false` hides it                                                                     |
 | `DRY_RUN`                                      | no          | `false`                 | No contact with Slack. All messages go to the log.                                                                                                              |
-| `BOT_LANGUAGE`                                 | no          | `en`                    | Language of all Slack messages: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`; for fun also `nerd_<lang>`, `pirate_<lang>` |
+| `BOT_LANGUAGE`                                 | no          | `en`                    | Language of all Slack messages: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`, `ja`; for fun also `nerd_<lang>`, `pirate_<lang>` |
 | `HEALTH_FILE`                                  | no          | `/tmp/officebot.health` | Heartbeat file for the health check                                                                                                                             |
 | `OFFICEBOT_UID` / `OFFICEBOT_GID`              | no          | `1000` / `1000`         | Compose only: user the container runs as, and thus owner of the data in `./volumes/officebot`                                                                   |
 

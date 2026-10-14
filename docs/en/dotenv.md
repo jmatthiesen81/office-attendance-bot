@@ -29,7 +29,7 @@ REMINDER_MAX_COUNT=1
 
 # --- Language ------------------------------------------------------------
 # Language of all Slack messages:
-# en, de, fr, es, it, pt, nl, da, sv, nb, pl, cs, tr, uk.
+# en, de, fr, es, it, pt, nl, da, sv, nb, pl, cs, tr, uk, ja.
 # For fun, every language also exists as nerd_<lang> and pirate_<lang>,
 # e.g. nerd_de or pirate_en.
 BOT_LANGUAGE=en
