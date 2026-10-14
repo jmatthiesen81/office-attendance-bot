@@ -366,13 +366,13 @@ Translations: all texts the bot sends to Slack live in `internal/i18n/locales/<l
 
 Architecture decisions are recorded in [adr/](adr/), e.g. [ADR 0001: Configurable work days](adr/0001-configurable-work-days.md) and [ADR 0002: Per-person language](adr/0002-per-user-language.md).
 
-Releases: for pull requests, the workflow `.github/workflows/release.yml` runs gofmt, `go vet`, the tests and a test build without publishing anything. Every push to a version branch such as `1.0` publishes the current state as `edge` and `sha-<commit>` once the tests pass. This is meant for trying things out on a test server, not for production. `officebot version` shows `edge-<commit>` there. A Git tag `v*` publishes a release:
+Releases: for pull requests, the workflow `.github/workflows/release.yml` runs gofmt, `go vet`, the tests and a test build without publishing anything. Every push to a version branch such as `1.0` publishes the current state as `edge` and `sha-<commit>` once the tests pass. This is meant for trying things out on a test server, not for production. `officebot version` shows `edge-<commit>` there. A Git tag with the version number without a `v` prefix (e.g. `1.0.0`) publishes a release:
 
 ```bash
-git tag v1.0.0 && git push origin v1.0.0   # → tags 1.0.0, 1.0, 1 and latest
+git tag 1.0.0 && git push origin 1.0.0   # → tags 1.0.0, 1.0, 1 and latest
 ```
 
-Pre-releases such as `v1.1.0-rc.1` only get their own tag, and `0.x` versions get no major tag. The image includes an SBOM and build provenance. After the first release, the package is private on GitHub. Set it to **Public** once under *Package settings* → *Change visibility*.
+Pre-releases such as `1.1.0-rc.1` only get their own tag, and `0.x` versions get no major tag. The image includes an SBOM and build provenance. After the first release, the package is private on GitHub. Set it to **Public** once under *Package settings* → *Change visibility*.
 
 New migrations: add a file with the next free number, e.g. `internal/storage/migrations/0004_….sql`. It is applied once, in a transaction, at startup.
 

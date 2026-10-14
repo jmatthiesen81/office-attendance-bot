@@ -364,13 +364,13 @@ Die Tests decken ab: ISO-Wochen und Jahreswechsel (inkl. 53-Wochen-Jahre und DST
 
 Architekturentscheidungen liegen unter [adr/](adr/), z. B. [ADR 0001: Konfigurierbare Arbeitstage](adr/0001-konfigurierbare-arbeitstage.md) und [ADR 0002: Sprache pro Person](adr/0002-sprache-pro-person.md).
 
-Releases: Der Workflow `.github/workflows/release.yml` führt bei Pull Requests gofmt, `go vet`, die Tests und einen Test-Build aus, ohne etwas zu veröffentlichen. Jeder Push auf einen Versionsbranch wie `1.0` veröffentlicht nach erfolgreichen Tests den aktuellen Stand als `edge` und `sha-<commit>`. Das ist zum Ausprobieren auf einem Testserver gedacht, nicht für den Produktivbetrieb. `officebot version` zeigt dort `edge-<commit>`. Ein Git-Tag `v*` veröffentlicht ein Release:
+Releases: Der Workflow `.github/workflows/release.yml` führt bei Pull Requests gofmt, `go vet`, die Tests und einen Test-Build aus, ohne etwas zu veröffentlichen. Jeder Push auf einen Versionsbranch wie `1.0` veröffentlicht nach erfolgreichen Tests den aktuellen Stand als `edge` und `sha-<commit>`. Das ist zum Ausprobieren auf einem Testserver gedacht, nicht für den Produktivbetrieb. `officebot version` zeigt dort `edge-<commit>`. Ein Git-Tag mit der Versionsnummer ohne `v`-Präfix (z. B. `1.0.0`) veröffentlicht ein Release:
 
 ```bash
-git tag v1.0.0 && git push origin v1.0.0   # → Tags 1.0.0, 1.0, 1 und latest
+git tag 1.0.0 && git push origin 1.0.0   # → Tags 1.0.0, 1.0, 1 und latest
 ```
 
-Vorabversionen wie `v1.1.0-rc.1` bekommen nur ihren eigenen Tag, `0.x`-Versionen keinen Major-Tag. Das Image enthält SBOM und Build-Provenance. Nach dem ersten Release ist das Paket auf GitHub privat. Es muss einmalig unter *Package settings* → *Change visibility* auf **Public** gestellt werden.
+Vorabversionen wie `1.1.0-rc.1` bekommen nur ihren eigenen Tag, `0.x`-Versionen keinen Major-Tag. Das Image enthält SBOM und Build-Provenance. Nach dem ersten Release ist das Paket auf GitHub privat. Es muss einmalig unter *Package settings* → *Change visibility* auf **Public** gestellt werden.
 
 Neue Migrationen: Datei mit der nächsten freien Nummer anlegen, z. B. `internal/storage/migrations/0004_….sql`. Sie wird beim Start einmalig in einer Transaktion angewendet.
 
