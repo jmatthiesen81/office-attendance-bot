@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Jag skickade precis enkäten till dig! Titta bland dina direktmeddelanden.",
   "reply.dm_resent": "📩 Jag skickar enkäten till dig igen som direktmeddelande. Ditt tidigare val ligger tryggt kvar i lastrummet.",
   "reply.not_eligible": "Du hör inte till den här besättningens enkät. Frågor? Fråga kaptenen som sköter botten.",
-  "reply.late_joiner_added": "📩 Välkommen ombord! Du har lagts till i veckans enkät. Jag skickar den som direktmeddelande om en liten stund."
+  "reply.late_joiner_added": "📩 Välkommen ombord! Du har lagts till i veckans enkät. Jag skickar den som direktmeddelande om en liten stund.",
+
+  "change.swapped": "🔄 Arr, *{name}* byter kurs: inte ombord på {removed}, men däremot på {added}!",
+  "change.added": "🔄 Arr, *{name}* kommer även ombord på {added}!",
+  "change.removed": "🔄 Arr, *{name}* kommer ändå inte ombord på {removed}!",
+  "change.no_office": "🔄 Arr, *{name}* kommer ändå inte ombord den här veckan!",
+  "change.back": "🔄 Arr, *{name}* kommer ändå ombord: {added}!"
 }

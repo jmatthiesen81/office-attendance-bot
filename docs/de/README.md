@@ -5,6 +5,7 @@ Kleine, eigenständige Slack-App zur wöchentlichen Büro-Anwesenheitsplanung.
 - Zum konfigurierten Zeitpunkt (Standard: **Montag 07:00 Europe/Berlin**) erhält jede Person der Zielgruppe eine private Nachricht mit den Tagen Montag bis Freitag zum Ankreuzen und einem **Speichern**-Button.
 - Antworten sind bis zur Abgabefrist möglich (Standard: **Freitag 08:00** der abgefragten Woche) und können beliebig oft geändert werden.
 - Im Ergebnis-Channel gibt es **genau eine Übersichtsnachricht pro Kalenderwoche**. Sie wird bei jeder Änderung per `chat.update` aktualisiert.
+- Ändert jemand eine bereits gespeicherte Antwort, antwortet der Bot im Thread der Übersicht mit einer kurzen Zusammenfassung, z. B. „Alex hat die Anwesenheit geändert und kommt nun nicht am Mittwoch, dafür aber am Donnerstag.“ Mehrere Änderungen kurz hintereinander werden zu einer Antwort zusammengefasst.
 - Optional gehen Erinnerungen an alle, die noch nicht geantwortet haben.
 - Die Slack-Nachrichten sind auf Englisch (Standard), Deutsch, Französisch, Spanisch, Italienisch, Portugiesisch, Niederländisch, Dänisch, Schwedisch, Norwegisch (Bokmål), Polnisch, Tschechisch, Türkisch, Ukrainisch oder Japanisch, einstellbar über `BOT_LANGUAGE`. Zum Spaß gibt es jede Sprache außerdem als Nerd- und Piratenvariante: `nerd_<sprache>` und `pirate_<sprache>`, z. B. `nerd_de` oder `pirate_en`. Die in dieser Doku zitierten Texte sind die deutschen (`BOT_LANGUAGE=de`).
 - **Sprache pro Person**: Über **🌐 Sprache** (in DM, Übersicht und Abwesenheitsformular) wählt jede Person die Sprache ihrer eigenen DM, Erinnerungen und Antworten. Die Übersicht im Channel bleibt in `BOT_LANGUAGE`. Optional nimmt der Bot die Slack-Sprache der Person, solange sie keine gewählt hat (`BOT_LANGUAGE_FROM_SLACK`).
@@ -82,6 +83,10 @@ internal/worker/                 Outbox-Worker mit Retry/Backoff
    - **Nach dem Speichern** werden die DMs aller offenen Abfragen sofort in der neuen Sprache neu gerendert (`update_dm` über die Outbox).
    - **Robustheit**: Gibt es eine gespeicherte Sprache nicht mehr (z. B. nach einem Rollback), greift die nächste Stufe und der Bot loggt eine Warnung. Die Wahl bleibt gespeichert.
    - **Aufbewahrung**: Die Wahl von Personen, die seit `RETENTION_WEEKS` an keiner gespeicherten Abfrage mehr teilgenommen haben, wird automatisch gelöscht.
+7. **Änderungshinweise im Thread** (Tabelle `change_notices`, abschaltbar mit `SUMMARY_CHANGE_NOTICES=false`): Ändert jemand eine bereits gespeicherte Antwort, merkt sich der Bot in derselben Transaktion die Auswahl *vor* der Änderung und plant einen `change_notice`-Job nach `SUMMARY_CHANGE_NOTICE_DELAY` ein. Die erste Antwort einer Person löst keinen Hinweis aus, ebenso wenig Korrekturen innerhalb von `SUMMARY_CHANGE_NOTICE_GRACE` danach (Schonfrist, gezählt ab der ersten Antwort).
+   - **Zusammenfassen**: Weitere Änderungen bis zum Versand aktualisieren nur die Antwort. Der Job vergleicht die gemerkte mit der aktuellen Auswahl und postet **eine** Thread-Antwort unter der Übersicht, je nach Unterschied: Tage weggefallen, Tage hinzugekommen, beides („kommt nun nicht am Mittwoch, dafür aber am Donnerstag“), gar nicht mehr im Büro oder doch wieder im Büro. Heben sich die Änderungen auf, postet er nichts.
+   - **Name statt Mention**: Der Hinweis nennt den Anzeigenamen, damit die Person nicht angepingt wird. Er ist in `BOT_LANGUAGE`, wie die Übersicht.
+   - **Robustheit**: Gibt es die Übersicht noch nicht, wird der Job mit Backoff wiederholt. Ändert die Person ihre Auswahl, während der Hinweis gepostet wird, folgt dafür ein weiterer Hinweis. Stürzt der Bot genau nach dem Posten ab, kann ein Hinweis einmal doppelt erscheinen.
 
 ---
 
@@ -100,7 +105,7 @@ Kurzfassung:
 
 | Scope                                 | Wofür                                                      |
 |---------------------------------------|------------------------------------------------------------|
-| `chat:write`                          | DMs, Erinnerungen und Übersicht posten und aktualisieren   |
+| `chat:write`                          | DMs, Erinnerungen, Übersicht und Thread-Antworten posten   |
 | `im:write`                            | DM-Kanal zu einer Person öffnen                            |
 | `im:history`                          | Nach Absturz prüfen, ob eine DM schon gesendet wurde       |
 | `users:read`                          | Bots, App-User und deaktivierte Accounts ausfiltern        |
@@ -176,6 +181,9 @@ LOG_LEVEL=info                 # debug, info, warn, error
 RETENTION_WEEKS=26             # ältere Abstimmungen werden gelöscht
 SUMMARY_MAX_NAMES=40           # Namen pro Liste, danach „… und N weitere“
 SUMMARY_PROJECT_LINK=true      # false = kein GitHub-Hinweis unter der Übersicht
+SUMMARY_CHANGE_NOTICES=true    # false = keine Änderungshinweise im Thread der Übersicht
+SUMMARY_CHANGE_NOTICE_DELAY=2m # Änderungen einer Person in dieser Zeit = ein Hinweis
+SUMMARY_CHANGE_NOTICE_GRACE=10m # Korrekturen so lange nach der ersten Antwort = kein Hinweis
 BOT_LANGUAGE=en                # Sprache der Slack-Nachrichten (siehe Tabelle)
 BOT_LANGUAGE_FROM_SLACK=false  # true = DMs in der Slack-Sprache der Person, bis sie selbst eine wählt
 DRY_RUN=false                  # true = nichts an Slack senden, nur loggen
@@ -208,6 +216,9 @@ OFFICEBOT_GID=1000
 | `RETENTION_WEEKS`                              | nein            | `26`                    | Aufbewahrung historischer Abstimmungen                                                                                                                                                                                                 |
 | `SUMMARY_MAX_NAMES`                            | nein            | `40`                    | Kürzung langer Namenslisten                                                                                                                                                                                                            |
 | `SUMMARY_PROJECT_LINK`                         | nein            | `true`                  | Kleiner Hinweis unter „Letzte Aktualisierung“, den Bot auf GitHub zu bewerten; `false` blendet ihn aus                                                                                                                                 |
+| `SUMMARY_CHANGE_NOTICES`                       | nein            | `true`                  | Ändert jemand eine gespeicherte Antwort, antwortet der Bot im Thread der Übersicht mit dem Unterschied (siehe Abläufe); `false` schaltet das ab                                                                                        |
+| `SUMMARY_CHANGE_NOTICE_DELAY`                  | nein            | `2m`                    | Wartezeit nach der ersten Änderung; weitere Änderungen der Person in dieser Zeit fasst der Bot zu einer Antwort zusammen (z. B. `30s`, `5m`)                                                                                           |
+| `SUMMARY_CHANGE_NOTICE_GRACE`                  | nein            | `10m`                   | Schonfrist ab der ersten Antwort einer Person: Korrekturen in dieser Zeit gelten als Teil der ersten Antwort und lösen keinen Hinweis aus; `0` = keine                                                                                 |
 | `DRY_RUN`                                      | nein            | `false`                 | Kein Kontakt zu Slack. Alle Nachrichten landen im Log.                                                                                                                                                                                 |
 | `BOT_LANGUAGE`                                 | nein            | `en`                    | Teamsprache: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`, `ja`; zum Spaß auch `nerd_<sprache>`, `pirate_<sprache>`. Gilt für die Übersicht und für alle, die keine eigene Sprache gewählt haben |
 | `BOT_LANGUAGE_FROM_SLACK`                      | nein            | `false`                 | `true`: Wer keine eigene Sprache gewählt hat, bekommt DMs in seiner Slack-Sprache, sofern der Bot sie spricht (`de-DE` → `de`). Wird beim Wochenstart mit den Teilnehmenden gelesen                                                    |

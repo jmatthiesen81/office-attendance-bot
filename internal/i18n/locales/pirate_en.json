@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 I just sent ye the poll! Check yer direct messages.",
   "reply.dm_resent": "📩 I'll send ye the poll again by direct message. Yer previous choice be kept safe in the hold.",
   "reply.not_eligible": "Ye be not part o' this crew's poll. Questions? Ask the Cap'n who runs the bot.",
-  "reply.late_joiner_added": "📩 Welcome aboard! Ye've been added to this week's poll. I'll send it by direct message shortly."
+  "reply.late_joiner_added": "📩 Welcome aboard! Ye've been added to this week's poll. I'll send it by direct message shortly.",
+
+  "change.swapped": "🔄 Arr, *{name}* changed course: not aboard on {removed}, but on {added} instead!",
+  "change.added": "🔄 Arr, *{name}* be comin' aboard on {added} as well!",
+  "change.removed": "🔄 Arr, *{name}* won't be aboard on {removed} after all!",
+  "change.no_office": "🔄 Arr, *{name}* won't be boardin' the ship this week after all!",
+  "change.back": "🔄 Arr, *{name}* be comin' aboard after all: {added}!"
 }

@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Jeg sendte deg nettopp undersøkelsen. Sjekk direktemeldingene dine.",
   "reply.dm_resent": "📩 Jeg sender deg undersøkelsen på nytt som direktemelding. Det tidligere valget ditt beholdes.",
   "reply.not_eligible": "Du er ikke med i gruppen for denne undersøkelsen. Har du spørsmål, kontakt personen som har ansvaret for boten.",
-  "reply.late_joiner_added": "📩 Du er lagt til i denne ukens undersøkelse. Jeg sender den til deg som direktemelding om litt."
+  "reply.late_joiner_added": "📩 Du er lagt til i denne ukens undersøkelse. Jeg sender den til deg som direktemelding om litt.",
+
+  "change.swapped": "🔄 *{name}* har endret oppmøtet sitt: kommer ikke lenger på {removed}, men i stedet på {added}.",
+  "change.added": "🔄 *{name}* kommer nå også på {added}.",
+  "change.removed": "🔄 *{name}* kommer likevel ikke på {removed}.",
+  "change.no_office": "🔄 *{name}* kommer likevel ikke på kontoret denne uken.",
+  "change.back": "🔄 *{name}* kommer likevel på kontoret: {added}."
 }

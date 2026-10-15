@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Jeg sendte deg nettopp undersøkelsen! Sjekk direktemeldingene dine.",
   "reply.dm_resent": "📩 Jeg sender deg undersøkelsen på nytt som direktemelding. Det tidligere valget ditt ligger trygt i lasterommet.",
   "reply.not_eligible": "Du er ikke en del av mannskapet for denne undersøkelsen. Spørsmål? Spør kapteinen som styrer boten.",
-  "reply.late_joiner_added": "📩 Velkommen om bord! Du er lagt til i denne ukens undersøkelse. Jeg sender den som direktemelding om litt."
+  "reply.late_joiner_added": "📩 Velkommen om bord! Du er lagt til i denne ukens undersøkelse. Jeg sender den som direktemelding om litt.",
+
+  "change.swapped": "🔄 Arr, *{name}* legger om kursen: ikke om bord på {removed}, men i stedet på {added}!",
+  "change.added": "🔄 Arr, *{name}* kommer også om bord på {added}!",
+  "change.removed": "🔄 Arr, *{name}* kommer likevel ikke om bord på {removed}!",
+  "change.no_office": "🔄 Arr, *{name}* kommer likevel ikke om bord denne uken!",
+  "change.back": "🔄 Arr, *{name}* kommer likevel om bord: {added}!"
 }

@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – ti ho appena inviato il sondaggio. Controlla i tuoi messaggi diretti.",
   "reply.dm_resent": "📩 Ritrasmissione del sondaggio via messaggio diretto. La tua selezione precedente resta in memoria.",
   "reply.not_eligible": "Accesso negato: non fai parte del gruppo di questo sondaggio. Per domande, contatta il sysadmin che gestisce il bot.",
-  "reply.late_joiner_added": "📩 Hot-plug completato: ora fai parte del sondaggio di questa settimana. A breve te lo invio in un messaggio diretto."
+  "reply.late_joiner_added": "📩 Hot-plug completato: ora fai parte del sondaggio di questa settimana. A breve te lo invio in un messaggio diretto.",
+
+  "change.swapped": "🔄 *{name}* ha pushato una patch al calendario: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* ha pushato una patch al calendario: `+{added}`",
+  "change.removed": "🔄 *{name}* ha pushato una patch al calendario: `-{removed}`",
+  "change.no_office": "🔄 *{name}* ha fatto il revert di tutti i giorni in ufficio di questa settimana (remote only).",
+  "change.back": "🔄 *{name}* è di nuovo online in ufficio: `+{added}`"
 }

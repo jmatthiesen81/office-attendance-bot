@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Je viens de vous envoyer le sondage. Jetez un œil à vos messages directs.",
   "reply.dm_resent": "📩 Je vous renvoie le sondage par message direct. Votre sélection précédente est conservée.",
   "reply.not_eligible": "Vous ne faites pas partie du groupe concerné par ce sondage. Pour toute question, contactez la personne qui gère le bot.",
-  "reply.late_joiner_added": "📩 Vous avez été ajouté(e) au sondage de cette semaine. Je vous l'envoie sous peu par message direct."
+  "reply.late_joiner_added": "📩 Vous avez été ajouté(e) au sondage de cette semaine. Je vous l'envoie sous peu par message direct.",
+
+  "change.swapped": "🔄 *{name}* a modifié sa présence – ne viendra finalement pas : {removed}, viendra en revanche : {added}.",
+  "change.added": "🔄 *{name}* viendra en plus : {added}.",
+  "change.removed": "🔄 *{name}* ne viendra finalement pas : {removed}.",
+  "change.no_office": "🔄 *{name}* ne viendra finalement pas au bureau cette semaine.",
+  "change.back": "🔄 *{name}* viendra finalement au bureau : {added}."
 }

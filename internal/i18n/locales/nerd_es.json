@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests: te acabo de enviar la encuesta. Revisa tus mensajes directos.",
   "reply.dm_resent": "📩 Retransmitiendo la encuesta por mensaje directo. Tu selección anterior se mantiene.",
   "reply.not_eligible": "Acceso denegado: no formas parte del grupo de esta encuesta. Si tienes preguntas, contacta con el sysadmin que gestiona el bot.",
-  "reply.late_joiner_added": "📩 Hot-plug completado: te he añadido a la encuesta de esta semana. Te la envío por mensaje directo en breve."
+  "reply.late_joiner_added": "📩 Hot-plug completado: te he añadido a la encuesta de esta semana. Te la envío por mensaje directo en breve.",
+
+  "change.swapped": "🔄 *{name}* ha subido un parche al horario: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* ha subido un parche al horario: `+{added}`",
+  "change.removed": "🔄 *{name}* ha subido un parche al horario: `-{removed}`",
+  "change.no_office": "🔄 *{name}* ha revertido todos sus días de oficina esta semana (remote only).",
+  "change.back": "🔄 *{name}* vuelve a estar online en la oficina: `+{added}`"
 }

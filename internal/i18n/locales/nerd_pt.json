@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests: acabei de te enviar a votação. Vê as tuas mensagens diretas.",
   "reply.dm_resent": "📩 A retransmitir a votação por mensagem direta. A tua seleção anterior mantém-se.",
   "reply.not_eligible": "Acesso negado: não fazes parte do grupo desta votação. Se tiveres dúvidas, contacta o sysadmin responsável pelo bot.",
-  "reply.late_joiner_added": "📩 Hot-plug concluído: foste adicionado à votação desta semana. Vou enviar-ta em breve por mensagem direta."
+  "reply.late_joiner_added": "📩 Hot-plug concluído: foste adicionado à votação desta semana. Vou enviar-ta em breve por mensagem direta.",
+
+  "change.swapped": "🔄 *{name}* fez push de um patch na agenda: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* fez push de um patch na agenda: `+{added}`",
+  "change.removed": "🔄 *{name}* fez push de um patch na agenda: `-{removed}`",
+  "change.no_office": "🔄 *{name}* fez revert de todos os dias no escritório esta semana (remote only).",
+  "change.back": "🔄 *{name}* está de novo online no escritório: `+{added}`"
 }

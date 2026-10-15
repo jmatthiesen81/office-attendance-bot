@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Acabei de te enviar a votação! Vê as tuas mensagens diretas.",
   "reply.dm_resent": "📩 Vou voltar a enviar-te a votação por mensagem direta. A tua escolha anterior continua a salvo no porão.",
   "reply.not_eligible": "Não fazes parte da tripulação desta votação. Dúvidas? Fala com o capitão responsável pelo bot.",
-  "reply.late_joiner_added": "📩 Bem-vindo a bordo! Foste adicionado à votação desta semana. Vou enviar-ta em breve por mensagem direta."
+  "reply.late_joiner_added": "📩 Bem-vindo a bordo! Foste adicionado à votação desta semana. Vou enviar-ta em breve por mensagem direta.",
+
+  "change.swapped": "🔄 Arr, *{name}* mudou o rumo – não estará a bordo: {removed}; em vez disso, a bordo: {added}!",
+  "change.added": "🔄 Arr, *{name}* também estará a bordo: {added}!",
+  "change.removed": "🔄 Arr, *{name}* afinal não estará a bordo: {removed}!",
+  "change.no_office": "🔄 Arr, *{name}* afinal não embarca esta semana!",
+  "change.back": "🔄 Arr, *{name}* afinal embarca: {added}!"
 }

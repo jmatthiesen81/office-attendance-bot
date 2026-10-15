@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – jag skickade precis enkäten till dig. Titta bland dina direktmeddelanden.",
   "reply.dm_resent": "📩 Retransmitterar enkäten som direktmeddelande. Ditt tidigare val finns kvar.",
   "reply.not_eligible": "Access denied: du ingår inte i gruppen för den här enkäten. Har du frågor kan du kontakta sysadminen som kör botten.",
-  "reply.late_joiner_added": "📩 Hot-pluggad: du har lagts till i veckans enkät. Jag skickar den till dig som direktmeddelande om en liten stund."
+  "reply.late_joiner_added": "📩 Hot-pluggad: du har lagts till i veckans enkät. Jag skickar den till dig som direktmeddelande om en liten stund.",
+
+  "change.swapped": "🔄 *{name}* har pushat en patch till schemat: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* har pushat en patch till schemat: `+{added}`",
+  "change.removed": "🔄 *{name}* har pushat en patch till schemat: `-{removed}`",
+  "change.no_office": "🔄 *{name}* har revertat alla kontorsdagar den här veckan (remote only).",
+  "change.back": "🔄 *{name}* är online på kontoret igen: `+{added}`"
 }

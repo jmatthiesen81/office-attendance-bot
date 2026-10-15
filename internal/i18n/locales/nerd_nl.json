@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – ik heb je de peiling net gestuurd. Kijk even in je directe berichten.",
   "reply.dm_resent": "📩 Retransmit: ik stuur je de peiling opnieuw via een direct bericht. Je eerdere selectie blijft behouden.",
   "reply.not_eligible": "Access denied: je hoort niet bij de groep voor deze peiling. Heb je vragen, neem dan contact op met de sysadmin die de bot beheert.",
-  "reply.late_joiner_added": "📩 Hot-plugged: je bent toegevoegd aan de peiling van deze week. Je ontvangt de peiling zo meteen via een direct bericht."
+  "reply.late_joiner_added": "📩 Hot-plugged: je bent toegevoegd aan de peiling van deze week. Je ontvangt de peiling zo meteen via een direct bericht.",
+
+  "change.swapped": "🔄 *{name}* heeft een patch op de planning gepusht: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* heeft een patch op de planning gepusht: `+{added}`",
+  "change.removed": "🔄 *{name}* heeft een patch op de planning gepusht: `-{removed}`",
+  "change.no_office": "🔄 *{name}* heeft alle kantoordagen van deze week gereverted (remote only).",
+  "change.back": "🔄 *{name}* is weer online op kantoor: `+{added}`"
 }

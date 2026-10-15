@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – anketa ti byla právě odeslána. Podívej se prosím do přímých zpráv.",
   "reply.dm_resent": "📩 Retransmise ankety přímou zprávou. Tvůj dosavadní výběr zůstane zachován.",
   "reply.not_eligible": "Access denied: nepatříš do skupiny této ankety. S dotazy se prosím obrať na sysadmina bota.",
-  "reply.late_joiner_added": "📩 Hot-plug: přidali jsme tě do ankety na tento týden. Za chvíli ti přijde v přímé zprávě."
+  "reply.late_joiner_added": "📩 Hot-plug: přidali jsme tě do ankety na tento týden. Za chvíli ti přijde v přímé zprávě.",
+
+  "change.swapped": "🔄 Patch rozvrhu od *{name}*: `-{removed}` `+{added}`",
+  "change.added": "🔄 Patch rozvrhu od *{name}*: `+{added}`",
+  "change.removed": "🔄 Patch rozvrhu od *{name}*: `-{removed}`",
+  "change.no_office": "🔄 *{name}*: revert všech dnů v kanceláři tento týden (remote only).",
+  "change.back": "🔄 *{name}* je zase online v kanceláři: `+{added}`"
 }

@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 たった今点呼を送ったところじゃ！ダイレクトメッセージを確かめろ。",
   "reply.dm_resent": "📩 点呼をもう一度ダイレクトメッセージで送るぞ。前の答えは船倉に大事にしまってある。",
   "reply.not_eligible": "おぬしはこの船の点呼の乗組員ではない。質問があるならボットを動かしておる船長に聞け。",
-  "reply.late_joiner_added": "📩 ようこそ乗船を！今週の点呼に加えたぞ。まもなくダイレクトメッセージで送る。"
+  "reply.late_joiner_added": "📩 ようこそ乗船を！今週の点呼に加えたぞ。まもなくダイレクトメッセージで送る。",
+
+  "change.swapped": "🔄 聞けぇ！*{name}* さんが進路変更！{removed}は乗船せず、代わりに{added}に乗船だ！",
+  "change.added": "🔄 聞けぇ！*{name}* さんは{added}にも乗船だ！",
+  "change.removed": "🔄 聞けぇ！*{name}* さんは{removed}に乗船しないぞ！",
+  "change.no_office": "🔄 聞けぇ！*{name}* さんは今週は乗船しないぞ！",
+  "change.back": "🔄 聞けぇ！*{name}* さんはやはり乗船だ：{added}！"
 }

@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Je viens de t'envoyer le sondage ! Jette un œil à tes messages directs.",
   "reply.dm_resent": "📩 Je te renvoie le sondage par message direct. Ton choix précédent reste bien à l'abri dans la cale.",
   "reply.not_eligible": "Tu ne fais pas partie de l'équipage de ce sondage. Des questions ? Adresse-toi au Capitaine qui gère le bot.",
-  "reply.late_joiner_added": "📩 Bienvenue à bord ! Tu as été ajouté(e) au sondage de cette semaine. Je te l'envoie sous peu par message direct."
+  "reply.late_joiner_added": "📩 Bienvenue à bord ! Tu as été ajouté(e) au sondage de cette semaine. Je te l'envoie sous peu par message direct.",
+
+  "change.swapped": "🔄 Arr, *{name}* change de cap – pas à bord : {removed}, mais à bord : {added} !",
+  "change.added": "🔄 Arr, *{name}* sera aussi à bord : {added} !",
+  "change.removed": "🔄 Arr, *{name}* ne sera finalement pas à bord : {removed} !",
+  "change.no_office": "🔄 Arr, *{name}* ne montera finalement pas à bord cette semaine !",
+  "change.back": "🔄 Arr, *{name}* montera finalement à bord : {added} !"
 }

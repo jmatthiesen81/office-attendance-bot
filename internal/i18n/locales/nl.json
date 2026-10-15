@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Ik heb je de peiling net gestuurd. Kijk even in je directe berichten.",
   "reply.dm_resent": "📩 Ik stuur je de peiling opnieuw via een direct bericht. Je eerdere selectie blijft behouden.",
   "reply.not_eligible": "Je hoort niet bij de groep voor deze peiling. Heb je vragen, neem dan contact op met de persoon die de bot beheert.",
-  "reply.late_joiner_added": "📩 Je bent toegevoegd aan de peiling van deze week. Je ontvangt de peiling zo meteen via een direct bericht."
+  "reply.late_joiner_added": "📩 Je bent toegevoegd aan de peiling van deze week. Je ontvangt de peiling zo meteen via een direct bericht.",
+
+  "change.swapped": "🔄 *{name}* heeft de aanwezigheid gewijzigd: komt niet meer op {removed}, maar wel op {added}.",
+  "change.added": "🔄 *{name}* komt nu ook op {added}.",
+  "change.removed": "🔄 *{name}* komt toch niet op {removed}.",
+  "change.no_office": "🔄 *{name}* komt deze week toch niet naar kantoor.",
+  "change.back": "🔄 *{name}* komt toch naar kantoor: {added}."
 }

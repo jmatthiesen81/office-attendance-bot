@@ -249,7 +249,11 @@ func (s *Service) HandleSave(ctx context.Context, req slack.Interaction) {
 		return
 	}
 	now := s.Now()
-	resp, changed, err := s.store.SaveResponse(ctx, p.ID, req.UserID, req.Days, now)
+	var noticeAt time.Time
+	if s.cfg.SummaryChangeNotices {
+		noticeAt = now.Add(s.cfg.SummaryChangeNoticeDelay)
+	}
+	resp, changed, err := s.store.SaveResponseWithNotice(ctx, p.ID, req.UserID, req.Days, now, noticeAt, s.cfg.SummaryChangeNoticeGrace)
 	if err != nil {
 		log.Error("save response", "err", err)
 		s.RejectInteraction(ctx, req, s.trFor(ctx, req.UserID).T("reply.save_failed"))
@@ -259,6 +263,7 @@ func (s *Service) HandleSave(ctx context.Context, req slack.Interaction) {
 	// The response is committed; Slack failures below never undo it.
 	if changed {
 		s.summary.Trigger()
+		s.outbox.Notify() // a change notice may have been scheduled
 	}
 	s.refreshOrEnqueue(ctx, part)
 }
@@ -470,6 +475,8 @@ func (s *Service) ExecuteJob(ctx context.Context, job *storage.Job) error {
 		return s.RefreshDM(ctx, job.ParticipantID)
 	case storage.JobReminderDM:
 		return s.sendReminder(ctx, job)
+	case storage.JobChangeNotice:
+		return s.postChangeNotice(ctx, job)
 	default:
 		return fmt.Errorf("%w: unknown job type %q", worker.ErrPermanent, job.Type)
 	}

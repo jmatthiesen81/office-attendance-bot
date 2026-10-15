@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – ankieta została właśnie wysłana. Sprawdź swoje wiadomości bezpośrednie.",
   "reply.dm_resent": "📩 Retransmisja ankiety w wiadomości bezpośredniej. Twój dotychczasowy wybór zostanie zachowany.",
   "reply.not_eligible": "Access denied: nie należysz do grupy objętej tą ankietą. W razie pytań skontaktuj się z sysadminem bota.",
-  "reply.late_joiner_added": "📩 Hot-plug: dodano cię do ankiety na ten tydzień. Za chwilę dostaniesz ją w wiadomości bezpośredniej."
+  "reply.late_joiner_added": "📩 Hot-plug: dodano cię do ankiety na ten tydzień. Za chwilę dostaniesz ją w wiadomości bezpośredniej.",
+
+  "change.swapped": "🔄 Patch grafiku od *{name}*: `-{removed}` `+{added}`",
+  "change.added": "🔄 Patch grafiku od *{name}*: `+{added}`",
+  "change.removed": "🔄 Patch grafiku od *{name}*: `-{removed}`",
+  "change.no_office": "🔄 *{name}*: revert wszystkich dni w biurze w tym tygodniu (remote only).",
+  "change.back": "🔄 *{name}* znów online w biurze: `+{added}`"
 }

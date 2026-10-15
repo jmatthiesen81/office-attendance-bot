@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – jeg sendte deg nettopp undersøkelsen. Sjekk direktemeldingene dine.",
   "reply.dm_resent": "📩 Retransmitterer undersøkelsen som direktemelding. Det tidligere valget ditt beholdes.",
   "reply.not_eligible": "Access denied: du er ikke i gruppen for denne undersøkelsen. Har du spørsmål, kontakt sysadminen som drifter boten.",
-  "reply.late_joiner_added": "📩 Hot-plugget: du er lagt til i denne ukens undersøkelse. Jeg sender den til deg som direktemelding om litt."
+  "reply.late_joiner_added": "📩 Hot-plugget: du er lagt til i denne ukens undersøkelse. Jeg sender den til deg som direktemelding om litt.",
+
+  "change.swapped": "🔄 *{name}* har pushet en patch til planen: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* har pushet en patch til planen: `+{added}`",
+  "change.removed": "🔄 *{name}* har pushet en patch til planen: `-{removed}`",
+  "change.no_office": "🔄 *{name}* har revertet alle kontordager denne uken (remote only).",
+  "change.back": "🔄 *{name}* er online på kontoret igjen: `+{added}`"
 }

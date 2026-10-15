@@ -48,6 +48,12 @@ RETENTION_WEEKS=26
 SUMMARY_MAX_NAMES=40
 # Show a small link to the project on GitHub below the summary footer
 SUMMARY_PROJECT_LINK=true
+# Reply in the summary thread when someone changes a saved answer
+SUMMARY_CHANGE_NOTICES=true
+# Changes of one person within this time after the first one become one reply
+SUMMARY_CHANGE_NOTICE_DELAY=2m
+# Corrections within this time after a person's first answer are not announced
+SUMMARY_CHANGE_NOTICE_GRACE=10m
 DRY_RUN=false
 
 # --- Docker Compose ------------------------------------------------------

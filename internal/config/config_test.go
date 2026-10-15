@@ -130,6 +130,27 @@ func TestProjectLink(t *testing.T) {
 	}
 }
 
+func TestChangeNotices(t *testing.T) {
+	c, err := LoadFrom(env(valid()))
+	if err != nil || !c.SummaryChangeNotices || c.SummaryChangeNoticeDelay != 2*time.Minute || c.SummaryChangeNoticeGrace != 10*time.Minute {
+		t.Fatalf("defaults: %v %v", c, err)
+	}
+	m := valid()
+	m["SUMMARY_CHANGE_NOTICES"], m["SUMMARY_CHANGE_NOTICE_DELAY"], m["SUMMARY_CHANGE_NOTICE_GRACE"] = "false", "30s", "0"
+	if c, err = LoadFrom(env(m)); err != nil || c.SummaryChangeNotices || c.SummaryChangeNoticeDelay != 30*time.Second || c.SummaryChangeNoticeGrace != 0 {
+		t.Fatalf("custom: %v %v", c, err)
+	}
+	for _, key := range []string{"SUMMARY_CHANGE_NOTICE_DELAY", "SUMMARY_CHANGE_NOTICE_GRACE"} {
+		for _, v := range []string{"2", "-1m", "soon"} {
+			m := valid()
+			m[key] = v
+			if _, err := LoadFrom(env(m)); err == nil {
+				t.Errorf("%s=%q accepted", key, v)
+			}
+		}
+	}
+}
+
 func TestSetupModeSkipsTargets(t *testing.T) {
 	m := valid()
 	m["SLACK_SUMMARY_CHANNEL_ID"], m["SLACK_USER_IDS"] = "", ""

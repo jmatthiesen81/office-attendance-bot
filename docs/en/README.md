@@ -5,6 +5,7 @@ A small, self-contained Slack app for weekly office attendance planning.
 - At the configured time (default: **Monday 07:00 Europe/Berlin**), every member of the target group receives a private message with checkboxes for Monday to Friday and a **Speichern** (*Save*) button.
 - Answers are accepted until the deadline (default: **Friday 08:00** of the polled week) and can be changed as often as needed.
 - The results channel contains **exactly one summary message per calendar week**, which is updated via `chat.update` on every change.
+- When someone changes an answer they already saved, the bot replies in the summary's thread with a short summary, e.g. "Alex changed their attendance: no longer coming in on Wednesday, but on Thursday instead." Several changes in quick succession are combined into one reply.
 - Optionally, people who have not answered yet receive reminders.
 - Slack messages are in English (default), German, French, Spanish, Italian, Portuguese, Dutch, Danish, Swedish, Norwegian (Bokmål), Polish, Czech, Turkish, Ukrainian or Japanese, configurable via `BOT_LANGUAGE`. For fun, every language also exists in nerd and pirate speak: `nerd_<lang>` and `pirate_<lang>`, e.g. `nerd_de` or `pirate_en`.
 - **Language per person**: with **🌐 Language** (in the DM, the summary and the time-off form), everyone chooses the language of their own DM, reminders and replies. The channel summary stays in `BOT_LANGUAGE`. Optionally, the bot uses a person's Slack language until they choose one (`BOT_LANGUAGE_FROM_SLACK`).
@@ -84,6 +85,10 @@ internal/worker/                 Outbox worker with retry/backoff
    - **After saving**, the DMs of all open polls are re-rendered in the new language right away (`update_dm` via the outbox).
    - **Robustness**: if a stored language no longer exists (e.g. after a rollback), the next step applies and the bot logs a warning. The choice stays stored.
    - **Retention**: the choice of people who have taken part in no stored poll for `RETENTION_WEEKS` is deleted automatically.
+7. **Change notices in the thread** (table `change_notices`, turned off with `SUMMARY_CHANGE_NOTICES=false`): when someone changes an answer they already saved, the bot stores the selection *before* the change in the same transaction and schedules a `change_notice` job after `SUMMARY_CHANGE_NOTICE_DELAY`. A person's first answer never causes a notice, and neither do corrections within `SUMMARY_CHANGE_NOTICE_GRACE` after it (grace period, counted from the first answer).
+   - **Combining**: further changes until then only update the answer. The job compares the stored selection with the current one and posts **one** thread reply under the summary, depending on the difference: days dropped, days added, both ("no longer coming in on Wednesday, but on Thursday instead"), not in the office at all any more, or in the office after all. If the changes cancel out, it posts nothing.
+   - **Name instead of mention**: the notice shows the display name so the person is not pinged. It is in `BOT_LANGUAGE`, like the summary.
+   - **Robustness**: if the summary does not exist yet, the job is retried with backoff. If the person changes their selection while the notice is being posted, another notice follows for that. If the bot crashes right after posting, a notice may appear twice once.
 
 ---
 
@@ -102,7 +107,7 @@ In short:
 
 | Scope                                 | Purpose                                                     |
 |---------------------------------------|-------------------------------------------------------------|
-| `chat:write`                          | Post and update DMs, reminders and the summary              |
+| `chat:write`                          | Post DMs, reminders, the summary and thread replies         |
 | `im:write`                            | Open a DM channel with a person                             |
 | `im:history`                          | After a crash, check whether a DM was already sent          |
 | `users:read`                          | Filter out bots, app users and deactivated accounts         |
@@ -178,6 +183,9 @@ LOG_LEVEL=info                 # debug, info, warn, error
 RETENTION_WEEKS=26             # older polls are deleted
 SUMMARY_MAX_NAMES=40           # names per list, then "… und N weitere" (… and N more)
 SUMMARY_PROJECT_LINK=true      # false = no GitHub link below the summary
+SUMMARY_CHANGE_NOTICES=true    # false = no change notices in the summary thread
+SUMMARY_CHANGE_NOTICE_DELAY=2m # changes of one person within this time = one notice
+SUMMARY_CHANGE_NOTICE_GRACE=10m # corrections this soon after the first answer = no notice
 BOT_LANGUAGE=en                # language of Slack messages (see table)
 BOT_LANGUAGE_FROM_SLACK=false  # true = DMs in the person's Slack language until they choose one
 DRY_RUN=false                  # true = send nothing to Slack, only log
@@ -210,6 +218,9 @@ OFFICEBOT_GID=1000
 | `RETENTION_WEEKS`                              | no          | `26`                    | Retention of past polls                                                                                                                                                                                                    |
 | `SUMMARY_MAX_NAMES`                            | no          | `40`                    | Truncation of long name lists                                                                                                                                                                                              |
 | `SUMMARY_PROJECT_LINK`                         | no          | `true`                  | Small note below "Last updated" inviting people to rate the bot on GitHub; `false` hides it                                                                                                                                |
+| `SUMMARY_CHANGE_NOTICES`                       | no          | `true`                  | When someone changes a saved answer, the bot replies in the summary thread with the difference (see flows); `false` turns it off                                                                                           |
+| `SUMMARY_CHANGE_NOTICE_DELAY`                  | no          | `2m`                    | Wait after the first change; further changes of that person meanwhile are combined into one reply (e.g. `30s`, `5m`)                                                                                                       |
+| `SUMMARY_CHANGE_NOTICE_GRACE`                  | no          | `10m`                   | Grace period after a person's first answer: corrections within it count as part of the first answer and cause no notice; `0` = none                                                                                        |
 | `DRY_RUN`                                      | no          | `false`                 | No contact with Slack. All messages go to the log.                                                                                                                                                                         |
 | `BOT_LANGUAGE`                                 | no          | `en`                    | Team language: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`, `ja`; for fun also `nerd_<lang>`, `pirate_<lang>`. Applies to the summary and to everyone who has not chosen a language |
 | `BOT_LANGUAGE_FROM_SLACK`                      | no          | `false`                 | `true`: people without an own choice get their DMs in their Slack language, if the bot speaks it (`de-DE` → `de`). Read with the participants at the weekly start                                                          |

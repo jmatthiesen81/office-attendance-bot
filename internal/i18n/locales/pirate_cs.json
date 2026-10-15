@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Anketa právě vyplula! Podívej se do přímých zpráv.",
   "reply.dm_resent": "📩 Anketu ti znovu pošlu přímou zprávou. Tvoje dosavadní volba zůstane v bezpečí v podpalubí.",
   "reply.not_eligible": "Nepatříš do posádky této ankety. Dotazy? Obrať se na kapitána, který bota řídí.",
-  "reply.late_joiner_added": "📩 Vítej na palubě! Přidali jsme tě do ankety na tento týden. Za chvíli ti přijde v přímé zprávě."
+  "reply.late_joiner_added": "📩 Vítej na palubě! Přidali jsme tě do ankety na tento týden. Za chvíli ti přijde v přímé zprávě.",
+
+  "change.swapped": "🔄 Arr, *{name}* mění kurz – nakonec ne na palubě: {removed}, zato na palubě: {added}!",
+  "change.added": "🔄 Arr, *{name}* bude na palubě navíc: {added}!",
+  "change.removed": "🔄 Arr, *{name}* nakonec nebude na palubě: {removed}!",
+  "change.no_office": "🔄 Arr, *{name}* tento týden nakonec nenastoupí na palubu!",
+  "change.back": "🔄 Arr, *{name}* nakonec nastoupí na palubu: {added}!"
 }

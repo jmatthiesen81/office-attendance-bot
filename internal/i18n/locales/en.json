@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 I just sent you the poll. Please check your direct messages.",
   "reply.dm_resent": "📩 I will send you the poll again by direct message. Your previous selection is kept.",
   "reply.not_eligible": "You are not part of the group for this poll. If you have questions, please contact the person who runs the bot.",
-  "reply.late_joiner_added": "📩 You have been added to this week's poll. I will send it to you by direct message shortly."
+  "reply.late_joiner_added": "📩 You have been added to this week's poll. I will send it to you by direct message shortly.",
+
+  "change.swapped": "🔄 *{name}* changed their attendance: no longer coming in on {removed}, but on {added} instead.",
+  "change.added": "🔄 *{name}* is now also coming in on {added}.",
+  "change.removed": "🔄 *{name}* is no longer coming in on {removed}.",
+  "change.no_office": "🔄 *{name}* is no longer coming to the office this week.",
+  "change.back": "🔄 *{name}* is coming to the office after all: {added}."
 }

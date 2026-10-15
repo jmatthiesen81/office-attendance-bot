@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Jeg har lige sendt dig afstemningen. Tjek venligst dine direkte beskeder.",
   "reply.dm_resent": "📩 Jeg sender dig afstemningen igen som direkte besked. Dit tidligere valg bevares.",
   "reply.not_eligible": "Du er ikke en del af gruppen for denne afstemning. Hvis du har spørgsmål, så kontakt den person, der står for botten.",
-  "reply.late_joiner_added": "📩 Du er blevet tilføjet til denne uges afstemning. Jeg sender den til dig som direkte besked om lidt."
+  "reply.late_joiner_added": "📩 Du er blevet tilføjet til denne uges afstemning. Jeg sender den til dig som direkte besked om lidt.",
+
+  "change.swapped": "🔄 *{name}* har ændret sit fremmøde: kommer ikke længere {removed}, men i stedet {added}.",
+  "change.added": "🔄 *{name}* kommer nu også {added}.",
+  "change.removed": "🔄 *{name}* kommer alligevel ikke {removed}.",
+  "change.no_office": "🔄 *{name}* kommer alligevel ikke på kontoret i denne uge.",
+  "change.back": "🔄 *{name}* kommer alligevel på kontoret: {added}."
 }

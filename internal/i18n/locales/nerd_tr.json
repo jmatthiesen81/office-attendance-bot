@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – anketi sana az önce gönderdim. Lütfen direkt mesajlarına bak.",
   "reply.dm_resent": "📩 Anket direkt mesajla yeniden iletiliyor (retransmit). Önceki seçimin korunuyor.",
   "reply.not_eligible": "Access denied: bu anketin grubunda değilsin. Sorun varsa botu yöneten sysadmin'e yaz.",
-  "reply.late_joiner_added": "📩 Hot-plug: bu haftanın anketine eklendin. Birazdan sana direkt mesajla göndereceğim."
+  "reply.late_joiner_added": "📩 Hot-plug: bu haftanın anketine eklendin. Birazdan sana direkt mesajla göndereceğim.",
+
+  "change.swapped": "🔄 *{name}* takvime bir patch pushladı: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* takvime bir patch pushladı: `+{added}`",
+  "change.removed": "🔄 *{name}* takvime bir patch pushladı: `-{removed}`",
+  "change.no_office": "🔄 *{name}* bu haftaki tüm ofis günlerini revert etti (remote only).",
+  "change.back": "🔄 *{name}* ofiste yeniden online: `+{added}`"
 }

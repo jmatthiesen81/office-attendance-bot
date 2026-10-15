@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – アンケートを送ったところです。ダイレクトメッセージをご確認ください。",
   "reply.dm_resent": "📩 アンケートをダイレクトメッセージで再送信します。これまでの回答はそのまま残ります。",
   "reply.not_eligible": "Access denied：あなたはこのアンケートの対象グループに含まれていません。ご不明な点はボットを運用している sysadmin にお問い合わせください。",
-  "reply.late_joiner_added": "📩 ホットプラグ完了：今週のアンケートに追加されました。まもなくダイレクトメッセージでお送りします。"
+  "reply.late_joiner_added": "📩 ホットプラグ完了：今週のアンケートに追加されました。まもなくダイレクトメッセージでお送りします。",
+
+  "change.swapped": "🔄 *{name}* さんがスケジュールにパッチをpushしました：`-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* さんがスケジュールにパッチをpushしました：`+{added}`",
+  "change.removed": "🔄 *{name}* さんがスケジュールにパッチをpushしました：`-{removed}`",
+  "change.no_office": "🔄 *{name}* さんが今週の出社日をすべてrevertしました（remote only）。",
+  "change.back": "🔄 *{name}* さんがオフィスに再びオンライン：`+{added}`"
 }

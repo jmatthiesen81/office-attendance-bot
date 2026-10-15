@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Ik heb je de peiling net gestuurd! Kijk even in je directe berichten.",
   "reply.dm_resent": "📩 Ik stuur je de peiling opnieuw via een direct bericht. Je eerdere keuze ligt veilig in het ruim.",
   "reply.not_eligible": "Je hoort niet bij de bemanning van deze peiling. Vragen? Vraag het aan de kapitein die de bot beheert.",
-  "reply.late_joiner_added": "📩 Welkom aan boord! Je bent toegevoegd aan de peiling van deze week. Je ontvangt de peiling zo meteen via een direct bericht."
+  "reply.late_joiner_added": "📩 Welkom aan boord! Je bent toegevoegd aan de peiling van deze week. Je ontvangt de peiling zo meteen via een direct bericht.",
+
+  "change.swapped": "🔄 Arr, *{name}* gooit het roer om: niet aan boord op {removed}, maar wel op {added}!",
+  "change.added": "🔄 Arr, *{name}* komt ook op {added} aan boord!",
+  "change.removed": "🔄 Arr, *{name}* komt op {removed} toch niet aan boord!",
+  "change.no_office": "🔄 Arr, *{name}* komt deze week toch niet aan boord!",
+  "change.back": "🔄 Arr, *{name}* komt toch aan boord: {added}!"
 }

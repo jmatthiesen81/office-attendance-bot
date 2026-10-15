@@ -12,6 +12,9 @@ const (
 	JobSendDM     = "send_dm"
 	JobUpdateDM   = "update_dm"
 	JobReminderDM = "reminder_dm"
+	// JobChangeNotice announces a changed response in the summary thread.
+	// Its dedupe key is the revision of the announced change's baseline.
+	JobChangeNotice = "change_notice"
 )
 
 // JobKeyJoin is the dedupe key of the send_dm job of a late joiner.

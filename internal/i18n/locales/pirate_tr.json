@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Anketi sana az önce yolladım! Direkt mesajlarına bak.",
   "reply.dm_resent": "📩 Anketi sana direkt mesajla tekrar yolluyorum. Önceki seçimin ambarda güvende.",
   "reply.not_eligible": "Bu anketin tayfasında değilsin. Sorun varsa botu yöneten kaptana sor.",
-  "reply.late_joiner_added": "📩 Gemiye hoş geldin! Bu haftanın anketine eklendin. Birazdan direkt mesajla yollayacağım."
+  "reply.late_joiner_added": "📩 Gemiye hoş geldin! Bu haftanın anketine eklendin. Birazdan direkt mesajla yollayacağım.",
+
+  "change.swapped": "🔄 Avast, *{name}* rotayı değiştirdi – artık gemide değil: {removed}, bunun yerine gemide: {added}!",
+  "change.added": "🔄 Avast, *{name}* ayrıca gemide olacak: {added}!",
+  "change.removed": "🔄 Avast, *{name}* artık gemide olmayacak: {removed}!",
+  "change.no_office": "🔄 Avast, *{name}* bu hafta gemiye binmeyecek!",
+  "change.back": "🔄 Avast, *{name}* yine de gemiye biniyor: {added}!"
 }

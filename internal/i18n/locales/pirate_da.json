@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Jeg har lige sendt dig afstemningen! Tjek dine direkte beskeder.",
   "reply.dm_resent": "📩 Jeg sender dig afstemningen igen som direkte besked. Dit tidligere valg ligger trygt i lasten.",
   "reply.not_eligible": "Du hører ikke til besætningen for denne afstemning. Spørgsmål? Spørg kaptajnen, der står for botten.",
-  "reply.late_joiner_added": "📩 Velkommen om bord! Du er blevet tilføjet til denne uges afstemning. Jeg sender den til dig som direkte besked om lidt."
+  "reply.late_joiner_added": "📩 Velkommen om bord! Du er blevet tilføjet til denne uges afstemning. Jeg sender den til dig som direkte besked om lidt.",
+
+  "change.swapped": "🔄 Arr, *{name}* skifter kurs: ikke om bord {removed}, men i stedet {added}!",
+  "change.added": "🔄 Arr, *{name}* kommer også om bord {added}!",
+  "change.removed": "🔄 Arr, *{name}* kommer alligevel ikke om bord {removed}!",
+  "change.no_office": "🔄 Arr, *{name}* kommer alligevel ikke om bord i denne uge!",
+  "change.back": "🔄 Arr, *{name}* kommer alligevel om bord: {added}!"
 }

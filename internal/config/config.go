@@ -51,6 +51,14 @@ type Config struct {
 	// SummaryProjectLink shows a link to the project repository below the
 	// summary footer.
 	SummaryProjectLink bool
+	// SummaryChangeNotices announces changed responses as thread replies
+	// under the summary. Changes within SummaryChangeNoticeGrace after a
+	// person's first answer count as part of it and are not announced.
+	// Changes of one person within SummaryChangeNoticeDelay after the first
+	// one are combined into one reply.
+	SummaryChangeNotices     bool
+	SummaryChangeNoticeDelay time.Duration
+	SummaryChangeNoticeGrace time.Duration
 
 	// Translator renders all texts sent to Slack in the configured language.
 	// It is the team default: people can choose their own language for
@@ -75,30 +83,33 @@ func LoadFrom(get func(string) string) (*Config, error) { return load(get, true)
 func load(get func(string) string, requireTargets bool) (*Config, error) {
 	p := parser{get: get, requireTargets: requireTargets}
 	c := &Config{
-		SlackBotToken:         p.str("SLACK_BOT_TOKEN", ""),
-		SlackAppToken:         p.str("SLACK_APP_TOKEN", ""),
-		SummaryChannelID:      p.str("SLACK_SUMMARY_CHANNEL_ID", ""),
-		ParticipantsChannelID: p.str("SLACK_PARTICIPANTS_CHANNEL_ID", ""),
-		UserIDs:               p.list("SLACK_USER_IDS"),
-		ExcludeUserIDs:        p.list("SLACK_EXCLUDE_USER_IDS"),
-		PollWeekday:           p.weekday("POLL_WEEKDAY", "MONDAY"),
-		PollTime:              p.timeOfDay("POLL_TIME", "07:00"),
-		Location:              p.location("POLL_TIMEZONE", "Europe/Berlin"),
-		DeadlineWeekday:       p.weekday("POLL_DEADLINE_WEEKDAY", "FRIDAY"),
-		DeadlineTime:          p.timeOfDay("POLL_DEADLINE_TIME", "08:00"),
-		ReminderEnabled:       p.boolean("REMINDER_ENABLED", true),
-		ReminderWeekdays:      p.weekdays("REMINDER_WEEKDAY", "TUESDAY"),
-		ReminderTime:          p.timeOfDay("REMINDER_TIME", "09:00"),
-		ReminderMaxCount:      p.integer("REMINDER_MAX_COUNT", 1),
-		DatabasePath:          p.str("DATABASE_PATH", "/data/officebot.db"),
-		HealthFile:            p.str("HEALTH_FILE", "/tmp/officebot.health"),
-		LogLevel:              p.logLevel("LOG_LEVEL", "info"),
-		DryRun:                p.boolean("DRY_RUN", false),
-		RetentionWeeks:        p.integer("RETENTION_WEEKS", 26),
-		SummaryMaxNames:       p.integer("SUMMARY_MAX_NAMES", 40),
-		SummaryProjectLink:    p.boolean("SUMMARY_PROJECT_LINK", true),
-		Translator:            p.language("BOT_LANGUAGE", i18n.DefaultLanguage),
-		LanguageFromSlack:     p.boolean("BOT_LANGUAGE_FROM_SLACK", false),
+		SlackBotToken:            p.str("SLACK_BOT_TOKEN", ""),
+		SlackAppToken:            p.str("SLACK_APP_TOKEN", ""),
+		SummaryChannelID:         p.str("SLACK_SUMMARY_CHANNEL_ID", ""),
+		ParticipantsChannelID:    p.str("SLACK_PARTICIPANTS_CHANNEL_ID", ""),
+		UserIDs:                  p.list("SLACK_USER_IDS"),
+		ExcludeUserIDs:           p.list("SLACK_EXCLUDE_USER_IDS"),
+		PollWeekday:              p.weekday("POLL_WEEKDAY", "MONDAY"),
+		PollTime:                 p.timeOfDay("POLL_TIME", "07:00"),
+		Location:                 p.location("POLL_TIMEZONE", "Europe/Berlin"),
+		DeadlineWeekday:          p.weekday("POLL_DEADLINE_WEEKDAY", "FRIDAY"),
+		DeadlineTime:             p.timeOfDay("POLL_DEADLINE_TIME", "08:00"),
+		ReminderEnabled:          p.boolean("REMINDER_ENABLED", true),
+		ReminderWeekdays:         p.weekdays("REMINDER_WEEKDAY", "TUESDAY"),
+		ReminderTime:             p.timeOfDay("REMINDER_TIME", "09:00"),
+		ReminderMaxCount:         p.integer("REMINDER_MAX_COUNT", 1),
+		DatabasePath:             p.str("DATABASE_PATH", "/data/officebot.db"),
+		HealthFile:               p.str("HEALTH_FILE", "/tmp/officebot.health"),
+		LogLevel:                 p.logLevel("LOG_LEVEL", "info"),
+		DryRun:                   p.boolean("DRY_RUN", false),
+		RetentionWeeks:           p.integer("RETENTION_WEEKS", 26),
+		SummaryMaxNames:          p.integer("SUMMARY_MAX_NAMES", 40),
+		SummaryProjectLink:       p.boolean("SUMMARY_PROJECT_LINK", true),
+		SummaryChangeNotices:     p.boolean("SUMMARY_CHANGE_NOTICES", true),
+		SummaryChangeNoticeDelay: p.duration("SUMMARY_CHANGE_NOTICE_DELAY", 2*time.Minute),
+		SummaryChangeNoticeGrace: p.duration("SUMMARY_CHANGE_NOTICE_GRACE", 10*time.Minute),
+		Translator:               p.language("BOT_LANGUAGE", i18n.DefaultLanguage),
+		LanguageFromSlack:        p.boolean("BOT_LANGUAGE_FROM_SLACK", false),
 	}
 	c.validate(&p)
 	if len(p.errs) > 0 {
@@ -133,6 +144,12 @@ func (c *Config) validate(p *parser) {
 	}
 	if c.SummaryMaxNames < 1 {
 		p.fail("SUMMARY_MAX_NAMES must be >= 1")
+	}
+	if c.SummaryChangeNoticeDelay < 0 {
+		p.fail("SUMMARY_CHANGE_NOTICE_DELAY must be >= 0")
+	}
+	if c.SummaryChangeNoticeGrace < 0 {
+		p.fail("SUMMARY_CHANGE_NOTICE_GRACE must be >= 0")
 	}
 	if c.DatabasePath == "" {
 		p.fail("DATABASE_PATH is required")
@@ -180,11 +197,19 @@ func (c *Config) LogValue() slog.Value {
 		slog.Bool("language_from_slack", c.LanguageFromSlack),
 		slog.String("deadline", fmt.Sprintf("%s %s", c.DeadlineWeekday, c.DeadlineTime)),
 		slog.Bool("reminder", c.ReminderEnabled),
+		slog.String("change_notices", changeNotices(c)),
 		slog.String("database", c.DatabasePath),
 		slog.Bool("dry_run", c.DryRun),
 		slog.String("bot_token", mask(c.SlackBotToken)),
 		slog.String("app_token", mask(c.SlackAppToken)),
 	)
+}
+
+func changeNotices(c *Config) string {
+	if !c.SummaryChangeNotices {
+		return "off"
+	}
+	return fmt.Sprintf("delay=%s grace=%s", c.SummaryChangeNoticeDelay, c.SummaryChangeNoticeGrace)
 }
 
 func mask(s string) string {
@@ -248,6 +273,19 @@ func (p *parser) boolean(key string, def bool) bool {
 		return def
 	}
 	return b
+}
+
+func (p *parser) duration(key string, def time.Duration) time.Duration {
+	v := p.str(key, "")
+	if v == "" {
+		return def
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		p.fail("%s: invalid duration %q (e.g. 90s, 2m)", key, v)
+		return def
+	}
+	return d
 }
 
 var weekdayNames = map[string]time.Weekday{

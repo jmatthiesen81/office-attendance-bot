@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Ankieta została właśnie wysłana. Sprawdź swoje wiadomości bezpośrednie.",
   "reply.dm_resent": "📩 Ankieta zostanie ponownie wysłana w wiadomości bezpośredniej. Twój dotychczasowy wybór zostanie zachowany.",
   "reply.not_eligible": "Nie należysz do grupy objętej tą ankietą. W razie pytań skontaktuj się z osobą, która zarządza botem.",
-  "reply.late_joiner_added": "📩 Dodano cię do ankiety na ten tydzień. Za chwilę dostaniesz ją w wiadomości bezpośredniej."
+  "reply.late_joiner_added": "📩 Dodano cię do ankiety na ten tydzień. Za chwilę dostaniesz ją w wiadomości bezpośredniej.",
+
+  "change.swapped": "🔄 *{name}* zmienia obecność – jednak nie przyjdzie: {removed}, za to przyjdzie: {added}.",
+  "change.added": "🔄 *{name}* przyjdzie dodatkowo: {added}.",
+  "change.removed": "🔄 *{name}* jednak nie przyjdzie: {removed}.",
+  "change.no_office": "🔄 *{name}* w tym tygodniu jednak nie przyjdzie do biura.",
+  "change.back": "🔄 *{name}* jednak przyjdzie do biura: {added}."
 }

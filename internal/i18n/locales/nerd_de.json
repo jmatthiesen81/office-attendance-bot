@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – ich habe dir die Abfrage gerade erst geschickt. Schau bitte in deine Direktnachrichten.",
   "reply.dm_resent": "📩 Retransmit: Ich schicke dir die Abfrage gleich erneut per Direktnachricht. Deine bisherige Auswahl bleibt erhalten.",
   "reply.not_eligible": "Permission denied: Du gehörst nicht zum Personenkreis dieser Abfrage. Bei Fragen wende dich bitte an den Sysadmin, der den Bot betreut.",
-  "reply.late_joiner_added": "📩 Hot-Plug erkannt: Du wurdest zur Abfrage dieser Woche hinzugefügt. Ich schicke sie dir gleich per Direktnachricht."
+  "reply.late_joiner_added": "📩 Hot-Plug erkannt: Du wurdest zur Abfrage dieser Woche hinzugefügt. Ich schicke sie dir gleich per Direktnachricht.",
+
+  "change.swapped": "🔄 *{name}* hat einen Patch für den Plan gepusht: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* hat einen Patch für den Plan gepusht: `+{added}`",
+  "change.removed": "🔄 *{name}* hat einen Patch für den Plan gepusht: `-{removed}`",
+  "change.no_office": "🔄 *{name}* hat alle Bürotage dieser Woche gereverted (remote only).",
+  "change.back": "🔄 *{name}* ist doch wieder im Büro online: `+{added}`"
 }

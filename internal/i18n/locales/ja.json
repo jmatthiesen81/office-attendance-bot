@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 アンケートを送ったところです。ダイレクトメッセージをご確認ください。",
   "reply.dm_resent": "📩 アンケートをダイレクトメッセージで再送します。これまでの回答はそのまま残ります。",
   "reply.not_eligible": "あなたはこのアンケートの対象グループに含まれていません。ご不明な点はボットの管理者にお問い合わせください。",
-  "reply.late_joiner_added": "📩 今週のアンケートに追加されました。まもなくダイレクトメッセージでお送りします。"
+  "reply.late_joiner_added": "📩 今週のアンケートに追加されました。まもなくダイレクトメッセージでお送りします。",
+
+  "change.swapped": "🔄 *{name}* さんが出社予定を変更しました：{removed}は出社なし、代わりに{added}に出社します。",
+  "change.added": "🔄 *{name}* さんが{added}にも出社します。",
+  "change.removed": "🔄 *{name}* さんは{removed}に出社しないことになりました。",
+  "change.no_office": "🔄 *{name}* さんは今週、出社しないことになりました。",
+  "change.back": "🔄 *{name}* さんはやはり出社します：{added}。"
 }

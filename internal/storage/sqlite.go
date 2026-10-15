@@ -467,7 +467,19 @@ func (s *Store) IncrementReminderCount(ctx context.Context, participantID int64)
 // revision only increases (and the summary is only marked outdated) when the
 // selection actually changes, so duplicate interactions are harmless.
 func (s *Store) SaveResponse(ctx context.Context, pollID int64, userID string, days domain.Days, now time.Time) (resp *domain.Response, changed bool, err error) {
+	return s.SaveResponseWithNotice(ctx, pollID, userID, days, now, time.Time{}, 0)
+}
+
+// SaveResponseWithNotice is SaveResponse that also schedules a change
+// notice at noticeAt when an existing response changes. A zero noticeAt
+// schedules none. A first answer never gets one, and neither do changes
+// within grace after it: they count as corrections of the first answer.
+func (s *Store) SaveResponseWithNotice(ctx context.Context, pollID int64, userID string, days domain.Days, now, noticeAt time.Time, grace time.Duration) (resp *domain.Response, changed bool, err error) {
 	err = s.tx(ctx, func(tx *sql.Tx) error {
+		prev, err := getResponse(ctx, tx, pollID, userID)
+		if err != nil && !errors.Is(err, ErrNotFound) {
+			return err
+		}
 		res, err := tx.ExecContext(ctx, `INSERT INTO responses (poll_id, slack_user_id, monday, tuesday, wednesday, thursday, friday, submitted_at, updated_at, revision)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
 			ON CONFLICT (poll_id, slack_user_id) DO UPDATE SET
@@ -488,6 +500,11 @@ func (s *Store) SaveResponse(ctx context.Context, pollID int64, userID string, d
 		if changed {
 			if _, err := tx.ExecContext(ctx, `UPDATE polls SET summary_version = summary_version + 1 WHERE id = ?`, pollID); err != nil {
 				return err
+			}
+			if prev != nil && !noticeAt.IsZero() && !now.Before(prev.SubmittedAt.Add(grace)) {
+				if err := queueChangeNotice(ctx, tx, pollID, userID, prev, noticeAt, now); err != nil {
+					return err
+				}
 			}
 		}
 		resp, err = getResponse(ctx, tx, pollID, userID)

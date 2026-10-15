@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Anketi sana az önce gönderdim. Lütfen direkt mesajlarına bak.",
   "reply.dm_resent": "📩 Anketi sana tekrar direkt mesajla gönderiyorum. Önceki seçimin korunuyor.",
   "reply.not_eligible": "Bu anketin grubunda değilsin. Sorun varsa botu yöneten kişiyle iletişime geç.",
-  "reply.late_joiner_added": "📩 Bu haftanın anketine eklendin. Birazdan sana direkt mesajla göndereceğim."
+  "reply.late_joiner_added": "📩 Bu haftanın anketine eklendin. Birazdan sana direkt mesajla göndereceğim.",
+
+  "change.swapped": "🔄 *{name}* katılımını değiştirdi – artık gelmeyecek: {removed}, bunun yerine gelecek: {added}.",
+  "change.added": "🔄 *{name}* ek olarak gelecek: {added}.",
+  "change.removed": "🔄 *{name}* artık gelmeyecek: {removed}.",
+  "change.no_office": "🔄 *{name}* bu hafta ofise gelmeyecek.",
+  "change.back": "🔄 *{name}* yine de ofise gelecek: {added}."
 }

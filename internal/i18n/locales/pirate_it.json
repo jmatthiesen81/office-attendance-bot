@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Ti ho appena mandato il sondaggio! Controlla i tuoi messaggi diretti.",
   "reply.dm_resent": "📩 Ti rimando il sondaggio in un messaggio diretto. La tua scelta precedente resta al sicuro nella stiva.",
   "reply.not_eligible": "Non fai parte della ciurma di questo sondaggio. Domande? Chiedi al capitano che comanda il bot.",
-  "reply.late_joiner_added": "📩 Ahoy! Ora sei nella ciurma del sondaggio di questa settimana. A breve te lo mando in un messaggio diretto."
+  "reply.late_joiner_added": "📩 Ahoy! Ora sei nella ciurma del sondaggio di questa settimana. A breve te lo mando in un messaggio diretto.",
+
+  "change.swapped": "🔄 Arr, *{name}* cambia rotta – non a bordo: {removed}; in compenso a bordo: {added}!",
+  "change.added": "🔄 Arr, *{name}* sarà a bordo anche: {added}!",
+  "change.removed": "🔄 Arr, *{name}* alla fine non sarà a bordo: {removed}!",
+  "change.no_office": "🔄 Arr, *{name}* alla fine questa settimana non sale a bordo!",
+  "change.back": "🔄 Arr, *{name}* alla fine sale a bordo: {added}!"
 }

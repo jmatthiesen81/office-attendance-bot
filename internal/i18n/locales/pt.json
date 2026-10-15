@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Acabei de te enviar a votação. Vê as tuas mensagens diretas.",
   "reply.dm_resent": "📩 Vou voltar a enviar-te a votação por mensagem direta. A tua seleção anterior mantém-se.",
   "reply.not_eligible": "Não fazes parte do grupo desta votação. Se tiveres dúvidas, contacta a pessoa responsável pelo bot.",
-  "reply.late_joiner_added": "📩 Foste adicionado à votação desta semana. Vou enviar-ta em breve por mensagem direta."
+  "reply.late_joiner_added": "📩 Foste adicionado à votação desta semana. Vou enviar-ta em breve por mensagem direta.",
+
+  "change.swapped": "🔄 *{name}* alterou a presença – afinal não vem: {removed}; em vez disso vem: {added}.",
+  "change.added": "🔄 *{name}* vem também: {added}.",
+  "change.removed": "🔄 *{name}* afinal não vem: {removed}.",
+  "change.no_office": "🔄 *{name}* afinal não vem ao escritório esta semana.",
+  "change.back": "🔄 *{name}* afinal vem ao escritório: {added}."
 }

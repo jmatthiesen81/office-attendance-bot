@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Jag skickade precis enkäten till dig. Titta bland dina direktmeddelanden.",
   "reply.dm_resent": "📩 Jag skickar enkäten till dig igen som direktmeddelande. Ditt tidigare val finns kvar.",
   "reply.not_eligible": "Du ingår inte i gruppen för den här enkäten. Har du frågor kan du kontakta den som sköter botten.",
-  "reply.late_joiner_added": "📩 Du har lagts till i veckans enkät. Jag skickar den till dig som direktmeddelande om en liten stund."
+  "reply.late_joiner_added": "📩 Du har lagts till i veckans enkät. Jag skickar den till dig som direktmeddelande om en liten stund.",
+
+  "change.swapped": "🔄 *{name}* har ändrat sin närvaro: kommer inte längre på {removed}, men däremot på {added}.",
+  "change.added": "🔄 *{name}* kommer nu även på {added}.",
+  "change.removed": "🔄 *{name}* kommer ändå inte på {removed}.",
+  "change.no_office": "🔄 *{name}* kommer ändå inte till kontoret den här veckan.",
+  "change.back": "🔄 *{name}* kommer ändå till kontoret: {added}."
 }

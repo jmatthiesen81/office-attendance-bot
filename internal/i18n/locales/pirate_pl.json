@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Ankieta właśnie wypłynęła! Sprawdź swoje wiadomości bezpośrednie.",
   "reply.dm_resent": "📩 Ankieta jeszcze raz popłynie do ciebie w wiadomości bezpośredniej. Twój dotychczasowy wybór zostaje bezpiecznie w ładowni.",
   "reply.not_eligible": "Nie należysz do załogi tej ankiety. Pytania? Zwróć się do kapitana, który dowodzi botem.",
-  "reply.late_joiner_added": "📩 Witaj na pokładzie! Dodano cię do ankiety na ten tydzień. Za chwilę dostaniesz ją w wiadomości bezpośredniej."
+  "reply.late_joiner_added": "📩 Witaj na pokładzie! Dodano cię do ankiety na ten tydzień. Za chwilę dostaniesz ją w wiadomości bezpośredniej.",
+
+  "change.swapped": "🔄 Ahoj, *{name}* zmienia kurs – jednak nie na pokładzie: {removed}, za to na pokładzie: {added}!",
+  "change.added": "🔄 Ahoj, *{name}* będzie też na pokładzie: {added}!",
+  "change.removed": "🔄 Ahoj, *{name}* jednak nie będzie na pokładzie: {removed}!",
+  "change.no_office": "🔄 Ahoj, *{name}* w tym tygodniu jednak nie wchodzi na pokład!",
+  "change.back": "🔄 Ahoj, *{name}* jednak wchodzi na pokład: {added}!"
 }

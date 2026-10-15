@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Anketa ti byla právě odeslána. Podívej se prosím do přímých zpráv.",
   "reply.dm_resent": "📩 Anketu ti znovu pošlu v přímé zprávě. Tvůj dosavadní výběr zůstane zachován.",
   "reply.not_eligible": "Nepatříš do skupiny této ankety. S dotazy se prosím obrať na osobu, která bota spravuje.",
-  "reply.late_joiner_added": "📩 Přidali jsme tě do ankety na tento týden. Za chvíli ti přijde v přímé zprávě."
+  "reply.late_joiner_added": "📩 Přidali jsme tě do ankety na tento týden. Za chvíli ti přijde v přímé zprávě.",
+
+  "change.swapped": "🔄 *{name}* mění docházku – nakonec nepřijde: {removed}, zato přijde: {added}.",
+  "change.added": "🔄 *{name}* přijde navíc: {added}.",
+  "change.removed": "🔄 *{name}* nakonec nepřijde: {removed}.",
+  "change.no_office": "🔄 *{name}* tento týden nakonec do kanceláře nepřijde.",
+  "change.back": "🔄 *{name}* nakonec do kanceláře přijde: {added}."
 }

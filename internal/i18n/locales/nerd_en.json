@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 429 Too Many Requests – I just sent you the poll. Please check your direct messages.",
   "reply.dm_resent": "📩 Retransmitting the poll by direct message. Your previous selection is kept.",
   "reply.not_eligible": "Access denied: you are not in the group for this poll. If you have questions, contact the sysadmin who runs the bot.",
-  "reply.late_joiner_added": "📩 Hot-plugged: you have been added to this week's poll. I will send it to you by direct message shortly."
+  "reply.late_joiner_added": "📩 Hot-plugged: you have been added to this week's poll. I will send it to you by direct message shortly.",
+
+  "change.swapped": "🔄 *{name}* pushed a schedule patch: `-{removed}` `+{added}`",
+  "change.added": "🔄 *{name}* pushed a schedule patch: `+{added}`",
+  "change.removed": "🔄 *{name}* pushed a schedule patch: `-{removed}`",
+  "change.no_office": "🔄 *{name}* reverted all office days this week (remote only).",
+  "change.back": "🔄 *{name}* is back online in the office: `+{added}`"
 }

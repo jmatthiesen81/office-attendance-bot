@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 Ich hab dir die Abfrage gerade erst geschickt! Schau in deine Direktnachrichten.",
   "reply.dm_resent": "📩 Ich schicke dir die Abfrage gleich erneut per Direktnachricht. Deine bisherige Wahl bleibt sicher im Laderaum.",
   "reply.not_eligible": "Du gehörst nicht zur Crew dieser Abfrage. Fragen? Wende dich an den Käpt'n, der den Bot steuert.",
-  "reply.late_joiner_added": "📩 Willkommen an Bord! Du wurdest zur Abfrage dieser Woche hinzugefügt. Ich schicke sie dir gleich per Direktnachricht."
+  "reply.late_joiner_added": "📩 Willkommen an Bord! Du wurdest zur Abfrage dieser Woche hinzugefügt. Ich schicke sie dir gleich per Direktnachricht.",
+
+  "change.swapped": "🔄 Arr, *{name}* hat den Kurs geändert: nicht an Bord am {removed}, dafür am {added}!",
+  "change.added": "🔄 Arr, *{name}* kommt zusätzlich am {added} an Bord!",
+  "change.removed": "🔄 Arr, *{name}* kommt am {removed} doch nicht an Bord!",
+  "change.no_office": "🔄 Arr, *{name}* kommt diese Woche doch nicht an Bord!",
+  "change.back": "🔄 Arr, *{name}* kommt doch an Bord: {added}!"
 }

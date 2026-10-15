@@ -112,5 +112,11 @@
   "reply.dm_cooldown": "📩 ¡Te acabo de enviar la encuesta! Revisa tus mensajes directos.",
   "reply.dm_resent": "📩 Te vuelvo a enviar la encuesta por mensaje directo. Tu elección anterior sigue a salvo en la bodega.",
   "reply.not_eligible": "No formas parte de la tripulación de esta encuesta. ¿Preguntas? Habla con el capitán que gestiona el bot.",
-  "reply.late_joiner_added": "📩 ¡Bienvenido a bordo! Te he añadido a la encuesta de esta semana. Te la envío por mensaje directo en breve."
+  "reply.late_joiner_added": "📩 ¡Bienvenido a bordo! Te he añadido a la encuesta de esta semana. Te la envío por mensaje directo en breve.",
+
+  "change.swapped": "🔄 ¡Arr, *{name}* cambia el rumbo – no estará a bordo: {removed}; en cambio sí: {added}!",
+  "change.added": "🔄 ¡Arr, *{name}* también estará a bordo: {added}!",
+  "change.removed": "🔄 ¡Arr, *{name}* al final no estará a bordo: {removed}!",
+  "change.no_office": "🔄 ¡Arr, *{name}* al final no sube a bordo esta semana!",
+  "change.back": "🔄 ¡Arr, *{name}* al final sí sube a bordo: {added}!"
 }
