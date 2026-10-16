@@ -50,6 +50,7 @@
   "dm.away": "🌴 Status satt til borte (AFK) denne uken. Påminnelser pipes til /dev/null, og oversikten viser deg som borte.",
   "dm.away.undo": "git revert: ikke borte",
   "dm.away.hint": "Likevel online? Frem til {deadline} kan du gjøre rollback på fraværet og velge dagene dine.",
+  "dm.away.answered": "Svaret er allerede committet, og sprinten er i gang – ingen force-push over historikken. Registrer nedetiden din fra i dag via 🌴 Planlegg nedetid.",
   "dm.closed.away": "Du var AFK denne uken.",
 
   "reminder.text": "⏰ PING: Gi beskjed om hvilke dager du er på kontoret i uke {week} – deadline {deadline}. Don't panic, det tar bare et øyeblikk.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request: velg en dato.",
   "timeoff.error.order": "Ugyldig intervall: siste dag kan ikke være før første dag.",
-  "timeoff.error.past": "Tidsreiser støttes ikke: siste dag kan ikke være tilbake i tid.",
+  "timeoff.error.past": "Tidsreiser støttes ikke: første dag kan ikke være tilbake i tid.",
   "timeoff.error.too_far": "Out of bounds: nedetid kan planlegges høyst ett år frem i tid.",
   "timeoff.error.failed": "500 Internal Server Error. Prøv igjen om litt.",
 

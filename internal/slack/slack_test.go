@@ -108,6 +108,10 @@ func TestPollDMRoundTrip(t *testing.T) {
 	if strings.Contains(closed, "[Speichern]") || !strings.Contains(closed, "geschlossen") || !strings.Contains(closed, "*Di*") {
 		t.Errorf("closed DM:\n%s", closed)
 	}
+	// Time off and language are not tied to the poll and stay reachable.
+	if !strings.Contains(closed, "[🌴 Abwesenheit planen]\n[🌐 Sprache]") || strings.Contains(closed, "Ich bin diese Woche abwesend") {
+		t.Errorf("closed DM must keep only the time-off and language buttons:\n%s", closed)
+	}
 }
 
 func TestPollDMEnglish(t *testing.T) {

@@ -50,6 +50,7 @@
   "dm.away": "🌴 Du har landlov denne uge. Ingen påmindelser når frem til dig, og oversigten viser dig som fraværende.",
   "dm.away.undo": "Alligevel om bord",
   "dm.away.hint": "Kommer du alligevel om bord? Indtil {deadline} kan du aflyse din landlov og vælge dine dage.",
+  "dm.away.answered": "Du har allerede svaret, og ugens togt er begyndt, matros! Skriv din landlov ind fra i dag via 🌴 Planlæg landlov.",
   "dm.closed.away": "Du havde landlov denne uge.",
 
   "reminder.text": "⏰ Ohøj! Fortæl kaptajnen, hvilke dage du er om bord (på kontoret) i uge {week} – senest {deadline}, ellers venter planken!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Vælg en dato, matros.",
   "timeoff.error.order": "Den sidste dag må ikke ligge før den første dag, din landkrabbe.",
-  "timeoff.error.past": "Den sidste dag må ikke ligge i fortiden – man kan ikke sejle baglæns i tiden!",
+  "timeoff.error.past": "Den første dag må ikke ligge i fortiden – man kan ikke sejle baglæns i tiden!",
   "timeoff.error.too_far": "Landlov kan højst planlægges et år frem.",
   "timeoff.error.failed": "Tordenskjold og krudt, det virkede ikke. Prøv igen om lidt.",
 

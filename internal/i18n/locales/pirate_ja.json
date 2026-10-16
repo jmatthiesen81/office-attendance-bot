@@ -50,6 +50,7 @@
   "dm.away": "🌴 今週は上陸休暇として記録したぞ。リマインダーは届かず、集計では不在と載る。",
   "dm.away.undo": "やっぱり乗船する",
   "dm.away.hint": "やっぱり乗船するか？{deadline}までなら上陸休暇を取り消して乗船日を選べるぞ。",
+  "dm.away.answered": "もう答えは出したし、今週の航海も始まっとるぞ、水夫よ！本日以降の休暇は 🌴 上陸休暇を申請 から記せ。",
   "dm.closed.away": "今週おぬしは上陸休暇じゃった。",
 
   "reminder.text": "⏰ 聞けぇ！第{week}週に何曜日に船に乗る（出社する）か、{deadline}までに船長に伝えろ。さもなくば板歩きの刑じゃ！",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}～{end}",
   "timeoff.error.missing": "日付を選べ、相棒。",
   "timeoff.error.order": "最終日を初日より前にはできん、この陸者め。",
-  "timeoff.error.past": "最終日を過去にはできん – 時を遡る航海などないわ！",
+  "timeoff.error.past": "初日を過去にはできん – 時を遡る航海などないわ！",
   "timeoff.error.too_far": "上陸休暇は最大1年先までしか申請できん。",
   "timeoff.error.failed": "なんてこった、うまくいかなんだ。少し待ってもう一度やれ。",
 

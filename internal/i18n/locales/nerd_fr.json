@@ -50,6 +50,7 @@
   "dm.away": "🌴 Statut AFK activé pour cette semaine. Les rappels partent dans /dev/null, et le récapitulatif t'indique comme absent(e).",
   "dm.away.undo": "git revert : pas AFK",
   "dm.away.hint": "Finalement de retour en ligne ? Jusqu'au {deadline}, tu peux faire un rollback de l'absence et choisir tes jours.",
+  "dm.away.answered": "Réponse déjà commitée et le sprint tourne – pas de force-push sur l'historique. Saisis ton downtime à partir d'aujourd'hui via 🌴 Planifier un downtime.",
   "dm.closed.away": "Tu étais AFK cette semaine.",
 
   "reminder.text": "⏰ PING : indique les jours où tu seras au bureau en semaine {week} – deadline le {deadline}. Pas de panique, ça prend deux secondes.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request : choisis une date.",
   "timeoff.error.order": "Intervalle invalide : le dernier jour ne peut pas être antérieur au premier.",
-  "timeoff.error.past": "Voyage dans le temps non supporté : le dernier jour ne peut pas être dans le passé.",
+  "timeoff.error.past": "Voyage dans le temps non supporté : le premier jour ne peut pas être dans le passé.",
   "timeoff.error.too_far": "Index out of bounds : un downtime peut être planifié au maximum un an à l'avance.",
   "timeoff.error.failed": "500 Internal Server Error. Réessaie dans un instant.",
 

@@ -50,6 +50,7 @@
   "dm.away": "🌴 Du er registrert som borte denne uken. Du får ingen påminnelser, og oversikten viser deg som borte.",
   "dm.away.undo": "Likevel ikke borte",
   "dm.away.hint": "Kommer du likevel på kontoret? Frem til {deadline} kan du angre fraværet og velge dagene dine.",
+  "dm.away.answered": "Du har allerede svart, og uken har begynt, så den kan ikke lenger markeres som fravær i sin helhet. Registrer fraværet ditt fra i dag via 🌴 Planlegg fravær.",
   "dm.closed.away": "Du var borte denne uken.",
 
   "reminder.text": "⏰ Påminnelse: Gi beskjed om hvilke dager du er på kontoret i uke {week} – senest {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Velg en dato.",
   "timeoff.error.order": "Siste dag kan ikke være før første dag.",
-  "timeoff.error.past": "Siste dag kan ikke være tilbake i tid.",
+  "timeoff.error.past": "Første dag kan ikke være tilbake i tid.",
   "timeoff.error.too_far": "Fravær kan planlegges høyst ett år frem i tid.",
   "timeoff.error.failed": "Det fungerte ikke. Prøv igjen om litt.",
 

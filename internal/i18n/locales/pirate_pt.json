@@ -50,6 +50,7 @@
   "dm.away": "🌴 Estás de licença em terra esta semana. Não te chegam lembretes e o resumo indica-te como ausente.",
   "dm.away.undo": "Afinal vou a bordo",
   "dm.away.hint": "Afinal vens a bordo? Até {deadline} podes cancelar a tua licença em terra e escolher os teus dias.",
+  "dm.away.answered": "Já respondeste e a viagem desta semana já levantou âncora, marujo! Regista a tua licença a partir de hoje em 🌴 Pedir licença em terra.",
   "dm.closed.away": "Estiveste de licença em terra esta semana.",
 
   "reminder.text": "⏰ Atenção, marujo! Diz ao capitão em que dias vais estar a bordo do navio (no escritório) na semana {week} – até {deadline}, ou vais dar um passeio pela prancha!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Escolhe uma data, marujo.",
   "timeoff.error.order": "O último dia não pode ser anterior ao primeiro, ó grumete!",
-  "timeoff.error.past": "O último dia não pode estar no passado – nenhum navio navega para trás no tempo!",
+  "timeoff.error.past": "O primeiro dia não pode estar no passado – nenhum navio navega para trás no tempo!",
   "timeoff.error.too_far": "A licença em terra pode ser planeada com, no máximo, um ano de antecedência.",
   "timeoff.error.failed": "Raios e coriscos, não funcionou! Tenta novamente daqui a pouco.",
 

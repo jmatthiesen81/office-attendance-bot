@@ -50,6 +50,7 @@
   "dm.away": "🌴 今週のステータスは AFK に設定されました。リマインダーは /dev/null にパイプされ、集計では不在として表示されます。",
   "dm.away.undo": "git revert: 不在",
   "dm.away.hint": "やっぱりオンライン？{deadline}までなら不在をロールバックして出社日を選べます。",
+  "dm.away.answered": "回答はコミット済み、スプリントも進行中 – 履歴への force-push は不可。本日以降のダウンタイムは 🌴 ダウンタイムを予定 から入力してください。",
   "dm.closed.away": "今週は AFK でした。",
 
   "reminder.text": "⏰ PING：第{week}週に何曜日に出社するか、{deadline}までに教えてください。Don't panic、すぐ終わります。",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request：日付を選んでください。",
   "timeoff.error.order": "不正な範囲：最終日は初日より前にできません。",
-  "timeoff.error.past": "タイムトラベルは未サポート：最終日に過去の日付は指定できません。",
+  "timeoff.error.past": "タイムトラベルは未サポート：初日に過去の日付は指定できません。",
   "timeoff.error.too_far": "Out of bounds：ダウンタイムは最大1年先まで予定できます。",
   "timeoff.error.failed": "500 Internal Server Error。少し待ってからリトライしてください。",
 

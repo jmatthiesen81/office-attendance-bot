@@ -50,6 +50,7 @@
   "dm.away": "🌴 Bu hafta için yok olarak işaretlendin. Hatırlatma almayacaksın, özette de yok olarak görüneceksin.",
   "dm.away.undo": "Yine de buradayım",
   "dm.away.hint": "Yine de ofise mi geliyorsun? Yokluğunu geri alıp günlerini seçebilirsin. Son tarih: {deadline}.",
+  "dm.away.answered": "Zaten yanıt verdin ve hafta başladı, bu yüzden hafta artık tamamen izinli olarak işaretlenemez. İznini bugünden itibaren 🌴 İzin planla ile gir.",
   "dm.closed.away": "Bu hafta yoktun.",
 
   "reminder.text": "⏰ Hatırlatma: {week}. haftada hangi günler ofiste olacağını lütfen bildir. Son tarih: {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Lütfen bir tarih seç.",
   "timeoff.error.order": "Son gün, ilk günden önce olamaz.",
-  "timeoff.error.past": "Son gün geçmişte olamaz.",
+  "timeoff.error.past": "İlk gün geçmişte olamaz.",
   "timeoff.error.too_far": "İzin en fazla bir yıl sonrasına kadar planlanabilir.",
   "timeoff.error.failed": "Bu işe yaramadı. Lütfen birazdan tekrar dene.",
 

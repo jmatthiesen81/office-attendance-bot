@@ -50,6 +50,7 @@
   "dm.away": "🌴 Статус на цей тиждень: AFK. Нагадування йдуть у /dev/null, а в підсумку тебе буде вказано серед відсутніх.",
   "dm.away.undo": "git revert: я не AFK",
   "dm.away.hint": "Усе ж онлайн? До {deadline} можна зробити rollback відсутності й вибрати свої дні.",
+  "dm.away.answered": "Відповідь уже закомічено, і спринт триває – жодного force-push поверх історії. Внеси свій downtime від сьогодні через 🌴 Запланувати downtime.",
   "dm.closed.away": "Цього тижня в тебе був статус AFK.",
 
   "reminder.text": "🏓 ping: повідом, будь ласка, у які дні тижня {week} ти будеш в офісі – дедлайн {deadline}. Don't panic, це забере хвилинку.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request: обери дату, будь ласка.",
   "timeoff.error.order": "Invalid range: останній день не може бути раніше за перший.",
-  "timeoff.error.past": "Подорожі в часі не підтримуються: останній день не може бути в минулому.",
+  "timeoff.error.past": "Подорожі в часі не підтримуються: перший день не може бути в минулому.",
   "timeoff.error.too_far": "Out of bounds: downtime можна запланувати щонайбільше на рік наперед.",
   "timeoff.error.failed": "500 Internal Server Error. Спробуй ще раз за мить.",
 

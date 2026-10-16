@@ -50,6 +50,7 @@
   "dm.away": "🌴 Questa settimana risulti assente. Non riceverai promemoria e il riepilogo ti indica come assente.",
   "dm.away.undo": "Alla fine non sono assente",
   "dm.away.hint": "Alla fine vieni in ufficio? Fino a {deadline} puoi annullare l'assenza e scegliere i tuoi giorni.",
+  "dm.away.answered": "Hai già risposto e la settimana è iniziata, quindi non può più essere segnata tutta come assenza. Inserisci la tua assenza da oggi in poi con 🌴 Pianifica le assenze.",
   "dm.closed.away": "Questa settimana eri assente.",
 
   "reminder.text": "⏰ Promemoria: facci sapere in quali giorni sarai in ufficio nella settimana {week} – entro {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Scegli una data.",
   "timeoff.error.order": "L'ultimo giorno non può essere prima del primo giorno.",
-  "timeoff.error.past": "L'ultimo giorno non può essere nel passato.",
+  "timeoff.error.past": "Il primo giorno non può essere nel passato.",
   "timeoff.error.too_far": "Le assenze si possono pianificare al massimo con un anno di anticipo.",
   "timeoff.error.failed": "Non ha funzionato. Riprova tra un attimo.",
 

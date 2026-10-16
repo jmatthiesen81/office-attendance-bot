@@ -50,6 +50,7 @@
   "dm.away": "🌴 Du bist für diese Woche als abwesend eingetragen. Du bekommst keine Erinnerungen, und die Übersicht führt dich als abwesend.",
   "dm.away.undo": "Doch nicht abwesend",
   "dm.away.hint": "Bist du doch im Büro? Bis {deadline} kannst du die Abwesenheit zurücknehmen und deine Tage eintragen.",
+  "dm.away.answered": "Du hast schon abgestimmt und die Woche hat begonnen, deshalb lässt sie sich nicht mehr komplett als abwesend markieren. Bitte trag deine Abwesenheit ab heute über 🌴 Abwesenheit planen ein.",
   "dm.closed.away": "Du warst diese Woche abwesend.",
 
   "reminder.text": "⏰ Erinnerung: Bitte trag noch ein, an welchen Tagen du in KW {week} im Büro bist – bis {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Bitte wähle ein Datum.",
   "timeoff.error.order": "Der letzte Tag darf nicht vor dem ersten liegen.",
-  "timeoff.error.past": "Der letzte Tag darf nicht in der Vergangenheit liegen.",
+  "timeoff.error.past": "Der erste Tag darf nicht in der Vergangenheit liegen.",
   "timeoff.error.too_far": "Abwesenheiten können höchstens ein Jahr im Voraus geplant werden.",
   "timeoff.error.failed": "Das hat gerade nicht geklappt. Bitte versuche es gleich noch einmal.",
 

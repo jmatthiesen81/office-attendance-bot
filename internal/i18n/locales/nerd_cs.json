@@ -50,6 +50,7 @@
   "dm.away": "🌴 Status na tento týden: away (AFK). Připomínky jdou do /dev/null a v přehledu se zobrazíš mezi nepřítomnými.",
   "dm.away.undo": "git revert: nejsem AFK",
   "dm.away.hint": "Nakonec online? Do {deadline} můžeš nepřítomnost rollbacknout a vybrat své dny.",
+  "dm.away.answered": "Odpověď už je commitnutá a sprint běží – žádný force-push přes historii. Zadej svůj downtime od dneška přes 🌴 Naplánovat downtime.",
   "dm.closed.away": "Tento týden: status AFK.",
 
   "reminder.text": "⏰ PING: Dej nám vědět, které dny budeš v týdnu {week} v kanceláři – deadline {deadline}. Don't panic, zabere to jen chvilku.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request: vyber prosím datum.",
   "timeoff.error.order": "Neplatný rozsah: poslední den nesmí být před prvním dnem.",
-  "timeoff.error.past": "Cestování časem není podporováno: poslední den nesmí být v minulosti.",
+  "timeoff.error.past": "Cestování časem není podporováno: první den nesmí být v minulosti.",
   "timeoff.error.too_far": "Out of bounds: downtime lze naplánovat nejvýše rok dopředu.",
   "timeoff.error.failed": "500 Internal Server Error. Zkus to prosím za chvíli znovu.",
 

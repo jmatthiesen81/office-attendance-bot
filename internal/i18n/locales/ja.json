@@ -50,6 +50,7 @@
   "dm.away": "🌴 今週は不在として登録されています。リマインダーは届かず、集計では不在として表示されます。",
   "dm.away.undo": "不在を取り消す",
   "dm.away.hint": "やはり出社しますか？{deadline}までなら不在を取り消して出社日を選べます。",
+  "dm.away.answered": "すでに回答済みで今週も始まっているため、週全体を不在にすることはできません。本日以降の休暇は 🌴 休暇を登録 から入力してください。",
   "dm.closed.away": "今週は不在でした。",
 
   "reminder.text": "⏰ リマインダー：第{week}週に何曜日に出社するか、{deadline}までにお知らせください。",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}～{end}",
   "timeoff.error.missing": "日付を選んでください。",
   "timeoff.error.order": "最終日は初日より前にできません。",
-  "timeoff.error.past": "最終日に過去の日付は指定できません。",
+  "timeoff.error.past": "初日に過去の日付は指定できません。",
   "timeoff.error.too_far": "休暇は最大1年先まで登録できます。",
   "timeoff.error.failed": "うまくいきませんでした。少し待ってからもう一度お試しください。",
 

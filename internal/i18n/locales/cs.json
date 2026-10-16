@@ -50,6 +50,7 @@
   "dm.away": "🌴 Na tento týden máš zapsanou nepřítomnost. Nebudou ti chodit připomínky a v přehledu se zobrazíš mezi nepřítomnými.",
   "dm.away.undo": "Zrušit nepřítomnost",
   "dm.away.hint": "Budeš nakonec v kanceláři? Do {deadline} můžeš nepřítomnost zrušit a vybrat své dny.",
+  "dm.away.answered": "Už jsi odpověděl a týden začal, takže ho už nelze celý označit jako nepřítomnost. Zadej svou nepřítomnost od dneška přes 🌴 Naplánovat nepřítomnost.",
   "dm.closed.away": "Na tento týden byla zapsána tvoje nepřítomnost.",
 
   "reminder.text": "⏰ Připomínka: Dej nám prosím vědět, které dny budeš v týdnu {week} v kanceláři – do {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Vyber prosím datum.",
   "timeoff.error.order": "Poslední den nesmí být před prvním dnem.",
-  "timeoff.error.past": "Poslední den nesmí být v minulosti.",
+  "timeoff.error.past": "První den nesmí být v minulosti.",
   "timeoff.error.too_far": "Nepřítomnost lze naplánovat nejvýše rok dopředu.",
   "timeoff.error.failed": "To se nepovedlo. Zkus to prosím za chvíli znovu.",
 

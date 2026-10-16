@@ -50,6 +50,7 @@
   "dm.away": "🌴 Du är markerad med landpermission den här veckan. Inga påminnelser når dig, och sammanställningen visar dig som borta.",
   "dm.away.undo": "Tillbaka ombord ändå",
   "dm.away.hint": "Kommer du ombord ändå? Fram till {deadline} kan du ställa in landpermissionen och välja dina dagar.",
+  "dm.away.answered": "Du har redan svarat och veckans färd har börjat, matros! Lägg in din landpermission från i dag via 🌴 Planera landpermission.",
   "dm.closed.away": "Du hade landpermission den här veckan.",
 
   "reminder.text": "⏰ Hörru! Berätta för kaptenen vilka dagar du är ombord på skeppet (på kontoret) vecka {week} – senast {deadline}, annars blir det plankan!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Välj ett datum, skeppsgosse.",
   "timeoff.error.order": "Sista dagen kan inte vara före första dagen, din landkrabba.",
-  "timeoff.error.past": "Sista dagen kan inte ligga bakåt i tiden – ingen seglar baklänges i tiden!",
+  "timeoff.error.past": "Första dagen kan inte ligga bakåt i tiden – ingen seglar baklänges i tiden!",
   "timeoff.error.too_far": "Landpermission kan planeras högst ett år framåt.",
   "timeoff.error.failed": "Sju sjutton, det fungerade inte. Försök igen om en liten stund.",
 

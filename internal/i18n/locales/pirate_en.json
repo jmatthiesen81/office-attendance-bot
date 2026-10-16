@@ -50,6 +50,7 @@
   "dm.away": "🌴 Ye be marked as on shore leave this week. No reminders will reach ye, and the summary lists ye as away.",
   "dm.away.undo": "Back aboard after all",
   "dm.away.hint": "Comin' aboard after all? Until {deadline} ye can cancel yer shore leave and pick yer days.",
+  "dm.away.answered": "Ye've already given yer answer and this week's voyage be under way, matey! Use 🌴 Plan shore leave to log yer leave from today on.",
   "dm.closed.away": "Ye were on shore leave this week.",
 
   "reminder.text": "⏰ Avast! Tell the Cap'n which days ye'll be aboard the ship (in the office) in week {week} – by {deadline}, or it's the plank for ye!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Pick a date, matey.",
   "timeoff.error.order": "The last day can't be before the first day, ye landlubber.",
-  "timeoff.error.past": "The last day can't be in the past – no sailin' backwards in time!",
+  "timeoff.error.past": "The first day can't be in the past – no sailin' backwards in time!",
   "timeoff.error.too_far": "Shore leave can be planned at most one year ahead.",
   "timeoff.error.failed": "Blimey, that didn't work. Try again in a moment.",
 

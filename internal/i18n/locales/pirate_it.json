@@ -50,6 +50,7 @@
   "dm.away": "🌴 Questa settimana risulti in licenza a terra. Nessun promemoria ti raggiungerà e il riepilogo ti indica come assente.",
   "dm.away.undo": "Torno a bordo, arrr",
   "dm.away.hint": "Alla fine sali a bordo? Fino a {deadline} puoi annullare la licenza a terra e scegliere i tuoi giorni.",
+  "dm.away.answered": "Hai già risposto e il viaggio della settimana ha levato l'ancora, mozzo! Segna la tua licenza da oggi con 🌴 Pianifica la licenza.",
   "dm.closed.away": "Questa settimana eri in licenza a terra.",
 
   "reminder.text": "⏰ Ohé! Di' al capitano in quali giorni sarai a bordo della nave (in ufficio) nella settimana {week} – entro {deadline}, o si cammina sull'asse!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Scegli una data, mozzo.",
   "timeoff.error.order": "L'ultimo giorno non può venire prima del primo, marinaio d'acqua dolce!",
-  "timeoff.error.past": "L'ultimo giorno non può essere nel passato – nessuna nave naviga all'indietro nel tempo!",
+  "timeoff.error.past": "Il primo giorno non può essere nel passato – nessuna nave naviga all'indietro nel tempo!",
   "timeoff.error.too_far": "La licenza a terra si può pianificare al massimo con un anno di anticipo.",
   "timeoff.error.failed": "Per mille balene, non ha funzionato! Riprova tra un attimo.",
 

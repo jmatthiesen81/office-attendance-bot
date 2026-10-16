@@ -50,6 +50,7 @@
   "dm.away": "🌴 Estás marcado como ausente esta semana. No recibirás recordatorios y el resumen te mostrará como ausente.",
   "dm.away.undo": "Al final no estoy ausente",
   "dm.away.hint": "¿Al final vas a la oficina? Hasta el {deadline} puedes deshacer la ausencia y elegir tus días.",
+  "dm.away.answered": "Ya has respondido y la semana ha empezado, así que ya no se puede marcar entera como ausencia. Registra tu ausencia a partir de hoy con 🌴 Planificar ausencia.",
   "dm.closed.away": "Estuviste ausente esta semana.",
 
   "reminder.text": "⏰ Recordatorio: indica qué días vas a estar en la oficina la semana {week} – antes del {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Elige una fecha.",
   "timeoff.error.order": "El último día no puede ser anterior al primero.",
-  "timeoff.error.past": "El último día no puede estar en el pasado.",
+  "timeoff.error.past": "El primer día no puede estar en el pasado.",
   "timeoff.error.too_far": "Las ausencias se pueden planificar como máximo con un año de antelación.",
   "timeoff.error.failed": "No ha funcionado. Inténtalo de nuevo en un momento.",
 

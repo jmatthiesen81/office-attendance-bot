@@ -148,6 +148,8 @@ func (r Renderer) Render(snap *storage.Snapshot, now time.Time) slack.Message {
 		// For anyone who did not get (or cannot find) their DM, and for
 		// people who joined the target group after the weekly start.
 		blocks = append(blocks, slack.RequestDMBlock(r.T, p.ID))
+	} else {
+		blocks = append(blocks, slack.SettingsBlock(r.T, p.ID))
 	}
 
 	return slack.Message{

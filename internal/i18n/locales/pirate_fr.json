@@ -50,6 +50,7 @@
   "dm.away": "🌴 Tu es en permission à terre cette semaine. Aucun rappel ne t'atteindra, et le récapitulatif t'indique comme absent(e).",
   "dm.away.undo": "Finalement à bord",
   "dm.away.hint": "Tu remontes à bord finalement ? Jusqu'au {deadline}, tu peux annuler ta permission et choisir tes jours.",
+  "dm.away.answered": "Tu as déjà répondu et le voyage de la semaine a levé l'ancre, matelot ! Note ta permission à partir d'aujourd'hui via 🌴 Prévoir une permission.",
   "dm.closed.away": "Tu étais en permission à terre cette semaine.",
 
   "reminder.text": "⏰ Branle-bas de combat ! Dis au Capitaine quels jours tu seras à bord (au bureau) en semaine {week} – d'ici le {deadline}, sinon c'est la planche !",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Choisis une date, moussaillon.",
   "timeoff.error.order": "Le dernier jour ne peut pas être avant le premier, marin d'eau douce !",
-  "timeoff.error.past": "Le dernier jour ne peut pas être dans le passé – on ne navigue pas à reculons dans le temps !",
+  "timeoff.error.past": "Le premier jour ne peut pas être dans le passé – on ne navigue pas à reculons dans le temps !",
   "timeoff.error.too_far": "Une permission à terre peut être prévue au maximum un an à l'avance.",
   "timeoff.error.failed": "Mille sabords, ça n'a pas marché ! Réessaie dans un instant.",
 

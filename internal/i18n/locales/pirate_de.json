@@ -50,6 +50,7 @@
   "dm.away": "🌴 Du bist diese Woche auf Landgang eingetragen. Keine Erinnerung erreicht dich, und die Übersicht führt dich als abwesend.",
   "dm.away.undo": "Doch wieder an Bord",
   "dm.away.hint": "Kommst du doch an Bord? Bis {deadline} kannst du den Landgang streichen und deine Tage eintragen.",
+  "dm.away.answered": "Du hast schon abgestimmt und die Reise dieser Woche läuft, Matrose! Trag deinen Landgang ab heute über 🌴 Landgang planen ein.",
   "dm.closed.away": "Du warst diese Woche auf Landgang.",
 
   "reminder.text": "⏰ Ahoi! Sag dem Käpt'n, an welchen Tagen du in KW {week} an Bord (im Büro) bist – bis {deadline}, sonst geht's über die Planke!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Wähl ein Datum, Matrose.",
   "timeoff.error.order": "Der letzte Tag darf nicht vor dem ersten liegen, du Landratte.",
-  "timeoff.error.past": "Der letzte Tag darf nicht in der Vergangenheit liegen – rückwärts durch die Zeit segelt keiner!",
+  "timeoff.error.past": "Der erste Tag darf nicht in der Vergangenheit liegen – rückwärts durch die Zeit segelt keiner!",
   "timeoff.error.too_far": "Landgang kann höchstens ein Jahr im Voraus geplant werden.",
   "timeoff.error.failed": "Klabautermann an Bord – das hat nicht geklappt. Versuch es gleich noch einmal.",
 

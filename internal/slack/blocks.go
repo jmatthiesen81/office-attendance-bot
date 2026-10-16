@@ -55,6 +55,12 @@ func RequestDMBlock(tr *i18n.Translator, pollID int64) goslack.Block {
 	return goslack.NewActionBlock(fmt.Sprintf("request:%d", pollID), btn, timeOffButton(tr), languageButton(tr))
 }
 
+// SettingsBlock holds the buttons that stay below a closed poll: time off and
+// language are not tied to a poll and must remain reachable after the deadline.
+func SettingsBlock(tr *i18n.Translator, pollID int64) goslack.Block {
+	return goslack.NewActionBlock(fmt.Sprintf("settings:%d", pollID), timeOffButton(tr), languageButton(tr))
+}
+
 // DMView is everything needed to render a participant's poll DM.
 type DMView struct {
 	PollID    int64
@@ -118,7 +124,7 @@ func PollDM(v DMView) Message {
 		} else {
 			text += "\n" + v.T.T("dm.closed.no_answer")
 		}
-		blocks = append(blocks, goslack.NewSectionBlock(mrkdwn(text), nil, nil))
+		blocks = append(blocks, goslack.NewSectionBlock(mrkdwn(text), nil, nil), SettingsBlock(v.T, v.PollID))
 		return Message{Text: v.T.T("dm.title.closed", "title", v.title()), Blocks: blocks}
 	}
 

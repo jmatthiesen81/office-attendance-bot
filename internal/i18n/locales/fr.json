@@ -50,6 +50,7 @@
   "dm.away": "🌴 Vous êtes indiqué(e) comme absent(e) cette semaine. Vous ne recevrez aucun rappel, et le récapitulatif vous indique comme absent(e).",
   "dm.away.undo": "Finalement pas absent(e)",
   "dm.away.hint": "Finalement au bureau ? Jusqu'au {deadline}, vous pouvez annuler l'absence et choisir vos jours.",
+  "dm.away.answered": "Tu as déjà répondu et la semaine a commencé : elle ne peut plus être marquée entièrement comme absence. Saisis ton absence à partir d'aujourd'hui via 🌴 Planifier une absence.",
   "dm.closed.away": "Vous étiez absent(e) cette semaine.",
 
   "reminder.text": "⏰ Rappel : merci d'indiquer les jours où vous serez au bureau en semaine {week} – d'ici le {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Veuillez choisir une date.",
   "timeoff.error.order": "Le dernier jour ne peut pas être antérieur au premier jour.",
-  "timeoff.error.past": "Le dernier jour ne peut pas être dans le passé.",
+  "timeoff.error.past": "Le premier jour ne peut pas être dans le passé.",
   "timeoff.error.too_far": "Les absences peuvent être planifiées au maximum un an à l'avance.",
   "timeoff.error.failed": "Cela n'a pas fonctionné. Veuillez réessayer dans un instant.",
 

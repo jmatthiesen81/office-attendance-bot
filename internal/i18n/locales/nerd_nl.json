@@ -50,6 +50,7 @@
   "dm.away": "🌴 Status op AFK gezet voor deze week. Herinneringen gaan naar /dev/null en het overzicht vermeldt je als afwezig.",
   "dm.away.undo": "git revert: niet afwezig",
   "dm.away.hint": "Toch online? Tot {deadline} kun je je afwezigheid terugdraaien (rollback) en je dagen kiezen.",
+  "dm.away.answered": "Antwoord al gecommit en de sprint loopt – geen force-push over de history. Voer je downtime vanaf vandaag in via 🌴 Downtime inplannen.",
   "dm.closed.away": "Je was deze week AFK.",
 
   "reminder.text": "⏰ PING: laat ons weten op welke dagen je in week {week} op kantoor bent – deadline {deadline}. Don't panic, het duurt maar even.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request: kies een datum.",
   "timeoff.error.order": "Ongeldig bereik: de laatste dag mag niet vóór de eerste dag liggen.",
-  "timeoff.error.past": "Tijdreizen wordt niet ondersteund: de laatste dag mag niet in het verleden liggen.",
+  "timeoff.error.past": "Tijdreizen wordt niet ondersteund: de eerste dag mag niet in het verleden liggen.",
   "timeoff.error.too_far": "Out of bounds: downtime kan maximaal een jaar vooruit worden gepland.",
   "timeoff.error.failed": "500 Internal Server Error. Probeer het over een ogenblik opnieuw.",
 

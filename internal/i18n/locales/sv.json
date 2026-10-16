@@ -50,6 +50,7 @@
   "dm.away": "🌴 Du är markerad som borta den här veckan. Du får inga påminnelser, och sammanställningen visar dig som borta.",
   "dm.away.undo": "Inte borta ändå",
   "dm.away.hint": "På kontoret ändå? Fram till {deadline} kan du ångra frånvaron och välja dina dagar.",
+  "dm.away.answered": "Du har redan svarat och veckan har börjat, så den kan inte längre markeras som ledig i sin helhet. Lägg in din ledighet från och med i dag via 🌴 Planera ledighet.",
   "dm.closed.away": "Du var borta den här veckan.",
 
   "reminder.text": "⏰ Påminnelse: Berätta vilka dagar du är på kontoret vecka {week} – senast {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Välj ett datum.",
   "timeoff.error.order": "Sista dagen får inte vara före första dagen.",
-  "timeoff.error.past": "Sista dagen får inte ligga bakåt i tiden.",
+  "timeoff.error.past": "Första dagen får inte ligga bakåt i tiden.",
   "timeoff.error.too_far": "Ledighet kan planeras högst ett år framåt.",
   "timeoff.error.failed": "Det fungerade inte. Försök igen om en liten stund.",
 

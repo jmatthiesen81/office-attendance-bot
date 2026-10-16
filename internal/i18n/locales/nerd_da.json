@@ -50,6 +50,7 @@
   "dm.away": "🌴 Status sat til AFK for denne uge. Påmindelser sendes til /dev/null, og oversigten viser dig som fraværende.",
   "dm.away.undo": "git revert: ikke fraværende",
   "dm.away.hint": "Alligevel online? Indtil {deadline} kan du lave rollback på fraværet og vælge dine dage.",
+  "dm.away.answered": "Svaret er allerede committet, og sprinten kører – ingen force-push over historikken. Registrér din downtime fra i dag via 🌴 Planlæg downtime.",
   "dm.closed.away": "Du var AFK denne uge.",
 
   "reminder.text": "⏰ PING: Fortæl os, hvilke dage du er på kontoret i uge {week} – deadline {deadline}. Don't panic, det tager kun et øjeblik.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request: vælg en dato.",
   "timeoff.error.order": "Ugyldigt interval: den sidste dag må ikke ligge før den første dag.",
-  "timeoff.error.past": "Tidsrejser understøttes ikke: den sidste dag må ikke ligge i fortiden.",
+  "timeoff.error.past": "Tidsrejser understøttes ikke: den første dag må ikke ligge i fortiden.",
   "timeoff.error.too_far": "Out of bounds: downtime kan højst planlægges et år frem.",
   "timeoff.error.failed": "500 Internal Server Error. Prøv igen om lidt.",
 

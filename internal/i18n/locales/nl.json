@@ -50,6 +50,7 @@
   "dm.away": "🌴 Je staat deze week als afwezig geregistreerd. Je krijgt geen herinneringen en het overzicht vermeldt je als afwezig.",
   "dm.away.undo": "Toch niet afwezig",
   "dm.away.hint": "Toch op kantoor? Tot {deadline} kun je je afwezigheid ongedaan maken en je dagen kiezen.",
+  "dm.away.answered": "Je hebt al geantwoord en de week is begonnen, dus die kan niet meer helemaal als afwezig worden gemarkeerd. Voer je afwezigheid vanaf vandaag in via 🌴 Afwezigheid plannen.",
   "dm.closed.away": "Je was deze week afwezig.",
 
   "reminder.text": "⏰ Herinnering: laat ons weten op welke dagen je in week {week} op kantoor bent – uiterlijk {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Kies een datum.",
   "timeoff.error.order": "De laatste dag mag niet vóór de eerste dag liggen.",
-  "timeoff.error.past": "De laatste dag mag niet in het verleden liggen.",
+  "timeoff.error.past": "De eerste dag mag niet in het verleden liggen.",
   "timeoff.error.too_far": "Afwezigheid kan maximaal een jaar vooruit worden gepland.",
   "timeoff.error.failed": "Dat is niet gelukt. Probeer het over een ogenblik opnieuw.",
 

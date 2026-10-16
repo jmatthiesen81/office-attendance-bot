@@ -3,7 +3,9 @@ package poll
 import (
 	"context"
 	"errors"
+	"slices"
 
+	"officebot/internal/domain"
 	"officebot/internal/i18n"
 	"officebot/internal/slack"
 	"officebot/internal/storage"
@@ -116,17 +118,29 @@ func (s *Service) SubmitLanguage(ctx context.Context, req slack.Interaction) map
 	return nil
 }
 
-// LanguageChanged re-renders the delivered DMs of userID in all running
-// polls in their current language. It only writes to the database, so the
-// CLI can use it as well; the running bot does the sending.
+// LanguageChanged re-renders the delivered DMs of userID in their current
+// language: those of all running polls and, after the deadline, the closed
+// DM of the latest poll, from which the language form stays reachable. It
+// only writes to the database, so the CLI can use it as well; the running
+// bot does the sending.
 func (s *Service) LanguageChanged(ctx context.Context, userID string) error {
 	polls, err := s.store.OpenPolls(ctx)
 	if err != nil {
 		return err
 	}
 	now := s.Now()
+	week, _ := s.CurrentTargetWeek(now)
+	latest, err := s.store.GetPollByWeek(ctx, s.workspaceID, week.Year, week.Week)
+	switch {
+	case err == nil:
+		if !slices.ContainsFunc(polls, func(p domain.Poll) bool { return p.ID == latest.ID }) {
+			polls = append(polls, *latest)
+		}
+	case !errors.Is(err, storage.ErrNotFound):
+		return err
+	}
 	for _, p := range polls {
-		if p.WorkspaceID != s.workspaceID || !p.IsAcceptingResponses(now) {
+		if p.WorkspaceID != s.workspaceID {
 			continue
 		}
 		part, err := s.store.GetParticipant(ctx, p.ID, userID)

@@ -50,6 +50,7 @@
   "dm.away": "🌴 Bu hafta karaya çıkma izinlisin. Sana hatırlatma ulaşmayacak, özette de karada olarak görüneceksin.",
   "dm.away.undo": "Yine de gemideyim",
   "dm.away.hint": "Yine de güverteye mi çıkıyorsun? Karaya çıkma iznini iptal edip günlerini seçebilirsin. Son tarih: {deadline}.",
+  "dm.away.answered": "Zaten yanıt verdin ve bu haftanın seferi başladı, tayfa! Karaya çıkma iznini bugünden itibaren 🌴 Karaya çıkma izni planla ile gir.",
   "dm.closed.away": "Bu hafta karadaydın.",
 
   "reminder.text": "⏰ Avast! {week}. haftada hangi günler gemide (ofiste) olacağını kaptana bildir. Son tarih: {deadline} – yoksa iskeleden yürürsün!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Bir tarih seç, miço.",
   "timeoff.error.order": "Son gün ilk günden önce olamaz, seni gidi karacı.",
-  "timeoff.error.past": "Son gün geçmişte olamaz – zamanda geriye yelken açılmaz!",
+  "timeoff.error.past": "İlk gün geçmişte olamaz – zamanda geriye yelken açılmaz!",
   "timeoff.error.too_far": "Karaya çıkma izni en fazla bir yıl sonrasına kadar planlanabilir.",
   "timeoff.error.failed": "Hay Barbaros'un sakalı, olmadı! Birazdan tekrar dene.",
 

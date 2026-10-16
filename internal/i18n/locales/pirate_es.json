@@ -50,6 +50,7 @@
   "dm.away": "🌴 Estás de permiso en tierra esta semana. No te llegarán recordatorios y el resumen te muestra como ausente.",
   "dm.away.undo": "Al final subo a bordo",
   "dm.away.hint": "¿Al final subes a bordo? Hasta el {deadline} puedes cancelar tu permiso en tierra y elegir tus días.",
+  "dm.away.answered": "¡Ya respondiste y la travesía de esta semana ya zarpó, grumete! Anota tu permiso desde hoy con 🌴 Pedir permiso en tierra.",
   "dm.closed.away": "Estuviste de permiso en tierra esta semana.",
 
   "reminder.text": "⏰ ¡Atención, marinero! Dile al capitán qué días vas a estar a bordo del barco (en la oficina) la semana {week} – antes del {deadline}, ¡o a la plancha!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Elige una fecha, grumete.",
   "timeoff.error.order": "El último día no puede ser anterior al primero, ¡marinero de agua dulce!",
-  "timeoff.error.past": "El último día no puede estar en el pasado: ¡ningún barco navega hacia atrás en el tiempo!",
+  "timeoff.error.past": "El primer día no puede estar en el pasado: ¡ningún barco navega hacia atrás en el tiempo!",
   "timeoff.error.too_far": "El permiso en tierra se puede planificar como máximo con un año de antelación.",
   "timeoff.error.failed": "¡Rayos y truenos, no ha funcionado! Inténtalo de nuevo en un momento.",
 

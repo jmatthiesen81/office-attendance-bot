@@ -98,7 +98,8 @@ func TestRender(t *testing.T) {
 	closed := snapshot(1, nil)
 	closed.Poll.Status = domain.PollClosed
 	closedText := slack.RenderPlain(r.Render(closed, t0).Blocks)
-	if !strings.Contains(closedText, "geschlossen") || strings.Contains(closedText, "Abfrage an mich senden") {
+	if !strings.Contains(closedText, "geschlossen") || strings.Contains(closedText, "Abfrage an mich senden") ||
+		!strings.Contains(closedText, "[🌴 Abwesenheit planen]\n[🌐 Sprache]") {
 		t.Errorf("closed summary:\n%s", closedText)
 	}
 	// After the deadline the button disappears even before the poll is closed.

@@ -50,6 +50,7 @@
   "dm.away": "🌴 Bu hafta için durumun AFK olarak ayarlandı. Hatırlatmalar /dev/null'a pipe ediliyor, özette de yok olarak görünüyorsun.",
   "dm.away.undo": "git revert: AFK değilim",
   "dm.away.hint": "Yine de online mısın? Yokluğu rollback edip günlerini seçebilirsin. Deadline: {deadline}.",
+  "dm.away.answered": "Yanıt zaten commit'lendi ve sprint başladı – geçmişin üzerine force-push yok. Downtime'ını bugünden itibaren 🌴 Downtime planla ile gir.",
   "dm.closed.away": "Bu hafta AFK'ydın.",
 
   "reminder.text": "⏰ PING: {week}. haftada hangi günler ofiste olacağını bildir. Deadline: {deadline}. Panik yok (Don't panic), bir dakikanı alır.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start}..{end}",
   "timeoff.error.missing": "400 Bad Request: lütfen bir tarih seç.",
   "timeoff.error.order": "Geçersiz aralık: son gün, ilk günden önce olamaz.",
-  "timeoff.error.past": "Zaman yolculuğu desteklenmiyor: son gün geçmişte olamaz.",
+  "timeoff.error.past": "Zaman yolculuğu desteklenmiyor: ilk gün geçmişte olamaz.",
   "timeoff.error.too_far": "Out of bounds: downtime en fazla bir yıl ileriye planlanabilir.",
   "timeoff.error.failed": "500 Internal Server Error. Lütfen birazdan retry et.",
 

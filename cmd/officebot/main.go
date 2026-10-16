@@ -507,6 +507,9 @@ func status(ctx context.Context, a *app, loc *time.Location) error {
 // away manages time off. Changes are only written to the database; the
 // running bot updates DMs and the summary within 30 s.
 func away(ctx context.Context, a *app, sub, user, fromFlag, toFlag string, id int64, loc *time.Location) error {
+	now := time.Now()
+	// Past days are a record: time off is only added or removed from today on.
+	today := domain.DateOf(now.In(loc))
 	dates := func() (domain.Date, domain.Date, error) {
 		if user == "" || fromFlag == "" || toFlag == "" {
 			return domain.Date{}, domain.Date{}, fmt.Errorf("usage: officebot away %s --user U --from YYYY-MM-DD --to YYYY-MM-DD", sub)
@@ -515,16 +518,18 @@ func away(ctx context.Context, a *app, sub, user, fromFlag, toFlag string, id in
 		if err != nil {
 			return from, from, err
 		}
+		if from.Before(today) {
+			return from, from, fmt.Errorf("--from must not be in the past (today is %s)", today)
+		}
 		to, err := domain.ParseDate(toFlag)
 		if err == nil && to.Before(from) {
 			err = errors.New("--to must not be before --from")
 		}
 		return from, to, err
 	}
-	now := time.Now()
 	switch sub {
 	case "list":
-		abs, err := a.store.ListAbsences(ctx, a.teamID, user, domain.DateOf(now.In(loc)))
+		abs, err := a.store.ListAbsences(ctx, a.teamID, user, today)
 		if err != nil {
 			return err
 		}

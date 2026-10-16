@@ -50,6 +50,7 @@
   "dm.away": "🌴 Tento týden máš vycházku na pevninu. Nedopluje k tobě žádná připomínka a v přehledu se zobrazíš mezi nepřítomnými.",
   "dm.away.undo": "Nakonec zpátky na palubu",
   "dm.away.hint": "Nakonec přece na palubu? Do {deadline} můžeš vycházku zrušit a vybrat své dny.",
+  "dm.away.answered": "Už jsi odpověděl a plavba tohoto týdne vyplula, plavčíku! Zapiš vycházku od dneška přes 🌴 Naplánovat vycházku.",
   "dm.closed.away": "Tento týden: vycházka na pevninu.",
 
   "reminder.text": "⏰ Ahoj! Dej kapitánovi vědět, které dny budeš v týdnu {week} na palubě (v kanceláři) – do {deadline}, jinak půjdeš po prkně!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Vyber datum, plavčíku.",
   "timeoff.error.order": "Poslední den nesmí být před prvním, ty suchozemská kryso!",
-  "timeoff.error.past": "Poslední den nesmí být v minulosti – proti proudu času se neplaví!",
+  "timeoff.error.past": "První den nesmí být v minulosti – proti proudu času se neplaví!",
   "timeoff.error.too_far": "Vycházku lze naplánovat nejvýše rok dopředu.",
   "timeoff.error.failed": "Hrom do toho! To se nepovedlo. Zkus to za chvíli znovu.",
 

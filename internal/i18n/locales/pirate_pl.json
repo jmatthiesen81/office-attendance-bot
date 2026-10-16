@@ -50,6 +50,7 @@
   "dm.away": "🌴 Ten tydzień spędzasz na przepustce na lądzie. Żadne przypomnienie do ciebie nie dopłynie, a w podsumowaniu pojawisz się na liście nieobecnych.",
   "dm.away.undo": "Jednak wracam na pokład",
   "dm.away.hint": "Jednak wchodzisz na pokład? Do {deadline} możesz anulować przepustkę i wybrać swoje dni.",
+  "dm.away.answered": "Już odpowiedziałeś, a rejs tego tygodnia wypłynął, majtku! Wpisz przepustkę od dziś przez 🌴 Zaplanuj przepustkę.",
   "dm.closed.away": "Ten tydzień: przepustka na ląd.",
 
   "reminder.text": "⏰ Ahoj! Daj znać kapitanowi, w które dni będziesz na pokładzie (w biurze) w tygodniu {week} – do {deadline}, bo inaczej spacer po desce!",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Wybierz datę, majtku.",
   "timeoff.error.order": "Ostatni dzień nie może być przed pierwszym, szczurze lądowy!",
-  "timeoff.error.past": "Ostatni dzień nie może być w przeszłości – pod prąd czasu nie popłyniesz!",
+  "timeoff.error.past": "Pierwszy dzień nie może być w przeszłości – pod prąd czasu nie popłyniesz!",
   "timeoff.error.too_far": "Przepustkę można zaplanować maksymalnie rok naprzód.",
   "timeoff.error.failed": "Do kroćset! Coś poszło nie tak. Spróbuj ponownie za chwilę.",
 

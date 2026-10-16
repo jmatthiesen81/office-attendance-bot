@@ -50,6 +50,7 @@
   "dm.away": "🌴 You are marked as away this week. You will not get any reminders, and the summary lists you as away.",
   "dm.away.undo": "Not away after all",
   "dm.away.hint": "In the office after all? Until {deadline} you can undo the absence and pick your days.",
+  "dm.away.answered": "You have already answered and this week has started, so it can no longer be marked as away as a whole. Please use 🌴 Plan time off to enter your time off from today on.",
   "dm.closed.away": "You were away this week.",
 
   "reminder.text": "⏰ Reminder: Please let us know which days you will be in the office in week {week} – by {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Please choose a date.",
   "timeoff.error.order": "The last day must not be before the first day.",
-  "timeoff.error.past": "The last day must not be in the past.",
+  "timeoff.error.past": "The first day must not be in the past.",
   "timeoff.error.too_far": "Time off can be planned at most one year ahead.",
   "timeoff.error.failed": "That did not work. Please try again in a moment.",
 

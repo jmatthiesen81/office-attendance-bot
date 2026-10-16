@@ -161,3 +161,18 @@ func TestOpenLanguageForm(t *testing.T) {
 		t.Errorf("foreign workspace changed the language: %q", lang)
 	}
 }
+
+func TestLanguageChangeAfterDeadline(t *testing.T) {
+	e := newEnv(t, "U1")
+	p := e.start()
+	e.setNow(p.Deadline.Add(time.Minute))
+	if err := e.svc.CloseDue(e.ctx, e.clock()); err != nil {
+		t.Fatal(err)
+	}
+	e.drain()
+
+	e.setLanguage("U1", "en")
+	if dm := e.lastDM("U1"); !strings.Contains(dm, "The poll is closed") || !strings.Contains(dm, "[🌐 Language]") {
+		t.Errorf("closed DM not re-rendered in English:\n%s", dm)
+	}
+}

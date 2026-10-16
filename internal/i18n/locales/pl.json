@@ -50,6 +50,7 @@
   "dm.away": "🌴 Ten tydzień jest oznaczony jako nieobecność. Nie dostaniesz przypomnień, a w podsumowaniu pojawisz się na liście nieobecnych.",
   "dm.away.undo": "Cofnij nieobecność",
   "dm.away.hint": "Jednak będziesz w biurze? Do {deadline} możesz cofnąć nieobecność i wybrać swoje dni.",
+  "dm.away.answered": "Już odpowiedziałeś, a tydzień się zaczął, więc nie można go już oznaczyć w całości jako nieobecność. Wpisz swoją nieobecność od dziś przez 🌴 Zaplanuj nieobecność.",
   "dm.closed.away": "Ten tydzień był oznaczony jako nieobecność.",
 
   "reminder.text": "⏰ Przypomnienie: daj znać, w które dni będziesz w biurze w tygodniu {week} – do {deadline}.",
@@ -83,7 +84,7 @@
   "timeoff.range": "{start} – {end}",
   "timeoff.error.missing": "Wybierz datę.",
   "timeoff.error.order": "Ostatni dzień nie może być wcześniejszy niż pierwszy.",
-  "timeoff.error.past": "Ostatni dzień nie może być w przeszłości.",
+  "timeoff.error.past": "Pierwszy dzień nie może być w przeszłości.",
   "timeoff.error.too_far": "Nieobecność można zaplanować maksymalnie rok naprzód.",
   "timeoff.error.failed": "Coś poszło nie tak. Spróbuj ponownie za chwilę.",
 

@@ -107,10 +107,11 @@ func TestAwayButtonAndUndo(t *testing.T) {
 		t.Errorf("reminder sent while away (posts=%d)", n)
 	}
 
+	// Undo on Tuesday keeps Monday, which has already passed.
 	req.Away = false
 	e.svc.HandleAway(e.ctx, req)
 	e.drain()
-	if got := e.absences("U1"); got != "" {
+	if got := e.absences("U1"); got != "2026-10-19..2026-10-19" {
 		t.Errorf("absences after undo = %s", got)
 	}
 	if dm := e.lastDM("U1"); !strings.Contains(dm, "[Speichern]") || !strings.Contains(dm, "[🌴 Ich bin diese Woche abwesend]") {
@@ -120,7 +121,7 @@ func TestAwayButtonAndUndo(t *testing.T) {
 	// Undo within a longer vacation only gives back the polled week.
 	e.addAbsence("U1", day(12), day(30))
 	e.svc.HandleAway(e.ctx, req)
-	if got := e.absences("U1"); got != "2026-10-12..2026-10-18 2026-10-24..2026-10-30" {
+	if got := e.absences("U1"); got != "2026-10-12..2026-10-19 2026-10-24..2026-10-30" {
 		t.Errorf("absences after undo inside vacation = %s", got)
 	}
 }
@@ -193,7 +194,8 @@ func TestTimeOffForm(t *testing.T) {
 	}{
 		{domain.Date{}, day(23), slack.TimeOffStartBlock, "Bitte wähle"},
 		{day(23), day(21), slack.TimeOffEndBlock, "nicht vor dem ersten"},
-		{day(12), day(18), slack.TimeOffEndBlock, "Vergangenheit"},
+		{day(12), day(18), slack.TimeOffStartBlock, "Vergangenheit"},
+		{day(16), day(21), slack.TimeOffStartBlock, "Vergangenheit"}, // ongoing, but started in the past
 		{day(20), domain.NewDate(2027, 10, 20), slack.TimeOffEndBlock, "ein Jahr"},
 	}
 	for _, c := range cases {
@@ -223,5 +225,52 @@ func TestTimeOffForm(t *testing.T) {
 	e.svc.HandleDeleteTimeOff(e.ctx, slack.Interaction{TeamID: "T1", UserID: "U2", AbsenceID: abs[0].ID, ViewID: "V2"})
 	if got := e.absences("U1"); got != "2026-10-19..2026-10-28" {
 		t.Errorf("U2 deleted U1's time off: %s", got)
+	}
+}
+
+func TestAwayButtonAfterWeekStarted(t *testing.T) {
+	e := newEnv(t, "U1", "U2")
+	p := e.start()
+	e.svc.HandleSave(e.ctx, e.saveReq(p, "U2", domain.Days{true, true}))
+	e.setNow(time.Date(2026, 10, 21, 9, 0, 0, 0, e.loc)) // Wednesday
+
+	// Seen late and not answered yet: the whole week may still be reported.
+	req := e.saveReq(p, "U1", domain.Days{})
+	req.Away = true
+	e.svc.HandleAway(e.ctx, req)
+	e.drain()
+	if got := e.absences("U1"); got != "2026-10-19..2026-10-23" {
+		t.Errorf("late away for the whole week = %s", got)
+	}
+	if dm := e.lastDM("U1"); !strings.Contains(dm, "[Doch nicht abwesend]") {
+		t.Errorf("DM not switched to away:\n%s", dm)
+	}
+
+	// Already answered: the answer for Monday and Tuesday must stand.
+	req = e.saveReq(p, "U2", domain.Days{})
+	req.Away = true
+	e.svc.HandleAway(e.ctx, req)
+	e.drain()
+	if got := e.absences("U2"); got != "" {
+		t.Errorf("answered days overwritten: %s", got)
+	}
+	if n := len(e.api.Ephemerals); n == 0 || !strings.HasPrefix(e.api.Ephemerals[n-1], "U2: ") || !strings.Contains(e.api.Ephemerals[n-1], "schon abgestimmt") {
+		t.Errorf("replies = %q", e.api.Ephemerals)
+	}
+}
+
+func TestDeleteOngoingTimeOffKeepsPast(t *testing.T) {
+	e := newEnv(t, "U1")
+	e.start()
+	a := e.addAbsence("U1", day(19), day(23))
+	e.setNow(time.Date(2026, 10, 21, 9, 0, 0, 0, e.loc)) // Wednesday
+
+	e.svc.HandleDeleteTimeOff(e.ctx, slack.Interaction{TeamID: "T1", UserID: "U1", AbsenceID: a.ID, ViewID: "V1"})
+	e.drain()
+	if got := e.absences("U1"); got != "2026-10-19..2026-10-20" {
+		t.Errorf("absences = %s", got)
+	}
+	if v, ok := e.api.LastView(); !ok || !strings.Contains(slack.RenderPlain(v.View.Blocks.BlockSet), "Keine Abwesenheiten geplant") {
+		t.Errorf("form not refreshed: %+v", v)
 	}
 }

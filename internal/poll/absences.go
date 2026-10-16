@@ -3,6 +3,7 @@ package poll
 import (
 	"context"
 	"errors"
+	"slices"
 	"strconv"
 	"time"
 
@@ -87,7 +88,11 @@ func (s *Service) AbsencesChanged(ctx context.Context, userID string) error {
 
 // HandleAway handles "I'm away this week" (req.Away) and its undo in the
 // poll DM: the office days of the polled week are added to or removed from
-// the person's time off.
+// the person's time off. Until the deadline, someone who has not answered
+// may still report the whole week, e.g. after seeing the DM late. Once the
+// week has started, "away" is rejected for people who already answered (it
+// would overwrite their answer for days that passed), and the undo keeps the
+// days already passed.
 func (s *Service) HandleAway(ctx context.Context, req slack.Interaction) {
 	log := s.log.With("user", req.UserID, "poll", req.PollID, "away", req.Away)
 	p, part, ok := s.dmInteraction(ctx, req, log)
@@ -95,11 +100,25 @@ func (s *Service) HandleAway(ctx context.Context, req slack.Interaction) {
 		return
 	}
 	week := p.Dates(s.cfg.Location)
+	from, today := week[0], s.today()
+	if from.Before(today) {
+		if !req.Away {
+			from = today // past days are a record
+		} else if resp, err := s.store.GetResponse(ctx, p.ID, req.UserID); err != nil {
+			log.Error("load response", "err", err)
+			s.RejectInteraction(ctx, req, s.trFor(ctx, req.UserID).T("reply.save_failed"))
+			return
+		} else if resp != nil {
+			log.Info("away for the whole week rejected, already answered and week started")
+			s.RejectInteraction(ctx, req, s.trFor(ctx, req.UserID).T("dm.away.answered"))
+			return
+		}
+	}
 	var err error
 	if req.Away {
-		_, err = s.store.AddAbsence(ctx, s.workspaceID, req.UserID, week[0], week[domain.NumDays-1], req.UserID, s.Now())
-	} else {
-		_, err = s.store.RemoveAbsenceDays(ctx, s.workspaceID, req.UserID, week[0], week[domain.NumDays-1], s.Now())
+		_, err = s.store.AddAbsence(ctx, s.workspaceID, req.UserID, from, week[domain.NumDays-1], req.UserID, s.Now())
+	} else if !from.After(week[domain.NumDays-1]) {
+		_, err = s.store.RemoveAbsenceDays(ctx, s.workspaceID, req.UserID, from, week[domain.NumDays-1], s.Now())
 	}
 	if err != nil {
 		log.Error("change absence", "err", err)
@@ -142,14 +161,15 @@ func (s *Service) HandleOpenTimeOff(ctx context.Context, req slack.Interaction) 
 }
 
 // HandleDeleteTimeOff deletes one of the user's own entries from the open
-// time-off form and refreshes the form.
+// time-off form and refreshes the form. Of an entry that already started,
+// only the days from today on are removed.
 func (s *Service) HandleDeleteTimeOff(ctx context.Context, req slack.Interaction) {
 	log := s.log.With("user", req.UserID, "absence", req.AbsenceID)
 	if req.TeamID != s.workspaceID {
 		log.Warn("interaction from foreign workspace rejected", "team", req.TeamID)
 		return
 	}
-	_, err := s.store.DeleteAbsence(ctx, s.workspaceID, req.UserID, req.AbsenceID)
+	err := s.deleteUpcoming(ctx, req.UserID, req.AbsenceID)
 	switch {
 	case errors.Is(err, storage.ErrNotFound):
 		log.Warn("delete of unknown or foreign absence ignored")
@@ -171,6 +191,27 @@ func (s *Service) HandleDeleteTimeOff(ctx context.Context, req slack.Interaction
 	}
 }
 
+// deleteUpcoming deletes an absence of userID, or only its days from today on
+// if it already started. It returns storage.ErrNotFound for unknown, past or
+// foreign entries.
+func (s *Service) deleteUpcoming(ctx context.Context, userID string, id int64) error {
+	today := s.today()
+	upcoming, err := s.store.ListAbsences(ctx, s.workspaceID, userID, today)
+	if err != nil {
+		return err
+	}
+	i := slices.IndexFunc(upcoming, func(a domain.Absence) bool { return a.ID == id })
+	if i < 0 {
+		return storage.ErrNotFound
+	}
+	if a := upcoming[i]; a.Start.Before(today) {
+		_, err = s.store.RemoveAbsenceDays(ctx, s.workspaceID, userID, today, a.End, s.Now())
+		return err
+	}
+	_, err = s.store.DeleteAbsence(ctx, s.workspaceID, userID, id)
+	return err
+}
+
 // SubmitTimeOff validates and stores a submitted time-off form. It returns
 // error messages per input block, or nil if the form may close.
 func (s *Service) SubmitTimeOff(ctx context.Context, req slack.Interaction) map[string]string {
@@ -187,10 +228,10 @@ func (s *Service) SubmitTimeOff(ctx context.Context, req slack.Interaction) map[
 		errs[slack.TimeOffStartBlock] = tr.T("timeoff.error.missing")
 	case req.End.IsZero():
 		errs[slack.TimeOffEndBlock] = tr.T("timeoff.error.missing")
+	case req.Start.Before(today):
+		errs[slack.TimeOffStartBlock] = tr.T("timeoff.error.past")
 	case req.End.Before(req.Start):
 		errs[slack.TimeOffEndBlock] = tr.T("timeoff.error.order")
-	case req.End.Before(today):
-		errs[slack.TimeOffEndBlock] = tr.T("timeoff.error.past")
 	case req.End.After(domain.DateOf(today.In(time.UTC).AddDate(1, 0, 0))):
 		errs[slack.TimeOffEndBlock] = tr.T("timeoff.error.too_far")
 	}
