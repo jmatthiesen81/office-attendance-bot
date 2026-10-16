@@ -3,6 +3,7 @@
 //	officebot [run]                                              start the bot (default)
 //	officebot start-week [--week 2026-W43]                       start a week's poll now (idempotent)
 //	officebot resync [--week 2026-W43]                           force a re-sync of the channel summary
+//	officebot refresh [--week 2026-W43]                          re-render the DMs and the summary (e.g. after an update)
 //	officebot status                                             show polls and outbox state
 //	officebot list-users [--channel C] [--all]                   list user IDs, e.g. to fill SLACK_USER_IDS
 //	officebot away list [--user U]                               list upcoming time off
@@ -83,7 +84,7 @@ func main() {
 	switch cmd {
 	case "run":
 		err = run(ctx, cfg, log)
-	case "start-week", "resync", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away", "lang":
+	case "start-week", "resync", "refresh", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away", "lang":
 		err = cli(ctx, cmd, args, cfg, log)
 	default:
 		err = fmt.Errorf("unknown command %q", cmd)
@@ -167,6 +168,13 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 	outbox := worker.NewOutbox(a.store, a.svc, log)
 	updater := summary.NewUpdater(a.store, a.api, summary.Renderer{Loc: cfg.Location, MaxNames: cfg.SummaryMaxNames, T: cfg.Translator, ProjectLink: cfg.SummaryProjectLink}, log)
 	a.svc.SetNotifiers(outbox, updater)
+	// After an update, existing messages show the new texts and layout at
+	// once, not only with the next poll. Not fatal: the next start retries.
+	if cfg.RefreshOnUpdate {
+		if err := a.svc.RefreshOnNewVersion(ctx, version); err != nil {
+			log.Error("re-render messages for the new version", "err", err)
+		}
+	}
 	sched := poll.NewScheduler(a.svc, log)
 
 	ctx, cancel := context.WithCancelCause(ctx)
@@ -377,6 +385,20 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 			return err
 		}
 		fmt.Printf("summary re-sync requested for %d poll(s); the running bot updates within 30 s\n", n)
+	case "refresh":
+		var polls []domain.Poll
+		if *weekFlag != "" {
+			p, err := findPoll()
+			if err != nil {
+				return err
+			}
+			polls = append(polls, *p)
+		}
+		n, err := a.svc.RefreshMessages(ctx, polls...)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("DMs and summary of %d poll(s) queued for re-rendering; the running bot updates within 30 s\n", n)
 	case "status":
 		return status(ctx, a, cfg.Location)
 	case "away":

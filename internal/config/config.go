@@ -59,6 +59,10 @@ type Config struct {
 	SummaryChangeNotices     bool
 	SummaryChangeNoticeDelay time.Duration
 	SummaryChangeNoticeGrace time.Duration
+	// RefreshOnUpdate re-renders the DMs and summaries in view at the first
+	// start of a new bot version. Off by default; the CLI command refresh
+	// does the same on demand.
+	RefreshOnUpdate bool
 
 	// Translator renders all texts sent to Slack in the configured language.
 	// It is the team default: people can choose their own language for
@@ -108,6 +112,7 @@ func load(get func(string) string, requireTargets bool) (*Config, error) {
 		SummaryChangeNotices:     p.boolean("SUMMARY_CHANGE_NOTICES", true),
 		SummaryChangeNoticeDelay: p.duration("SUMMARY_CHANGE_NOTICE_DELAY", 2*time.Minute),
 		SummaryChangeNoticeGrace: p.duration("SUMMARY_CHANGE_NOTICE_GRACE", 10*time.Minute),
+		RefreshOnUpdate:          p.boolean("REFRESH_MESSAGES_ON_UPDATE", false),
 		Translator:               p.language("BOT_LANGUAGE", i18n.DefaultLanguage),
 		LanguageFromSlack:        p.boolean("BOT_LANGUAGE_FROM_SLACK", false),
 	}
@@ -198,6 +203,7 @@ func (c *Config) LogValue() slog.Value {
 		slog.String("deadline", fmt.Sprintf("%s %s", c.DeadlineWeekday, c.DeadlineTime)),
 		slog.Bool("reminder", c.ReminderEnabled),
 		slog.String("change_notices", changeNotices(c)),
+		slog.Bool("refresh_on_update", c.RefreshOnUpdate),
 		slog.String("database", c.DatabasePath),
 		slog.Bool("dry_run", c.DryRun),
 		slog.String("bot_token", mask(c.SlackBotToken)),

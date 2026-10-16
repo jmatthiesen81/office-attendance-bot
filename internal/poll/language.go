@@ -3,9 +3,7 @@ package poll
 import (
 	"context"
 	"errors"
-	"slices"
 
-	"officebot/internal/domain"
 	"officebot/internal/i18n"
 	"officebot/internal/slack"
 	"officebot/internal/storage"
@@ -124,25 +122,12 @@ func (s *Service) SubmitLanguage(ctx context.Context, req slack.Interaction) map
 // only writes to the database, so the CLI can use it as well; the running
 // bot does the sending.
 func (s *Service) LanguageChanged(ctx context.Context, userID string) error {
-	polls, err := s.store.OpenPolls(ctx)
+	polls, err := s.visiblePolls(ctx)
 	if err != nil {
 		return err
 	}
 	now := s.Now()
-	week, _ := s.CurrentTargetWeek(now)
-	latest, err := s.store.GetPollByWeek(ctx, s.workspaceID, week.Year, week.Week)
-	switch {
-	case err == nil:
-		if !slices.ContainsFunc(polls, func(p domain.Poll) bool { return p.ID == latest.ID }) {
-			polls = append(polls, *latest)
-		}
-	case !errors.Is(err, storage.ErrNotFound):
-		return err
-	}
 	for _, p := range polls {
-		if p.WorkspaceID != s.workspaceID {
-			continue
-		}
 		part, err := s.store.GetParticipant(ctx, p.ID, userID)
 		if errors.Is(err, storage.ErrNotFound) {
 			continue

@@ -47,6 +47,7 @@ To try it without Slack, use the [dry run](docs/en/README.md#test-run).
 docker compose exec officebot /officebot status       # polls, answers, delivery state
 docker compose exec officebot /officebot start-week   # start this week's poll now (idempotent)
 docker compose exec officebot /officebot resync       # rewrite the channel summary
+docker compose exec officebot /officebot refresh      # re-render DMs and summary, e.g. after an update
 make backup                                           # consistent database backup into ./backup
 make test                                             # go test -race (runs in Docker, no local Go needed)
 ```

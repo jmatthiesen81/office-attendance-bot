@@ -324,6 +324,12 @@ func (s *Store) RequestSummaryResync(ctx context.Context, pollIDs ...int64) (int
 	return res.RowsAffected()
 }
 
+// RequestDMRefresh enqueues an update of every delivered DM of a poll, so
+// that they are re-rendered from the current state.
+func (s *Store) RequestDMRefresh(ctx context.Context, pollID int64, now time.Time) error {
+	return enqueueForPoll(ctx, s.db, JobUpdateDM, pollID, `dm_message_ts <> ''`, "", now)
+}
+
 // DeletePollsBefore removes polls (and all dependent rows) whose week ended before t.
 func (s *Store) DeletePollsBefore(ctx context.Context, t time.Time) (int64, error) {
 	res, err := s.db.ExecContext(ctx, `DELETE FROM polls WHERE week_end < ?`, unix(t))

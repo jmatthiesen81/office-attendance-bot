@@ -130,6 +130,17 @@ func TestProjectLink(t *testing.T) {
 	}
 }
 
+func TestRefreshOnUpdate(t *testing.T) {
+	if c, err := LoadFrom(env(valid())); err != nil || c.RefreshOnUpdate {
+		t.Fatalf("not off by default: %v", err)
+	}
+	m := valid()
+	m["REFRESH_MESSAGES_ON_UPDATE"] = "true"
+	if c, err := LoadFrom(env(m)); err != nil || !c.RefreshOnUpdate {
+		t.Fatalf("not enabled: %v", err)
+	}
+}
+
 func TestChangeNotices(t *testing.T) {
 	c, err := LoadFrom(env(valid()))
 	if err != nil || !c.SummaryChangeNotices || c.SummaryChangeNoticeDelay != 2*time.Minute || c.SummaryChangeNoticeGrace != 10*time.Minute {

@@ -87,6 +87,7 @@ internal/worker/                 Outbox-Worker mit Retry/Backoff
    - **Zusammenfassen**: Weitere Änderungen bis zum Versand aktualisieren nur die Antwort. Der Job vergleicht die gemerkte mit der aktuellen Auswahl und postet **eine** Thread-Antwort unter der Übersicht, je nach Unterschied: Tage weggefallen, Tage hinzugekommen, beides („kommt nun nicht am Mittwoch, dafür aber am Donnerstag“), gar nicht mehr im Büro oder doch wieder im Büro. Heben sich die Änderungen auf, postet er nichts.
    - **Name statt Mention**: Der Hinweis nennt den Anzeigenamen, damit die Person nicht angepingt wird. Er ist in `BOT_LANGUAGE`, wie die Übersicht.
    - **Robustheit**: Gibt es die Übersicht noch nicht, wird der Job mit Backoff wiederholt. Ändert die Person ihre Auswahl, während der Hinweis gepostet wird, folgt dafür ein weiterer Hinweis. Stürzt der Bot genau nach dem Posten ab, kann ein Hinweis einmal doppelt erscheinen.
+8. **Neu rendern nach einem Update** (Tabelle `app_state`, nur mit `REFRESH_MESSAGES_ON_UPDATE=true`, sonst von Hand mit `refresh`): Beim Start vergleicht der Bot seine Version mit der zuletzt angewendeten. Ist sie neu, reiht er für alle zugestellten DMs der offenen und der letzten Abstimmung einen `update_dm`-Job ein und erhöht deren `summary_version`. Danach speichert er die Version. Der Versand läuft über Outbox und Update-Worker, mit Retry und Beachtung der Slack-Rate-Limits. Schlägt das Einreihen fehl, versucht es der nächste Start erneut.
 
 ---
 
@@ -184,6 +185,7 @@ SUMMARY_PROJECT_LINK=true      # false = kein GitHub-Hinweis unter der Übersich
 SUMMARY_CHANGE_NOTICES=true    # false = keine Änderungshinweise im Thread der Übersicht
 SUMMARY_CHANGE_NOTICE_DELAY=2m # Änderungen einer Person in dieser Zeit = ein Hinweis
 SUMMARY_CHANGE_NOTICE_GRACE=10m # Korrekturen so lange nach der ersten Antwort = kein Hinweis
+REFRESH_MESSAGES_ON_UPDATE=false # true = DMs und Übersicht beim ersten Start einer neuen Version neu schreiben
 BOT_LANGUAGE=en                # Sprache der Slack-Nachrichten (siehe Tabelle)
 BOT_LANGUAGE_FROM_SLACK=false  # true = DMs in der Slack-Sprache der Person, bis sie selbst eine wählt
 DRY_RUN=false                  # true = nichts an Slack senden, nur loggen
@@ -219,6 +221,7 @@ OFFICEBOT_GID=1000
 | `SUMMARY_CHANGE_NOTICES`                       | nein            | `true`                  | Ändert jemand eine gespeicherte Antwort, antwortet der Bot im Thread der Übersicht mit dem Unterschied (siehe Abläufe); `false` schaltet das ab                                                                                        |
 | `SUMMARY_CHANGE_NOTICE_DELAY`                  | nein            | `2m`                    | Wartezeit nach der ersten Änderung; weitere Änderungen der Person in dieser Zeit fasst der Bot zu einer Antwort zusammen (z. B. `30s`, `5m`)                                                                                           |
 | `SUMMARY_CHANGE_NOTICE_GRACE`                  | nein            | `10m`                   | Schonfrist ab der ersten Antwort einer Person: Korrekturen in dieser Zeit gelten als Teil der ersten Antwort und lösen keinen Hinweis aus; `0` = keine                                                                                 |
+| `REFRESH_MESSAGES_ON_UPDATE`                   | nein            | `false`                 | `true`: Beim ersten Start einer neuen Version schreibt der Bot zugestellte DMs und Übersicht der offenen und der letzten Abstimmung neu (wie `refresh`)                                                                               |
 | `DRY_RUN`                                      | nein            | `false`                 | Kein Kontakt zu Slack. Alle Nachrichten landen im Log.                                                                                                                                                                                 |
 | `BOT_LANGUAGE`                                 | nein            | `en`                    | Teamsprache: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`, `ja`; zum Spaß auch `nerd_<sprache>`, `pirate_<sprache>`. Gilt für die Übersicht und für alle, die keine eigene Sprache gewählt haben |
 | `BOT_LANGUAGE_FROM_SLACK`                      | nein            | `false`                 | `true`: Wer keine eigene Sprache gewählt hat, bekommt DMs in seiner Slack-Sprache, sofern der Bot sie spricht (`de-DE` → `de`). Wird beim Wochenstart mit den Teilnehmenden gelesen                                                    |
@@ -252,6 +255,8 @@ docker compose ps                 # STATUS zeigt (healthy) nach ca. 15–60 s
 ```
 
 **Fertiges Image oder selbst bauen:** `compose.yaml` verweist auf `ghcr.io/jmatthiesen81/office-attendance-bot:1`, ein Multi-Arch-Image für amd64 und arm64. Für den Betrieb genügen dann `compose.yaml`, `.env`, `.env.local` und das Verzeichnis `volumes/officebot/`, ein Klon des Repos ist nicht nötig. Der Tag `:1` bekommt Fehlerbehebungen und neue Funktionen, aber keine inkompatiblen Änderungen. Für eine feste Version `:1.2.3` eintragen, für den neuesten ungetesteten Stand `:edge` (siehe [Entwicklung](#entwicklung)). Updates: `docker compose up -d`. Wegen `pull_policy: always` lädt Compose dabei jedes Mal das neueste Image zum Tag. Mit `docker compose up -d --build` (`make up`) baut Compose stattdessen aus dem Quellcode. Das passiert auch automatisch, wenn sich das Image nicht laden lässt. `docker compose exec officebot /officebot version` zeigt die laufende Version.
+
+**Nach einem Update** zeigen bereits verschickte Nachrichten noch den alten Stand, bis die nächste Abstimmung startet. `docker compose exec officebot /officebot refresh` schreibt alle zugestellten DMs und die Übersicht der laufenden Abstimmungen neu, nach der Frist auch die der letzten, bereits geschlossenen Abstimmung. Eine geschlossene Abstimmung bleibt dabei geschlossen. Mit `REFRESH_MESSAGES_ON_UPDATE=true` erledigt der Bot das selbst beim ersten Start einer neuen Version. Die zuletzt so angewendete Version steht in der Tabelle `app_state`, ein Neustart derselben Version lässt die Nachrichten unverändert. Wird die Option erst später eingeschaltet, schreibt der nächste Start einmal alles neu.
 
 Eigenschaften des Containers:
 
@@ -303,6 +308,7 @@ Alle Befehle laufen im Container mit derselben Konfiguration: `docker compose ex
 | `run`                                              | Bot starten (Standard)                                                                    |
 | `start-week [--week 2026-W43]`                     | Abstimmung jetzt starten. Existiert sie schon, passiert nichts.                           |
 | `resync [--week 2026-W43]`                         | Übersicht neu schreiben (ohne `--week`: alle offenen)                                     |
+| `refresh [--week 2026-W43]`                        | DMs und Übersicht neu rendern (ohne `--week`: offene und letzte Abstimmung)               |
 | `status`                                           | Offene Abstimmungen, Antworten, Zustellstatus, Outbox                                     |
 | `list-users [--channel C…] [--all]`                | Benutzer mit IDs auflisten und eine fertige Zeile `SLACK_USER_IDS=` ausgeben (nur lesend) |
 | `delete-week --week W --yes`                       | Abstimmung einer Woche aus der DB löschen (für Tests)                                     |

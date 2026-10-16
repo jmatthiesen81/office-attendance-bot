@@ -54,6 +54,9 @@ SUMMARY_CHANGE_NOTICES=true
 SUMMARY_CHANGE_NOTICE_DELAY=2m
 # Corrections within this time after a person's first answer are not announced
 SUMMARY_CHANGE_NOTICE_GRACE=10m
+# Re-render the delivered DMs and the summary at the first start of a new
+# version, so that an update shows at once (by hand: officebot refresh)
+REFRESH_MESSAGES_ON_UPDATE=false
 DRY_RUN=false
 
 # --- Docker Compose ------------------------------------------------------

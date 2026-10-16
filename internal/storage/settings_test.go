@@ -77,3 +77,19 @@ func TestDeleteUserSettingsBefore(t *testing.T) {
 		t.Error("setting of U2 kept")
 	}
 }
+
+func TestAppState(t *testing.T) {
+	ctx := context.Background()
+	s := openTest(t)
+	if v, err := s.GetState(ctx, StateRenderedVersion); err != nil || v != "" {
+		t.Fatalf("unset: %q %v", v, err)
+	}
+	for _, v := range []string{"1.0.0", "1.0.1"} { // second call overwrites
+		if err := s.SetState(ctx, StateRenderedVersion, v, t0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if v, _ := s.GetState(ctx, StateRenderedVersion); v != "1.0.1" {
+		t.Errorf("value = %q", v)
+	}
+}

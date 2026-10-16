@@ -89,6 +89,7 @@ internal/worker/                 Outbox worker with retry/backoff
    - **Combining**: further changes until then only update the answer. The job compares the stored selection with the current one and posts **one** thread reply under the summary, depending on the difference: days dropped, days added, both ("no longer coming in on Wednesday, but on Thursday instead"), not in the office at all any more, or in the office after all. If the changes cancel out, it posts nothing.
    - **Name instead of mention**: the notice shows the display name so the person is not pinged. It is in `BOT_LANGUAGE`, like the summary.
    - **Robustness**: if the summary does not exist yet, the job is retried with backoff. If the person changes their selection while the notice is being posted, another notice follows for that. If the bot crashes right after posting, a notice may appear twice once.
+8. **Re-rendering after an update** (table `app_state`, only with `REFRESH_MESSAGES_ON_UPDATE=true`, otherwise by hand with `refresh`): at startup the bot compares its version with the one last applied. If it is new, the bot enqueues an `update_dm` job for every delivered DM of the open polls and the latest poll and increments their `summary_version`. Then it stores the version. Sending runs through the outbox and the update worker, with retries and respecting Slack rate limits. If enqueueing fails, the next start tries again.
 
 ---
 
@@ -186,6 +187,7 @@ SUMMARY_PROJECT_LINK=true      # false = no GitHub link below the summary
 SUMMARY_CHANGE_NOTICES=true    # false = no change notices in the summary thread
 SUMMARY_CHANGE_NOTICE_DELAY=2m # changes of one person within this time = one notice
 SUMMARY_CHANGE_NOTICE_GRACE=10m # corrections this soon after the first answer = no notice
+REFRESH_MESSAGES_ON_UPDATE=false # true = re-render DMs and summary at the first start of a new version
 BOT_LANGUAGE=en                # language of Slack messages (see table)
 BOT_LANGUAGE_FROM_SLACK=false  # true = DMs in the person's Slack language until they choose one
 DRY_RUN=false                  # true = send nothing to Slack, only log
@@ -221,6 +223,7 @@ OFFICEBOT_GID=1000
 | `SUMMARY_CHANGE_NOTICES`                       | no          | `true`                  | When someone changes a saved answer, the bot replies in the summary thread with the difference (see flows); `false` turns it off                                                                                           |
 | `SUMMARY_CHANGE_NOTICE_DELAY`                  | no          | `2m`                    | Wait after the first change; further changes of that person meanwhile are combined into one reply (e.g. `30s`, `5m`)                                                                                                       |
 | `SUMMARY_CHANGE_NOTICE_GRACE`                  | no          | `10m`                   | Grace period after a person's first answer: corrections within it count as part of the first answer and cause no notice; `0` = none                                                                                        |
+| `REFRESH_MESSAGES_ON_UPDATE`                   | no          | `false`                 | `true`: at the first start of a new version, the bot re-renders the delivered DMs and the summary of the open polls and the latest one (like `refresh`)                                                                    |
 | `DRY_RUN`                                      | no          | `false`                 | No contact with Slack. All messages go to the log.                                                                                                                                                                         |
 | `BOT_LANGUAGE`                                 | no          | `en`                    | Team language: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`, `ja`; for fun also `nerd_<lang>`, `pirate_<lang>`. Applies to the summary and to everyone who has not chosen a language |
 | `BOT_LANGUAGE_FROM_SLACK`                      | no          | `false`                 | `true`: people without an own choice get their DMs in their Slack language, if the bot speaks it (`de-DE` → `de`). Read with the participants at the weekly start                                                          |
@@ -254,6 +257,8 @@ docker compose ps                 # STATUS shows (healthy) after about 15–60 s
 ```
 
 **Published image or own build:** `compose.yaml` refers to `ghcr.io/jmatthiesen81/office-attendance-bot:1`, a multi-arch image for amd64 and arm64. To run the bot, you only need `compose.yaml`, `.env`, `.env.local` and the `volumes/officebot/` directory; no clone of the repository. The `:1` tag gets fixes and new features, but no breaking changes. For a fixed version, use `:1.2.3`; for the latest untested state, `:edge` (see [Development](#development)). Updates: `docker compose up -d`. Because of `pull_policy: always`, Compose pulls the newest image for the tag every time. With `docker compose up -d --build` (`make up`), Compose builds from source instead. This also happens automatically if the image cannot be pulled. `docker compose exec officebot /officebot version` shows the running version.
+
+**After an update**, messages already sent keep showing the old state until the next poll starts. `docker compose exec officebot /officebot refresh` re-renders all delivered DMs and the summary of the running polls, and after the deadline also those of the latest poll, which is already closed. A closed poll stays closed. With `REFRESH_MESSAGES_ON_UPDATE=true`, the bot does this itself at the first start of a new version. The version last applied this way is stored in the `app_state` table, so a restart of the same version leaves the messages alone. If the option is turned on later, the next start re-renders everything once.
 
 Container properties:
 
@@ -305,6 +310,7 @@ All commands run inside the container with the same configuration: `docker compo
 | `run`                                              | Start the bot (default)                                                           |
 | `start-week [--week 2026-W43]`                     | Start the poll now. If it already exists, nothing happens.                        |
 | `resync [--week 2026-W43]`                         | Rewrite the summary (without `--week`: all open polls)                            |
+| `refresh [--week 2026-W43]`                        | Re-render DMs and summary (without `--week`: open polls and the latest one)       |
 | `status`                                           | Open polls, answers, delivery status, outbox                                      |
 | `list-users [--channel C…] [--all]`                | List users with IDs and print a ready-to-paste `SLACK_USER_IDS=` line (read-only) |
 | `delete-week --week W --yes`                       | Delete a week's poll from the database (for testing)                              |
