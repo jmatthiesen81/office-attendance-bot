@@ -291,7 +291,7 @@ docker restart officebot-dry      # erzeugt keine neue Abstimmung, keine neuen D
 ### Mit echtem Slack
 
 1. Für den ersten Test `SLACK_USER_IDS` auf die eigene User-ID setzen und einen Test-Channel als `SLACK_SUMMARY_CHANNEL_ID` verwenden.
-2. `docker compose up -d --build`. Liegt der konfigurierte Zeitpunkt dieser Woche schon zurück, kommt die DM sofort. Sonst `docker compose exec officebot /officebot start-week` ausführen.
+2. `docker compose up -d` (oder `--build` für einen eigenen Build). Liegt der konfigurierte Zeitpunkt dieser Woche schon zurück, kommt die DM sofort. Sonst `docker compose exec officebot /officebot start-week` ausführen.
 3. In der DM Tage ankreuzen und **Speichern** klicken. Die DM zeigt „✅ Gespeichert“, und die Übersicht im Channel wird nach ca. 1–2 s aktualisiert.
 4. Auswahl ändern und erneut speichern: Es kommt keine neue Channel-Nachricht, nur ein Update.
 5. Frist testen: `POLL_DEADLINE_WEEKDAY`/`POLL_DEADLINE_TIME` kurz in die Zukunft legen und neu starten. Nach Ablauf zeigt die DM „🔒 geschlossen“.

@@ -293,7 +293,7 @@ docker restart officebot-dry      # creates no new poll and no new DMs
 ### With real Slack
 
 1. For the first test, set `SLACK_USER_IDS` to your own user ID and use a test channel as `SLACK_SUMMARY_CHANNEL_ID`.
-2. `docker compose up -d --build`. If this week's configured start time has already passed, the DM arrives immediately. Otherwise run `docker compose exec officebot /officebot start-week`.
+2. `docker compose up -d` (or `--build` for an own build). If this week's configured start time has already passed, the DM arrives immediately. Otherwise run `docker compose exec officebot /officebot start-week`.
 3. Tick days in the DM and click **Speichern** (*Save*). The DM shows "✅ Gespeichert" (*saved*), and the summary in the channel is updated after about 1–2 s.
 4. Change the selection and save again: no new channel message appears, only an update.
 5. Test the deadline: set `POLL_DEADLINE_WEEKDAY`/`POLL_DEADLINE_TIME` shortly into the future and restart. Afterwards the DM shows "🔒 geschlossen" (*closed*).

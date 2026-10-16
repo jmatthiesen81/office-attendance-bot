@@ -33,11 +33,11 @@ Full documentation (architecture, Slack app setup, all configuration options, CL
 3. **Start:**
 
    ```bash
-   docker compose up -d --build
+   docker compose up -d               # pulls the published image from ghcr.io
    docker compose logs -f officebot
    ```
 
-   Data is stored in `./volumes/officebot/` (bind mount, no Docker volumes).
+   Data is stored in `./volumes/officebot/` (bind mount, no Docker volumes). To build from source instead, use `docker compose up -d --build` (`make up`); see [Running with Docker Compose](docs/en/README.md#running-with-docker-compose).
 
 To try it without Slack, use the [dry run](docs/en/README.md#test-run).
 
