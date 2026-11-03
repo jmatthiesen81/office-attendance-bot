@@ -51,7 +51,7 @@ internal/worker/                 Outbox-Worker mit Retry/Backoff
 ### Wesentliche Entscheidungen
 
 | Entscheidung                              | Begründung                                                                                                                                                                                                                                                                                                                                                                                            |
-|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Transaktionale Outbox** (`outbox_jobs`) | Poll, Teilnehmer-Snapshot und ein `send_dm`-Job je Person entstehen in *einer* Transaktion. Ein Neustart setzt dort fort, wo der Versand aufgehört hat. Fehlgeschlagene DMs werden einzeln wiederholt.                                                                                                                                                                                                |
 | **Idempotenz über Unique-Constraints**    | `UNIQUE(workspace_id, iso_year, iso_week)` verhindert doppelte Polls. `UNIQUE(job_type, participant_id, dedupe_key)` verhindert doppelte Jobs. Jede Erinnerungsrunde (`reminder_rounds`) läuft genau einmal.                                                                                                                                                                                          |
 | **Message-Metadata gegen Duplikate**      | DMs und Übersicht tragen Slack-Metadata. Stürzt der Bot ab, nachdem Slack eine Nachricht angenommen hat, aber bevor der Timestamp gespeichert ist, findet der nächste Versuch die vorhandene Nachricht und postet nicht erneut.                                                                                                                                                                       |
@@ -67,7 +67,7 @@ internal/worker/                 Outbox-Worker mit Retry/Backoff
 
 1. **Scheduler**: schläft per Timer bis zum nächsten relevanten Zeitpunkt (Wochenstart, Frist, Erinnerung, höchstens 1 h). Jeder Tick ist idempotent: Er schließt fällige Polls, legt den aktuellen Poll an, falls er fehlt (auch nachgeholt nach Ausfall, solange die Frist nicht vorbei ist), plant fällige Erinnerungen ein und löscht alte Daten.
 2. **Speichern**: Ack sofort (unter 3 s). Danach asynchron: Workspace prüfen, User aus dem von Slack authentifizierten Payload übernehmen, Poll-ID nur als Lookup verwenden und prüfen, ob Poll offen, Frist nicht vorbei, User im Snapshot und Nachricht = gespeicherte DM ist. Dann atomarer Upsert (Revision steigt nur bei echter Änderung), DM aktualisieren und Übersicht anstoßen.
-3. **Frist**: Ab der Frist werden Speichern-Klicks abgelehnt (mit Hinweis an die Person). Die DMs werden als „geschlossen“ neu gerendert, und die Übersicht zeigt „🔒 Abstimmung geschlossen“. Beide behalten nur **🌴 Abwesenheit planen** und **🌐 Sprache**, weil diese nicht an die Abstimmung gebunden sind.
+3. **Frist**: Ab der Frist werden Speichern-Klicks abgelehnt (mit Hinweis an die Person). Admins können Antworten per `attendance` auch danach noch korrigieren. Die DMs werden als „geschlossen“ neu gerendert, und die Übersicht zeigt „🔒 Abstimmung geschlossen“. Beide behalten nur **🌴 Abwesenheit planen** und **🌐 Sprache**, weil diese nicht an die Abstimmung gebunden sind.
 4. **DM erneut anfordern** (Button unter der Übersicht, nur solange die Abstimmung offen ist): Der Klick muss von der aktuellen Übersicht kommen. Alle Antworten sind ephemer, also nur für die klickende Person sichtbar.
    - **Teilnehmende:** Die alte DM wird durch einen Hinweis ohne Buttons ersetzt („durch eine neue ersetzt“). Eine neue DM mit der gespeicherten Auswahl wird über die Outbox verschickt. Ein Generationszähler je Person in den DM-Metadaten sorgt dafür, dass die Wiederherstellung nach einem Absturz nie die alte DM übernimmt. Pro Person ist höchstens eine neue DM alle 2 Minuten möglich.
    - **Nachzügler:** Wer jetzt zur Zielgruppe gehört (Mitglied des Teilnehmer-Channels oder in `SLACK_USER_IDS`) und die üblichen Filter besteht, wird in die laufende Abstimmung aufgenommen. Alle anderen bekommen einen kurzen Hinweis.
@@ -105,7 +105,7 @@ Kurzfassung:
 ### Benötigte OAuth-Scopes
 
 | Scope                                 | Wofür                                                      |
-|---------------------------------------|------------------------------------------------------------|
+| ------------------------------------- | ---------------------------------------------------------- |
 | `chat:write`                          | DMs, Erinnerungen, Übersicht und Thread-Antworten posten   |
 | `im:write`                            | DM-Kanal zu einer Person öffnen                            |
 | `im:history`                          | Nach Absturz prüfen, ob eine DM schon gesendet wurde       |
@@ -126,7 +126,7 @@ Alle Einstellungen kommen aus Umgebungsvariablen und werden beim Start validiert
 Docker Compose lädt zwei Dateien. Werte aus der zweiten überschreiben die aus der ersten:
 
 | Datei        | Im Git                  | Inhalt                                                                                                                        |
-|--------------|-------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| ------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `.env`       | ja                      | Gemeinsame, nicht geheime Standardwerte: Zeitplan, Frist, Erinnerungen, Betrieb, Container-UID/GID                            |
 | `.env.local` | **nein** (`.gitignore`) | Workspace-spezifische Werte und Geheimnisse: Tokens, Channel-IDs, Teilnehmer, lokale Overrides. Vorlage: `.env.local.example` |
 
@@ -200,7 +200,7 @@ OFFICEBOT_GID=1000
 `OFFICEBOT_UID`/`OFFICEBOT_GID` werden in `compose.yaml` selbst eingesetzt. Compose liest solche `${…}`-Werte nur aus `.env` (oder der Shell), also bitte in `.env` ändern, nicht in `.env.local`. Niemals Tokens in `.env` eintragen: Die Datei wird committet.
 
 | Variable                                       | Pflicht         | Standard                | Bedeutung                                                                                                                                                                                                                              |
-|------------------------------------------------|-----------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------------- | --------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SLACK_BOT_TOKEN`                              | ja¹             | –                       | Bot User OAuth Token, `xoxb-…`                                                                                                                                                                                                         |
 | `SLACK_APP_TOKEN`                              | ja¹             | –                       | App-Level Token (`connections:write`), `xapp-…`                                                                                                                                                                                        |
 | `SLACK_SUMMARY_CHANNEL_ID`                     | ja              | –                       | Ergebnis-Channel                                                                                                                                                                                                                       |
@@ -221,7 +221,7 @@ OFFICEBOT_GID=1000
 | `SUMMARY_CHANGE_NOTICES`                       | nein            | `true`                  | Ändert jemand eine gespeicherte Antwort, antwortet der Bot im Thread der Übersicht mit dem Unterschied (siehe Abläufe); `false` schaltet das ab                                                                                        |
 | `SUMMARY_CHANGE_NOTICE_DELAY`                  | nein            | `2m`                    | Wartezeit nach der ersten Änderung; weitere Änderungen der Person in dieser Zeit fasst der Bot zu einer Antwort zusammen (z. B. `30s`, `5m`)                                                                                           |
 | `SUMMARY_CHANGE_NOTICE_GRACE`                  | nein            | `10m`                   | Schonfrist ab der ersten Antwort einer Person: Korrekturen in dieser Zeit gelten als Teil der ersten Antwort und lösen keinen Hinweis aus; `0` = keine                                                                                 |
-| `REFRESH_MESSAGES_ON_UPDATE`                   | nein            | `false`                 | `true`: Beim ersten Start einer neuen Version schreibt der Bot zugestellte DMs und Übersicht der offenen und der letzten Abstimmung neu (wie `refresh`)                                                                               |
+| `REFRESH_MESSAGES_ON_UPDATE`                   | nein            | `false`                 | `true`: Beim ersten Start einer neuen Version schreibt der Bot zugestellte DMs und Übersicht der offenen und der letzten Abstimmung neu (wie `refresh`)                                                                                |
 | `DRY_RUN`                                      | nein            | `false`                 | Kein Kontakt zu Slack. Alle Nachrichten landen im Log.                                                                                                                                                                                 |
 | `BOT_LANGUAGE`                                 | nein            | `en`                    | Teamsprache: `en`, `de`, `fr`, `es`, `it`, `pt`, `nl`, `da`, `sv`, `nb`, `pl`, `cs`, `tr`, `uk`, `ja`; zum Spaß auch `nerd_<sprache>`, `pirate_<sprache>`. Gilt für die Übersicht und für alle, die keine eigene Sprache gewählt haben |
 | `BOT_LANGUAGE_FROM_SLACK`                      | nein            | `false`                 | `true`: Wer keine eigene Sprache gewählt hat, bekommt DMs in seiner Slack-Sprache, sofern der Bot sie spricht (`de-DE` → `de`). Wird beim Wochenstart mit den Teilnehmenden gelesen                                                    |
@@ -303,28 +303,33 @@ docker restart officebot-dry      # erzeugt keine neue Abstimmung, keine neuen D
 
 Alle Befehle laufen im Container mit derselben Konfiguration: `docker compose exec officebot /officebot <befehl>`. Sie schreiben nur in die Datenbank. Den Versand übernimmt der laufende Bot innerhalb von 30 s. So spricht immer nur ein Prozess mit Slack, und es entstehen keine Doppelnachrichten.
 
-| Befehl                                             | Wirkung                                                                                   |
-|----------------------------------------------------|-------------------------------------------------------------------------------------------|
-| `run`                                              | Bot starten (Standard)                                                                    |
-| `start-week [--week 2026-W43]`                     | Abstimmung jetzt starten. Existiert sie schon, passiert nichts.                           |
-| `resync [--week 2026-W43]`                         | Übersicht neu schreiben (ohne `--week`: alle offenen)                                     |
-| `refresh [--week 2026-W43]`                        | DMs und Übersicht neu rendern (ohne `--week`: offene und letzte Abstimmung)               |
-| `status`                                           | Offene Abstimmungen, Antworten, Zustellstatus, Outbox                                     |
-| `list-users [--channel C…] [--all]`                | Benutzer mit IDs auflisten und eine fertige Zeile `SLACK_USER_IDS=` ausgeben (nur lesend) |
-| `delete-week --week W --yes`                       | Abstimmung einer Woche aus der DB löschen (für Tests)                                     |
-| `simulate-save --user U --days mon,wed [--week W]` | Nur bei `DRY_RUN=true`: Antwort simulieren                                                |
-| `simulate-request --user U [--week W]`             | Nur bei `DRY_RUN=true`: Klick auf „Abfrage an mich senden“ simulieren                     |
-| `away list [--user U]`                             | Kommende Abwesenheiten anzeigen (mit ID)                                                  |
-| `away add --user U --from D --to D`                | Abwesenheit eintragen (`YYYY-MM-DD`, beide Tage inklusive, `--from` ab heute)             |
-| `away remove --user U --from D --to D`             | Tage aus Abwesenheiten entfernen (kürzt oder teilt Einträge, `--from` ab heute)           |
-| `away remove --id N`                               | Einen Eintrag löschen                                                                     |
-| `lang list`                                        | Sprachwahl der Personen anzeigen                                                          |
-| `lang set --user U <sprache>`                      | Sprache einer Person setzen, z. B. `de` oder `pirate_en`; offene DMs werden neu gerendert |
-| `lang reset --user U`                              | Zurück zum Teamstandard                                                                   |
-| `backup <datei>`                                   | Konsistente Kopie der DB (`VACUUM INTO`), auch im laufenden Betrieb                       |
-| `migrate`                                          | Migrationen anwenden und beenden                                                          |
-| `healthcheck`                                      | Healthcheck-Probe                                                                         |
-| `version`                                          | Version ausgeben (`dev` bei lokalen Builds ohne Version)                                  |
+| Befehl                                                    | Wirkung                                                                                   |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `run`                                                     | Bot starten (Standard)                                                                    |
+| `start-week [--week 2026-W43]`                            | Abstimmung jetzt starten. Existiert sie schon, passiert nichts.                           |
+| `resync [--week 2026-W43]`                                | Übersicht neu schreiben (ohne `--week`: alle offenen)                                     |
+| `refresh [--week 2026-W43]`                               | DMs und Übersicht neu rendern (ohne `--week`: offene und letzte Abstimmung)               |
+| `status`                                                  | Offene Abstimmungen, Antworten, Zustellstatus, Outbox                                     |
+| `list-users [--channel C…] [--all]`                       | Benutzer mit IDs auflisten und eine fertige Zeile `SLACK_USER_IDS=` ausgeben (nur lesend) |
+| `delete-week --week W --yes`                              | Abstimmung einer Woche aus der DB löschen (für Tests)                                     |
+| `simulate-save --user U --days mon,wed [--week W]`        | Nur bei `DRY_RUN=true`: Antwort simulieren                                                |
+| `simulate-request --user U [--week W]`                    | Nur bei `DRY_RUN=true`: Klick auf „Abfrage an mich senden“ simulieren                     |
+| `away list [--user U]`                                    | Kommende Abwesenheiten anzeigen (mit ID)                                                  |
+| `away add --user U --from D --to D`                       | Abwesenheit eintragen (`YYYY-MM-DD`, beide Tage inklusive, `--from` ab heute)             |
+| `away remove --user U --from D --to D`                    | Tage aus Abwesenheiten entfernen (kürzt oder teilt Einträge, `--from` ab heute)           |
+| `away remove --id N`                                      | Einen Eintrag löschen                                                                     |
+| `attendance remove --user U --days tue [--week W]`        | Tage aus der Antwort einer Person austragen, z. B. wenn sie doch nicht da war             |
+| `attendance add --user U --days tue [--week W]`           | Tage zur Antwort hinzufügen (ohne bisherige Antwort: neue Antwort)                        |
+| `attendance set --user U --days mon,wed\|none [--week W]` | Antwort ersetzen, `none` = kein Bürotag                                                   |
+| `lang list`                                               | Sprachwahl der Personen anzeigen                                                          |
+| `lang set --user U <sprache>`                             | Sprache einer Person setzen, z. B. `de` oder `pirate_en`; offene DMs werden neu gerendert |
+| `lang reset --user U`                                     | Zurück zum Teamstandard                                                                   |
+| `backup <datei>`                                          | Konsistente Kopie der DB (`VACUUM INTO`), auch im laufenden Betrieb                       |
+| `migrate`                                                 | Migrationen anwenden und beenden                                                          |
+| `healthcheck`                                             | Healthcheck-Probe                                                                         |
+| `version`                                                 | Version ausgeben (`dev` bei lokalen Builds ohne Version)                                  |
+
+`attendance` korrigiert Antworten über die normale Speicherlogik, aber ohne Frist. So lassen sich auch vergangene Tage und geschlossene Abstimmungen korrigieren. Ohne `--week` gilt die aktuelle Kalenderwoche. Die DM wird neu gerendert, die Übersicht aktualisiert, und eine geschlossene Abstimmung bleibt geschlossen. Eine Änderung wird wie in Slack im Thread der Übersicht angekündigt (siehe Änderungshinweise). Mit `--no-notice` unterbleibt der Hinweis. Beispiel, wenn jemand heute doch nicht im Büro war: `docker compose exec officebot /officebot attendance remove --user U0123456 --days tue`.
 
 ---
 
@@ -348,7 +353,7 @@ mv volumes/officebot/officebot-20261013-1000.db backup/
 ## Fehlerdiagnose
 
 | Symptom / Log                                            | Ursache und Lösung                                                                                                                            |
-|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `invalid configuration: …`                               | Variablen prüfen. Alle Fehler werden auf einmal aufgelistet.                                                                                  |
 | `slack auth.test … invalid_auth`                         | `SLACK_BOT_TOKEN` falsch oder App nicht installiert                                                                                           |
 | `socket mode: invalid app token`                         | `SLACK_APP_TOKEN` falsch oder ohne `connections:write`                                                                                        |

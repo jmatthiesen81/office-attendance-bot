@@ -53,7 +53,7 @@ internal/worker/                 Outbox worker with retry/backoff
 ### Key decisions
 
 | Decision                                 | Rationale                                                                                                                                                                                                                                                                                                                                                                |
-|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Transactional outbox** (`outbox_jobs`) | The poll, the participant snapshot and one `send_dm` job per person are created in *one* transaction. After a restart, sending resumes where it stopped. Failed DMs are retried individually.                                                                                                                                                                            |
 | **Idempotency via unique constraints**   | `UNIQUE(workspace_id, iso_year, iso_week)` prevents duplicate polls. `UNIQUE(job_type, participant_id, dedupe_key)` prevents duplicate jobs. Each reminder round (`reminder_rounds`) runs exactly once.                                                                                                                                                                  |
 | **Message metadata against duplicates**  | DMs and the summary carry Slack message metadata. If the bot crashes after Slack accepted a message but before its timestamp was stored, the next attempt finds the existing message and does not post again.                                                                                                                                                            |
@@ -69,7 +69,7 @@ internal/worker/                 Outbox worker with retry/backoff
 
 1. **Scheduler**: sleeps on a timer until the next relevant moment (weekly start, deadline, reminder, at most 1 h). Each tick is idempotent: it closes polls whose deadline has passed, creates the current poll if it is missing (also catching up after downtime, as long as the deadline has not passed), schedules due reminders and deletes old data.
 2. **Saving**: acknowledged immediately (under 3 s). Then, asynchronously: check the workspace, take the user from the Slack-authenticated payload, use the poll ID only as a lookup key, and check that the poll is open, the deadline has not passed, the user is in the snapshot and the message is the stored DM. Then an atomic upsert (the revision only increases on a real change), update the DM and trigger the summary.
-3. **Deadline**: from the deadline on, save clicks are rejected (with a notice to the person). The DMs are re-rendered as closed, and the summary shows "🔒 Abstimmung geschlossen" (*poll closed*). Both keep only **🌴 Plan time off** and **🌐 Language**, as these are not tied to the poll.
+3. **Deadline**: from the deadline on, save clicks are rejected (with a notice to the person). Admins can still correct answers with `attendance` afterwards. The DMs are re-rendered as closed, and the summary shows "🔒 Abstimmung geschlossen" (*poll closed*). Both keep only **🌴 Plan time off** and **🌐 Language**, as these are not tied to the poll.
 4. **Requesting the DM again** (button below the summary, only while the poll is open): the click must come from the current summary message. All replies are ephemeral, i.e. only visible to the person who clicked.
    - **Participants:** the old DM is replaced by a note without buttons ("durch eine neue ersetzt", *replaced by a new one*). A new DM with the saved selection is queued via the outbox. A per-participant generation counter in the DM metadata ensures that crash recovery never adopts the old DM. At most one new DM per person every 2 minutes.
    - **Late joiners:** people who now belong to the target group (member of the participants channel, or listed in `SLACK_USER_IDS`) and pass the usual filters are added to the running poll. Everybody else gets a short explanation.
@@ -107,7 +107,7 @@ In short:
 ### Required OAuth scopes
 
 | Scope                                 | Purpose                                                     |
-|---------------------------------------|-------------------------------------------------------------|
+| ------------------------------------- | ----------------------------------------------------------- |
 | `chat:write`                          | Post DMs, reminders, the summary and thread replies         |
 | `im:write`                            | Open a DM channel with a person                             |
 | `im:history`                          | After a crash, check whether a DM was already sent          |
@@ -128,7 +128,7 @@ All settings come from environment variables and are validated at startup. All e
 Docker Compose loads two files, the second overriding the first:
 
 | File         | In git                | Content                                                                                                                     |
-|--------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| ------------ | --------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `.env`       | yes                   | Shared, non-secret defaults: schedule, deadline, reminders, operation, container UID/GID                                    |
 | `.env.local` | **no** (`.gitignore`) | Workspace-specific settings and secrets: tokens, channel IDs, participants, local overrides. Template: `.env.local.example` |
 
@@ -202,7 +202,7 @@ OFFICEBOT_GID=1000
 `OFFICEBOT_UID`/`OFFICEBOT_GID` are substituted into `compose.yaml` itself. Compose reads such `${…}` values only from `.env` (or the shell), so change them in `.env`, not in `.env.local`. Never put tokens into `.env`: it is committed.
 
 | Variable                                       | Required    | Default                 | Meaning                                                                                                                                                                                                                    |
-|------------------------------------------------|-------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------------- | ----------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SLACK_BOT_TOKEN`                              | yes¹        | –                       | Bot User OAuth Token, `xoxb-…`                                                                                                                                                                                             |
 | `SLACK_APP_TOKEN`                              | yes¹        | –                       | App-level token (`connections:write`), `xapp-…`                                                                                                                                                                            |
 | `SLACK_SUMMARY_CHANNEL_ID`                     | yes         | –                       | Results channel                                                                                                                                                                                                            |
@@ -305,28 +305,33 @@ docker restart officebot-dry      # creates no new poll and no new DMs
 
 All commands run inside the container with the same configuration: `docker compose exec officebot /officebot <command>`. They only write to the database. The running bot does the sending within 30 s. This way only one process ever talks to Slack, and no duplicate messages are created.
 
-| Command                                            | Effect                                                                            |
-|----------------------------------------------------|-----------------------------------------------------------------------------------|
-| `run`                                              | Start the bot (default)                                                           |
-| `start-week [--week 2026-W43]`                     | Start the poll now. If it already exists, nothing happens.                        |
-| `resync [--week 2026-W43]`                         | Rewrite the summary (without `--week`: all open polls)                            |
-| `refresh [--week 2026-W43]`                        | Re-render DMs and summary (without `--week`: open polls and the latest one)       |
-| `status`                                           | Open polls, answers, delivery status, outbox                                      |
-| `list-users [--channel C…] [--all]`                | List users with IDs and print a ready-to-paste `SLACK_USER_IDS=` line (read-only) |
-| `delete-week --week W --yes`                       | Delete a week's poll from the database (for testing)                              |
-| `simulate-save --user U --days mon,wed [--week W]` | Only with `DRY_RUN=true`: simulate an answer                                      |
-| `simulate-request --user U [--week W]`             | Only with `DRY_RUN=true`: simulate a click on "Abfrage an mich senden"            |
-| `away list [--user U]`                             | List upcoming time off (with IDs)                                                 |
-| `away add --user U --from D --to D`                | Add time off (`YYYY-MM-DD`, both days included, `--from` today or later)          |
-| `away remove --user U --from D --to D`             | Remove days from time off (shortens or splits entries, `--from` today or later)   |
-| `away remove --id N`                               | Delete one entry                                                                  |
-| `lang list`                                        | List the language choices of people                                               |
-| `lang set --user U <language>`                     | Set a person's language, e.g. `de` or `pirate_en`; open DMs are re-rendered       |
-| `lang reset --user U`                              | Back to the team default                                                          |
-| `backup <file>`                                    | Consistent copy of the database (`VACUUM INTO`), also while running               |
-| `migrate`                                          | Apply migrations and exit                                                         |
-| `healthcheck`                                      | Health check probe                                                                |
-| `version`                                          | Print the version (`dev` for local builds without a version)                      |
+| Command                                                   | Effect                                                                            |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `run`                                                     | Start the bot (default)                                                           |
+| `start-week [--week 2026-W43]`                            | Start the poll now. If it already exists, nothing happens.                        |
+| `resync [--week 2026-W43]`                                | Rewrite the summary (without `--week`: all open polls)                            |
+| `refresh [--week 2026-W43]`                               | Re-render DMs and summary (without `--week`: open polls and the latest one)       |
+| `status`                                                  | Open polls, answers, delivery status, outbox                                      |
+| `list-users [--channel C…] [--all]`                       | List users with IDs and print a ready-to-paste `SLACK_USER_IDS=` line (read-only) |
+| `delete-week --week W --yes`                              | Delete a week's poll from the database (for testing)                              |
+| `simulate-save --user U --days mon,wed [--week W]`        | Only with `DRY_RUN=true`: simulate an answer                                      |
+| `simulate-request --user U [--week W]`                    | Only with `DRY_RUN=true`: simulate a click on "Abfrage an mich senden"            |
+| `away list [--user U]`                                    | List upcoming time off (with IDs)                                                 |
+| `away add --user U --from D --to D`                       | Add time off (`YYYY-MM-DD`, both days included, `--from` today or later)          |
+| `away remove --user U --from D --to D`                    | Remove days from time off (shortens or splits entries, `--from` today or later)   |
+| `away remove --id N`                                      | Delete one entry                                                                  |
+| `attendance remove --user U --days tue [--week W]`        | Remove days from a person's answer, e.g. when they did not show up after all      |
+| `attendance add --user U --days tue [--week W]`           | Add days to the answer (no answer yet: creates one)                               |
+| `attendance set --user U --days mon,wed\|none [--week W]` | Replace the answer, `none` = no office day                                        |
+| `lang list`                                               | List the language choices of people                                               |
+| `lang set --user U <language>`                            | Set a person's language, e.g. `de` or `pirate_en`; open DMs are re-rendered       |
+| `lang reset --user U`                                     | Back to the team default                                                          |
+| `backup <file>`                                           | Consistent copy of the database (`VACUUM INTO`), also while running               |
+| `migrate`                                                 | Apply migrations and exit                                                         |
+| `healthcheck`                                             | Health check probe                                                                |
+| `version`                                                 | Print the version (`dev` for local builds without a version)                      |
+
+`attendance` corrects answers through the normal save path, but without the deadline. This also works for past days and closed polls. Without `--week` it applies to the current calendar week. The DM is re-rendered and the summary updated, and a closed poll stays closed. As with a save in Slack, the change is announced in the summary thread (see change notices). `--no-notice` suppresses the notice. Example for someone who did not come to the office today after all: `docker compose exec officebot /officebot attendance remove --user U0123456 --days tue`.
 
 ---
 
@@ -350,7 +355,7 @@ mv volumes/officebot/officebot-20261013-1000.db backup/
 ## Troubleshooting
 
 | Symptom / log                                          | Cause and fix                                                                                                                       |
-|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `invalid configuration: …`                             | Check the variables. All errors are listed at once.                                                                                 |
 | `slack auth.test … invalid_auth`                       | `SLACK_BOT_TOKEN` is wrong or the app is not installed                                                                              |
 | `socket mode: invalid app token`                       | `SLACK_APP_TOKEN` is wrong or lacks `connections:write`                                                                             |

@@ -84,7 +84,7 @@ func main() {
 	switch cmd {
 	case "run":
 		err = run(ctx, cfg, log)
-	case "start-week", "resync", "refresh", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away", "lang":
+	case "start-week", "resync", "refresh", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away", "lang", "attendance":
 		err = cli(ctx, cmd, args, cfg, log)
 	default:
 		err = fmt.Errorf("unknown command %q", cmd)
@@ -289,10 +289,13 @@ func healthcheck() int {
 
 func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log *slog.Logger) error {
 	var sub string
-	if cmd == "away" || cmd == "lang" {
+	if cmd == "away" || cmd == "lang" || cmd == "attendance" {
 		if len(args) == 0 || strings.HasPrefix(args[0], "-") {
-			if cmd == "lang" {
+			switch cmd {
+			case "lang":
 				return errors.New("usage: officebot lang list|set|reset [flags]")
+			case "attendance":
+				return errors.New("usage: officebot attendance set|add|remove --user U --days mon,tue [--week W] [--no-notice]")
 			}
 			return errors.New("usage: officebot away list|add|remove [flags]")
 		}
@@ -305,7 +308,8 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 	from := fs.String("from", "", "first day of time off, YYYY-MM-DD (away)")
 	to := fs.String("to", "", "last day of time off, YYYY-MM-DD (away)")
 	id := fs.Int64("id", 0, "ID of a time-off entry as shown by 'away list' (away remove)")
-	days := fs.String("days", "", "comma separated days mon,tue,wed,thu,fri; empty = no office day (simulate-save)")
+	days := fs.String("days", "", "comma separated days mon,tue,wed,thu,fri; empty = no office day (simulate-save), 'none' = no office day (attendance set)")
+	noNotice := fs.Bool("no-notice", false, "do not announce the change in the summary thread (attendance)")
 	channel := fs.String("channel", "", "only members of this channel ID (list-users)")
 	all := fs.Bool("all", false, "also show bots, deactivated and excluded users (list-users)")
 	if err := fs.Parse(args); err != nil {
@@ -405,6 +409,15 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 		return away(ctx, a, sub, *user, *from, *to, *id, cfg.Location)
 	case "lang":
 		return lang(ctx, a, sub, *user, fs.Arg(0), cfg.Location)
+	case "attendance":
+		if *weekFlag == "" {
+			week = isoweek.Of(time.Now().In(cfg.Location)) // corrections are about the current week
+		}
+		p, err := findPoll()
+		if err != nil {
+			return err
+		}
+		return attendance(ctx, a, p, sub, *user, *days, !*noNotice)
 	case "delete-week":
 		p, err := findPoll()
 		if err != nil {
@@ -430,15 +443,8 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 			return fmt.Errorf("participant %q: %w", *user, err)
 		}
 		req := slack.Interaction{TeamID: a.teamID, UserID: *user, PollID: p.ID, ChannelID: part.DMChannelID, MessageTS: part.DMMessageTS}
-		for _, d := range strings.Split(*days, ",") {
-			if d = strings.TrimSpace(d); d == "" {
-				continue
-			}
-			i, ok := domain.DayIndex(d)
-			if !ok {
-				return fmt.Errorf("unknown day %q", d)
-			}
-			req.Days[i] = true
+		if req.Days, err = parseDays(*days); err != nil {
+			return err
 		}
 		a.svc.HandleSave(ctx, req)
 		fmt.Println("saved; the running bot updates the summary within 30 s")
@@ -454,6 +460,67 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 			ChannelID: p.SummaryChannelID, MessageTS: p.SummaryMessageTS})
 		fmt.Println("requested; the reply is logged above, the running bot sends the DM within 30 s")
 	}
+	return nil
+}
+
+// parseDays parses a comma separated list like "mon,wed".
+func parseDays(list string) (domain.Days, error) {
+	var days domain.Days
+	for _, d := range strings.Split(list, ",") {
+		if d = strings.ToLower(strings.TrimSpace(d)); d == "" {
+			continue
+		}
+		i, ok := domain.DayIndex(d)
+		if !ok {
+			return days, fmt.Errorf("unknown day %q (use mon,tue,wed,thu,fri)", d)
+		}
+		days[i] = true
+	}
+	return days, nil
+}
+
+// attendance corrects a participant's response, also after the deadline.
+// Changes are only written to the database; the running bot updates the DM,
+// the summary and posts the change notice within 30 s.
+func attendance(ctx context.Context, a *app, p *domain.Poll, sub, user, dayList string, notice bool) error {
+	ops := map[string]poll.AttendanceChange{"set": poll.AttendanceSet, "add": poll.AttendanceAdd, "remove": poll.AttendanceRemove}
+	op, ok := ops[sub]
+	if !ok {
+		return fmt.Errorf("unknown attendance command %q (use set, add or remove)", sub)
+	}
+	if user == "" || dayList == "" {
+		return fmt.Errorf("usage: officebot attendance %s --user U --days mon,tue [--week W] [--no-notice]", sub)
+	}
+	var days domain.Days
+	if !(op == poll.AttendanceSet && strings.EqualFold(strings.TrimSpace(dayList), "none")) {
+		var err error
+		if days, err = parseDays(dayList); err != nil {
+			return err
+		}
+		if days.Count() == 0 {
+			return errors.New("--days is empty; use --days none with 'set' for no office day")
+		}
+	}
+	before, after, changed, err := a.svc.SetAttendance(ctx, p.ID, user, op, days, notice)
+	if err != nil {
+		return err
+	}
+	answer := func(r *domain.Response) string {
+		if r == nil {
+			return "no answer"
+		}
+		if r.Days.Count() == 0 {
+			return "no office day"
+		}
+		return strings.Join(r.Days.Names(func(wd time.Weekday) string { return wd.String()[:3] }), ", ")
+	}
+	week := fmt.Sprintf("%d-W%02d", p.ISOYear, p.ISOWeek)
+	if !changed {
+		fmt.Printf("%s in %s: unchanged (%s)\n", user, week, answer(after))
+		return nil
+	}
+	fmt.Printf("%s in %s: %s -> %s\n", user, week, answer(before), answer(after))
+	fmt.Println("the running bot updates the DM and the summary within 30 s")
 	return nil
 }
 
