@@ -60,9 +60,43 @@ services:
     environment:
       OFFICEBOT_DOMAIN: ${OFFICEBOT_DOMAIN:-}
       ACME_EMAIL: ${ACME_EMAIL:-}
+      CADDY_TLS: ${CADDY_TLS:-auto}
+      # {$$VAR} is Caddy's own environment placeholder ($$ keeps Compose from
+      # substituting it).
+      # auto: automatic Let's Encrypt certificate. Ports 80 or 443 must be
+      # reachable from the internet (HTTP-01 or TLS-ALPN-01). ADR 0003, section 9.
+      CADDYFILE_auto: |
+        {
+        	email {$$ACME_EMAIL}
+        }
+
+        {$$OFFICEBOT_DOMAIN} {
+        	reverse_proxy officebot:8080
+        }
+      # files: certificate issued elsewhere, e.g. via DNS-01 for other ports,
+      # internal-only access or wildcards. The issuing service writes
+      # fullchain.pem and privkey.pem to CADDY_CERT_DIR and reloads Caddy
+      # after every renewal (command above).
+      CADDYFILE_files: |
+        {$$OFFICEBOT_DOMAIN} {
+        	tls /certs/fullchain.pem /certs/privkey.pem
+        	reverse_proxy officebot:8080
+        }
+    # The Caddyfiles live in compose.yaml itself (CADDYFILE_* above), so a
+    # server needs no clone of the repository. At start, the one selected by
+    # CADDY_TLS is written to /tmp/Caddyfile (tmpfs, the container stays
+    # read-only). Reload: docker exec officebot-caddy caddy reload --config /tmp/Caddyfile --force
+    entrypoint: ["/bin/sh", "-c"]
+    # Without ACME_EMAIL, the email line is left out (it is optional).
+    # OFFICEBOT_DOMAIN, ACME_EMAIL and CADDY_TLS are substituted by Compose,
+    # so they must be in .env (or the shell), not in .env.local.
+    command:
+      - |
+        [ -n "$$OFFICEBOT_DOMAIN" ] || { echo "OFFICEBOT_DOMAIN is empty: set it in .env (Compose does not read .env.local for this)" >&2; exit 1; }
+        case "$$CADDY_TLS" in auto|files) ;; *) echo "CADDY_TLS must be auto or files" >&2; exit 1;; esac
+        printenv "CADDYFILE_$$CADDY_TLS" | if [ -n "$$ACME_EMAIL" ]; then cat; else grep -vF '{$$ACME_EMAIL}'; fi > /tmp/Caddyfile
+        exec caddy run --config /tmp/Caddyfile --adapter caddyfile
     volumes:
-      # auto (default) or files, see deploy/caddy/
-      - ./deploy/caddy/Caddyfile.${CADDY_TLS:-auto}:/etc/caddy/Caddyfile:ro
       # Certificates of the auto mode live here and must be kept.
       - ./volumes/caddy/data:/data
       - ./volumes/caddy/config:/config
@@ -84,3 +118,4 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+

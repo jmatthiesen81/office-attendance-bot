@@ -280,7 +280,7 @@ The external DNS-01 service is deliberately **not part of this project**. The sa
 
 #### Implementation
 
-- Two Caddyfiles in `deploy/caddy/`: `Caddyfile.auto` and `Caddyfile.files`. Compose mounts the right one as `/etc/caddy/Caddyfile` via `./deploy/caddy/Caddyfile.${CADDY_TLS:-auto}`.
+- Two Caddyfiles, embedded in `compose.yaml` as environment variables of the `caddy` service (`CADDYFILE_auto`, `CADDYFILE_files`). At start, the container writes the one selected by `CADDY_TLS` to `/tmp/Caddyfile` (tmpfs) and starts Caddy with it. A server thus still needs only `compose.yaml` and the env files, no clone of the repository. In `compose.yaml`, the placeholders are written as `{$$VAR}`, so Compose leaves them to Caddy.
 
   ```
   # Caddyfile.auto
@@ -305,21 +305,21 @@ The external DNS-01 service is deliberately **not part of this project**. The sa
   - with `files`, additionally `${CADDY_CERT_DIR:-./volumes/certs}:/certs:ro`
   - hardened like the bot: `read_only`, `cap_drop: ALL` plus `cap_add: NET_BIND_SERVICE`, `no-new-privileges`
 - The bot gets no host port, only `expose: ["8080"]`. Section 1 applies accordingly: the port is reachable only within the Compose network.
-- **Reload after a renewal (`files`):** Caddy does not pick up changed certificate files by itself. The external service therefore runs `docker exec officebot-caddy caddy reload --config /etc/caddy/Caddyfile --force` after every renewal. Without `--force`, Caddy would skip the reload because the configuration is unchanged.
+- **Reload after a renewal (`files`):** Caddy does not pick up changed certificate files by itself. The external service therefore runs `docker exec officebot-caddy caddy reload --config /tmp/Caddyfile --force` after every renewal. Without `--force`, Caddy would skip the reload because the configuration is unchanged.
 - If Caddy runs on a public port other than 443, that port must be part of `WEB_BASE_URL` and of the redirect URL in the Slack app, e.g. `https://officebot.example.com:8443`.
 
 #### Compose variables
 
 These variables are read by Compose, not by the bot. They still live in `.env` and are documented in `dotenv.md`.
 
-| Variable           | Default           | Purpose                                                         |
-| ------------------ | ----------------- | --------------------------------------------------------------- |
-| `OFFICEBOT_DOMAIN` | –                 | host name of the interface, e.g. `officebot.example.com`        |
-| `CADDY_TLS`        | `auto`            | `auto` or `files`                                               |
-| `ACME_EMAIL`       | –                 | contact address for the Let's Encrypt account (`auto` only)     |
-| `PROXY_HTTP_PORT`  | `80`              | host port for HTTP                                              |
-| `PROXY_HTTPS_PORT` | `443`             | host port for HTTPS                                             |
-| `CADDY_CERT_DIR`   | `./volumes/certs` | directory with `fullchain.pem` and `privkey.pem` (`files` only) |
+| Variable           | Default           | Purpose                                                              |
+| ------------------ | ----------------- | -------------------------------------------------------------------- |
+| `OFFICEBOT_DOMAIN` | –                 | host name of the interface, e.g. `officebot.example.com`             |
+| `CADDY_TLS`        | `auto`            | `auto` or `files`                                                    |
+| `ACME_EMAIL`       | –                 | optional contact address for the Let's Encrypt account (`auto` only) |
+| `PROXY_HTTP_PORT`  | `80`              | host port for HTTP                                                   |
+| `PROXY_HTTPS_PORT` | `443`             | host port for HTTPS                                                  |
+| `CADDY_CERT_DIR`   | `./volumes/certs` | directory with `fullchain.pem` and `privkey.pem` (`files` only)      |
 
 ### 10. Privacy and co-determination
 
@@ -366,6 +366,7 @@ Where the implementation differs from or refines the plan above:
 - **Development login:** with `DRY_RUN=true` and a `WEB_BASE_URL` on localhost, people with access can log in without Slack. This allows trying the interface locally.
 - **Charts:** the SVG charts show exact values as native tooltips (`<title>`), and the numbers are in tables next to them.
 - **Caddy as root in the container:** Caddy runs as root inside the container so it can bind ports 80 and 443, but without any other capability (`cap_drop: ALL`, only `NET_BIND_SERVICE`). With `no-new-privileges`, a regular user would not get the file capability of the Caddy binary. The files in `./volumes/caddy/` are therefore owned by root.
+- **Caddyfile from an environment variable:** a bind-mounted Caddyfile needs the file on the server; without a clone, Docker creates an empty directory in its place and Caddy does not start. Compose `configs` with inline `content` cannot be written into a read-only container and failed on the production server with `mkdirat etc/caddy/Caddyfile: file exists`. The environment variable works with every Compose version and keeps the container read-only.
 - **Additionally:** `/weeks` for correcting whole weeks, a per-person export (`/stats/persons.csv`, admins with `WEB_STATS_PER_PERSON` only) and logins in the audit log (`login`, `login.denied`).
 
 ## Alternatives considered

@@ -93,7 +93,7 @@ OFFICEBOT_GID=1000
 OFFICEBOT_DOMAIN=
 # auto = Let's Encrypt via ports 80/443, files = certificate from CADDY_CERT_DIR
 CADDY_TLS=auto
-# Contact address for the Let's Encrypt account (auto)
+# Optional contact address for the Let's Encrypt account (auto)
 ACME_EMAIL=
 PROXY_HTTP_PORT=80
 PROXY_HTTPS_PORT=443

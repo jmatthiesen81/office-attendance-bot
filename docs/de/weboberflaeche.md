@@ -92,14 +92,14 @@ docker compose --profile web up -d
 
 Weitere Variablen für Compose (in `.env`):
 
-| Variable           | Standard          | Bedeutung                                                    |
-| ------------------ | ----------------- | ------------------------------------------------------------ |
-| `OFFICEBOT_DOMAIN` | –                 | Hostname der Oberfläche; ohne ihn startet Caddy nicht        |
-| `CADDY_TLS`        | `auto`            | `auto` oder `files` (wählt `deploy/caddy/Caddyfile.<modus>`) |
-| `ACME_EMAIL`       | leer              | Kontaktadresse für das Let's-Encrypt-Konto (`auto`)          |
-| `PROXY_HTTP_PORT`  | `80`              | Host-Port für HTTP                                           |
-| `PROXY_HTTPS_PORT` | `443`             | Host-Port für HTTPS                                          |
-| `CADDY_CERT_DIR`   | `./volumes/certs` | Verzeichnis mit `fullchain.pem` und `privkey.pem` (`files`)  |
+| Variable           | Standard          | Bedeutung                                                                |
+| ------------------ | ----------------- | ------------------------------------------------------------------------ |
+| `OFFICEBOT_DOMAIN` | –                 | Hostname der Oberfläche; ohne ihn startet Caddy nicht                    |
+| `CADDY_TLS`        | `auto`            | `auto` oder `files` (wählt das in `compose.yaml` eingebettete Caddyfile) |
+| `ACME_EMAIL`       | leer              | Optionale Kontaktadresse für das Let's-Encrypt-Konto (`auto`)            |
+| `PROXY_HTTP_PORT`  | `80`              | Host-Port für HTTP                                                       |
+| `PROXY_HTTPS_PORT` | `443`             | Host-Port für HTTPS                                                      |
+| `CADDY_CERT_DIR`   | `./volumes/certs` | Verzeichnis mit `fullchain.pem` und `privkey.pem` (`files`)              |
 
 Hinweise:
 
@@ -107,7 +107,7 @@ Hinweise:
 - Bei einem anderen öffentlichen Port als 443 gehört dieser Port in `WEB_BASE_URL` und in die Redirect-URL der Slack-App, z. B. `https://officebot.example.com:8443`.
 - Bei `files` muss der externe Dienst Caddy nach jeder Erneuerung neu laden, weil Caddy geänderte Zertifikatsdateien nicht von selbst liest:
   ```bash
-  docker exec officebot-caddy caddy reload --config /etc/caddy/Caddyfile --force
+  docker exec officebot-caddy caddy reload --config /tmp/Caddyfile --force
   ```
 - Die Zertifikate von Caddy (`auto`) liegen in `./volumes/caddy/` und müssen erhalten bleiben.
 - Anderer Reverse Proxy statt Caddy: Profil weglassen und im Compose-Netz auf `officebot:8080` weiterleiten.

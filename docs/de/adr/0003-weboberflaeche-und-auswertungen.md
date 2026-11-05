@@ -280,7 +280,7 @@ Der externe Dienst für DNS-01 ist bewusst **kein Teil dieses Projekts**. Diesel
 
 #### Umsetzung
 
-- Zwei Caddyfiles unter `deploy/caddy/`: `Caddyfile.auto` und `Caddyfile.files`. Compose bindet die passende Datei über `./deploy/caddy/Caddyfile.${CADDY_TLS:-auto}` als `/etc/caddy/Caddyfile` ein.
+- Zwei Caddyfiles, eingebettet in `compose.yaml` als Umgebungsvariablen des Service `caddy` (`CADDYFILE_auto`, `CADDYFILE_files`). Beim Start schreibt der Container das per `CADDY_TLS` gewählte nach `/tmp/Caddyfile` (tmpfs) und startet Caddy damit. Ein Server braucht so weiterhin nur `compose.yaml` und die Env-Dateien, keinen Klon des Repositorys. In `compose.yaml` stehen die Platzhalter als `{$$VAR}`, damit Compose sie Caddy überlässt.
 
   ```
   # Caddyfile.auto
@@ -305,21 +305,21 @@ Der externe Dienst für DNS-01 ist bewusst **kein Teil dieses Projekts**. Diesel
   - Bei `files` zusätzlich `${CADDY_CERT_DIR:-./volumes/certs}:/certs:ro`
   - Härtung wie beim Bot: `read_only`, `cap_drop: ALL` plus `cap_add: NET_BIND_SERVICE`, `no-new-privileges`
 - Der Bot bekommt keinen Host-Port, nur `expose: ["8080"]`. Abschnitt 1 gilt entsprechend: Der Port ist nur im Compose-Netz erreichbar.
-- **Neu laden nach einer Erneuerung (`files`):** Caddy liest geänderte Zertifikatsdateien nicht von selbst ein. Der externe Dienst ruft deshalb nach jeder Erneuerung `docker exec officebot-caddy caddy reload --config /etc/caddy/Caddyfile --force` auf. Ohne `--force` würde Caddy den Reload bei unveränderter Konfiguration überspringen.
+- **Neu laden nach einer Erneuerung (`files`):** Caddy liest geänderte Zertifikatsdateien nicht von selbst ein. Der externe Dienst ruft deshalb nach jeder Erneuerung `docker exec officebot-caddy caddy reload --config /tmp/Caddyfile --force` auf. Ohne `--force` würde Caddy den Reload bei unveränderter Konfiguration überspringen.
 - Läuft Caddy auf einem anderen öffentlichen Port als 443, muss dieser Port in `WEB_BASE_URL` und in der Redirect-URL der Slack-App stehen, z. B. `https://officebot.example.com:8443`.
 
 #### Variablen für Compose
 
 Diese Variablen liest Compose, nicht der Bot. Sie stehen trotzdem in `.env` und werden in `dotenv.md` dokumentiert.
 
-| Variable           | Standard          | Zweck                                                           |
-| ------------------ | ----------------- | --------------------------------------------------------------- |
-| `OFFICEBOT_DOMAIN` | –                 | Hostname der Oberfläche, z. B. `officebot.example.com`          |
-| `CADDY_TLS`        | `auto`            | `auto` oder `files`                                             |
-| `ACME_EMAIL`       | –                 | Kontaktadresse für das Let's-Encrypt-Konto (nur `auto`)         |
-| `PROXY_HTTP_PORT`  | `80`              | Host-Port für HTTP                                              |
-| `PROXY_HTTPS_PORT` | `443`             | Host-Port für HTTPS                                             |
-| `CADDY_CERT_DIR`   | `./volumes/certs` | Verzeichnis mit `fullchain.pem` und `privkey.pem` (nur `files`) |
+| Variable           | Standard          | Zweck                                                             |
+| ------------------ | ----------------- | ----------------------------------------------------------------- |
+| `OFFICEBOT_DOMAIN` | –                 | Hostname der Oberfläche, z. B. `officebot.example.com`            |
+| `CADDY_TLS`        | `auto`            | `auto` oder `files`                                               |
+| `ACME_EMAIL`       | –                 | optionale Kontaktadresse für das Let's-Encrypt-Konto (nur `auto`) |
+| `PROXY_HTTP_PORT`  | `80`              | Host-Port für HTTP                                                |
+| `PROXY_HTTPS_PORT` | `443`             | Host-Port für HTTPS                                               |
+| `CADDY_CERT_DIR`   | `./volumes/certs` | Verzeichnis mit `fullchain.pem` und `privkey.pem` (nur `files`)   |
 
 ### 10. Datenschutz und Mitbestimmung
 
@@ -366,6 +366,7 @@ Wo die Umsetzung vom Plan oben abweicht oder ihn genauer fasst:
 - **Entwicklungs-Login:** Mit `DRY_RUN=true` und einer `WEB_BASE_URL` auf localhost gibt es einen Login ohne Slack für Personen mit Zugang. Damit lässt sich die Oberfläche lokal ausprobieren.
 - **Diagramme:** Die SVG-Diagramme zeigen exakte Werte als native Tooltips (`<title>`), daneben stehen die Zahlen in Tabellen.
 - **Caddy als root im Container:** Caddy läuft im Container als root, damit er die Ports 80 und 443 öffnen kann, aber ohne weitere Capabilities (`cap_drop: ALL`, nur `NET_BIND_SERVICE`). Mit `no-new-privileges` würde ein normaler Benutzer die Datei-Capability des Caddy-Binaries nicht bekommen. Die Dateien unter `./volumes/caddy/` gehören deshalb root.
+- **Caddyfile aus einer Umgebungsvariable:** Ein eingebundenes Caddyfile braucht die Datei auf dem Server; ohne Klon legt Docker an ihrer Stelle ein leeres Verzeichnis an, und Caddy startet nicht. Compose-`configs` mit eingebettetem `content` lassen sich nicht in einen schreibgeschützten Container schreiben und scheiterten auf dem Produktivserver mit `mkdirat etc/caddy/Caddyfile: file exists`. Die Umgebungsvariable funktioniert mit jeder Compose-Version, und der Container bleibt schreibgeschützt.
 - **Zusätzlich:** `/weeks` zum Korrigieren ganzer Wochen, ein Export pro Person (`/stats/persons.csv`, nur Admins mit `WEB_STATS_PER_PERSON`) und die Anmeldungen im Audit-Log (`login`, `login.denied`).
 
 ## Betrachtete Alternativen
