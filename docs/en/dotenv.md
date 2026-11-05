@@ -73,8 +73,8 @@ WEB_BASE_URL=
 # Maximum lifetime of a login and logout after inactivity
 WEB_SESSION_TTL=12h
 WEB_SESSION_IDLE=2h
-# Let admins see and export statistics per person (check with the works
-# council and data protection first)
+# Let analysts and admins see and export statistics per person (check with
+# the works council and data protection first)
 WEB_STATS_PER_PERSON=false
 # Keep the daily status per person this many months; 0 = delete manually only.
 # Monthly figures without names are kept indefinitely.

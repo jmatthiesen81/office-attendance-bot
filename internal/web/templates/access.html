@@ -16,6 +16,7 @@
           <input type="hidden" name="user" value="{{.SlackUserID}}">
           <select name="role" aria-label="{{$.T "access.role"}}">
             <option value="admin" {{if eq .Role "admin"}}selected{{end}}>{{$.T "role.admin"}}</option>
+            <option value="analyst" {{if eq .Role "analyst"}}selected{{end}}>{{$.T "role.analyst"}}</option>
             <option value="viewer" {{if eq .Role "viewer"}}selected{{end}}>{{$.T "role.viewer"}}</option>
           </select>
           <button type="submit">{{$.T "access.change"}}</button>
@@ -53,6 +54,7 @@
     <label>{{.T "access.role"}}
       <select name="role">
         <option value="viewer">{{.T "role.viewer"}}</option>
+        <option value="analyst">{{.T "role.analyst"}}</option>
         <option value="admin">{{.T "role.admin"}}</option>
       </select>
     </label>

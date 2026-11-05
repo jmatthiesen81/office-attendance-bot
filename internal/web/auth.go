@@ -25,7 +25,6 @@ import (
 type viewer struct {
 	User    storage.WebUser
 	Session storage.WebSession
-	Lang    string
 }
 
 type ctxKey struct{}
@@ -72,7 +71,7 @@ func (s *Server) session(r *http.Request) (*viewer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &viewer{User: *u, Session: *sess, Lang: webLang(s.Svc.TranslatorFor(r.Context(), u.SlackUserID).Lang())}, nil
+	return &viewer{User: *u, Session: *sess}, nil
 }
 
 // auth protects a handler: it requires a session with at least role and,
@@ -93,7 +92,7 @@ func (s *Server) auth(role string, next http.HandlerFunc) http.Handler {
 			return
 		}
 		r = r.WithContext(context.WithValue(r.Context(), ctxKey{}, v))
-		if role == storage.RoleAdmin && v.User.Role != storage.RoleAdmin {
+		if !storage.RoleAtLeast(v.User.Role, role) {
 			s.fail(w, r, http.StatusForbidden, "err.forbidden", nil)
 			return
 		}

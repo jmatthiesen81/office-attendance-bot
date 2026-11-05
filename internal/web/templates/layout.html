@@ -11,7 +11,7 @@
 <header class="top">
   <a class="brand" href="/">{{.T "app.name"}}</a>
   {{if .User}}
-  <nav>
+  <nav class="menu">
     <a href="/" {{if eq .Nav "overview"}}aria-current="page"{{end}}>{{.T "nav.overview"}}</a>
     <a href="/stats" {{if eq .Nav "stats"}}aria-current="page"{{end}}>{{.T "nav.stats"}}</a>
     {{- if .IsAdmin}}
@@ -31,6 +31,10 @@
     <button type="submit" class="link">{{.T "nav.logout"}}</button>
   </form>
   {{end}}
+  <nav class="lang" aria-label="{{.T "nav.language"}}">
+    <a href="/lang?to=en&amp;return={{.Return}}" hreflang="en" lang="en" {{if eq .Lang "en"}}aria-current="true"{{end}}>EN</a>
+    <a href="/lang?to=de&amp;return={{.Return}}" hreflang="de" lang="de" {{if eq .Lang "de"}}aria-current="true"{{end}}>DE</a>
+  </nav>
 </header>
 <main>
   {{if .Message}}<p class="notice ok" role="status">{{.Message}}</p>{{end}}

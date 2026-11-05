@@ -15,8 +15,8 @@
 //	officebot attendance verify --date D [--undo]                mark a day as checked: statuses match actual attendance
 //	officebot stats purge --year Y | --before D | --user U [--yes] delete daily status (monthly figures are kept)
 //	officebot web-user list                                      list who may log in to the web interface
-//	officebot web-user add --user U [--role admin|viewer]        grant web access (default role: admin)
-//	officebot web-user set-role --user U --role admin|viewer     change the role
+//	officebot web-user add --user U [--role R]                   grant web access (R: admin, analyst, viewer; default admin)
+//	officebot web-user set-role --user U --role R                change the role
 //	officebot web-user remove --user U                           revoke web access and end all sessions
 //	officebot delete-week --week W --yes                         delete a week's poll from the database (testing)
 //	officebot simulate-save --user U --days mon,wed [--week W]   dry-run only: answer as a user
@@ -319,7 +319,7 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 			case "stats":
 				return errors.New("usage: officebot stats purge --year Y | --before YYYY-MM-DD | --user U [--yes]")
 			case "web-user":
-				return errors.New("usage: officebot web-user list|add|set-role|remove [--user U] [--role admin|viewer]")
+				return errors.New("usage: officebot web-user list|add|set-role|remove [--user U] [--role admin|analyst|viewer]")
 			case "lang":
 				return errors.New("usage: officebot lang list|set|reset [flags]")
 			case "attendance":
@@ -340,7 +340,7 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 	noNotice := fs.Bool("no-notice", false, "do not announce the change in the summary thread (attendance)")
 	channel := fs.String("channel", "", "only members of this channel ID (list-users)")
 	all := fs.Bool("all", false, "also show bots, deactivated and excluded users (list-users)")
-	role := fs.String("role", "", "role in the web interface: admin or viewer (web-user)")
+	role := fs.String("role", "", "role in the web interface: admin, analyst or viewer (web-user)")
 	date := fs.String("date", "", "day, YYYY-MM-DD (attendance verify)")
 	undo := fs.Bool("undo", false, "remove the checked mark (attendance verify)")
 	year := fs.Int("year", 0, "calendar year (stats purge)")
@@ -798,7 +798,7 @@ func webUser(ctx context.Context, a *app, sub, user, role string, loc *time.Loca
 			role = storage.RoleAdmin
 		}
 		if !storage.ValidRole(role) {
-			return fmt.Errorf("unknown role %q (use admin or viewer)", role)
+			return fmt.Errorf("unknown role %q (use admin, analyst or viewer)", role)
 		}
 		name := ""
 		info, err := a.api.UserInfo(ctx, user)
@@ -822,7 +822,7 @@ func webUser(ctx context.Context, a *app, sub, user, role string, loc *time.Loca
 			return err
 		}
 		if !storage.ValidRole(role) {
-			return errors.New("usage: officebot web-user set-role --user U --role admin|viewer")
+			return errors.New("usage: officebot web-user set-role --user U --role admin|analyst|viewer")
 		}
 		changed, err := a.store.SetWebUserRole(ctx, a.teamID, user, role, "cli", now)
 		if errors.Is(err, storage.ErrNotFound) {

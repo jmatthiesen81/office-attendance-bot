@@ -309,37 +309,37 @@ docker restart officebot-dry      # creates no new poll and no new DMs
 
 All commands run inside the container with the same configuration: `docker compose exec officebot /officebot <command>`. They only write to the database. The running bot does the sending within 30 s. This way only one process ever talks to Slack, and no duplicate messages are created.
 
-| Command                                                   | Effect                                                                            |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `run`                                                     | Start the bot (default)                                                           |
-| `start-week [--week 2026-W43]`                            | Start the poll now. If it already exists, nothing happens.                        |
-| `resync [--week 2026-W43]`                                | Rewrite the summary (without `--week`: all open polls)                            |
-| `refresh [--week 2026-W43]`                               | Re-render DMs and summary (without `--week`: open polls and the latest one)       |
-| `status`                                                  | Open polls, answers, delivery status, outbox                                      |
-| `list-users [--channel C…] [--all]`                       | List users with IDs and print a ready-to-paste `SLACK_USER_IDS=` line (read-only) |
-| `delete-week --week W --yes`                              | Delete a week's poll from the database (for testing)                              |
-| `simulate-save --user U --days mon,wed [--week W]`        | Only with `DRY_RUN=true`: simulate an answer                                      |
-| `simulate-request --user U [--week W]`                    | Only with `DRY_RUN=true`: simulate a click on "Abfrage an mich senden"            |
-| `away list [--user U]`                                    | List upcoming time off (with IDs)                                                 |
-| `away add --user U --from D --to D`                       | Add time off (`YYYY-MM-DD`, both days included, `--from` today or later)          |
-| `away remove --user U --from D --to D`                    | Remove days from time off (shortens or splits entries, `--from` today or later)   |
-| `away remove --id N`                                      | Delete one entry                                                                  |
-| `attendance remove --user U --days tue [--week W]`        | Remove days from a person's answer, e.g. when they did not show up after all      |
-| `attendance add --user U --days tue [--week W]`           | Add days to the answer (no answer yet: creates one)                               |
-| `attendance set --user U --days mon,wed\|none [--week W]` | Replace the answer, `none` = no office day                                        |
-| `attendance verify --date D [--undo]`                     | Mark a day as checked: the status of everybody matches actual attendance          |
-| `stats purge --year Y\|--before D\|--user U [--yes]`      | Delete daily status per person (preview without `--yes`); monthly figures stay    |
-| `web-user list`                                           | Everybody with access to the web interface                                        |
-| `web-user add --user U [--role admin\|viewer]`            | Grant access to the web interface (default: admin)                                |
-| `web-user set-role --user U --role admin\|viewer`         | Change the role                                                                   |
-| `web-user remove --user U`                                | Revoke access and end all sessions                                                |
-| `lang list`                                               | List the language choices of people                                               |
-| `lang set --user U <language>`                            | Set a person's language, e.g. `de` or `pirate_en`; open DMs are re-rendered       |
-| `lang reset --user U`                                     | Back to the team default                                                          |
-| `backup <file>`                                           | Consistent copy of the database (`VACUUM INTO`), also while running               |
-| `migrate`                                                 | Apply migrations and exit                                                         |
-| `healthcheck`                                             | Health check probe                                                                |
-| `version`                                                 | Print the version (`dev` for local builds without a version)                      |
+| Command                                                    | Effect                                                                            |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `run`                                                      | Start the bot (default)                                                           |
+| `start-week [--week 2026-W43]`                             | Start the poll now. If it already exists, nothing happens.                        |
+| `resync [--week 2026-W43]`                                 | Rewrite the summary (without `--week`: all open polls)                            |
+| `refresh [--week 2026-W43]`                                | Re-render DMs and summary (without `--week`: open polls and the latest one)       |
+| `status`                                                   | Open polls, answers, delivery status, outbox                                      |
+| `list-users [--channel C…] [--all]`                        | List users with IDs and print a ready-to-paste `SLACK_USER_IDS=` line (read-only) |
+| `delete-week --week W --yes`                               | Delete a week's poll from the database (for testing)                              |
+| `simulate-save --user U --days mon,wed [--week W]`         | Only with `DRY_RUN=true`: simulate an answer                                      |
+| `simulate-request --user U [--week W]`                     | Only with `DRY_RUN=true`: simulate a click on "Abfrage an mich senden"            |
+| `away list [--user U]`                                     | List upcoming time off (with IDs)                                                 |
+| `away add --user U --from D --to D`                        | Add time off (`YYYY-MM-DD`, both days included, `--from` today or later)          |
+| `away remove --user U --from D --to D`                     | Remove days from time off (shortens or splits entries, `--from` today or later)   |
+| `away remove --id N`                                       | Delete one entry                                                                  |
+| `attendance remove --user U --days tue [--week W]`         | Remove days from a person's answer, e.g. when they did not show up after all      |
+| `attendance add --user U --days tue [--week W]`            | Add days to the answer (no answer yet: creates one)                               |
+| `attendance set --user U --days mon,wed\|none [--week W]`  | Replace the answer, `none` = no office day                                        |
+| `attendance verify --date D [--undo]`                      | Mark a day as checked: the status of everybody matches actual attendance          |
+| `stats purge --year Y\|--before D\|--user U [--yes]`       | Delete daily status per person (preview without `--yes`); monthly figures stay    |
+| `web-user list`                                            | Everybody with access to the web interface                                        |
+| `web-user add --user U [--role admin\|analyst\|viewer]`    | Grant access to the web interface (default: admin)                                |
+| `web-user set-role --user U --role admin\|analyst\|viewer` | Change the role                                                                   |
+| `web-user remove --user U`                                 | Revoke access and end all sessions                                                |
+| `lang list`                                                | List the language choices of people                                               |
+| `lang set --user U <language>`                             | Set a person's language, e.g. `de` or `pirate_en`; open DMs are re-rendered       |
+| `lang reset --user U`                                      | Back to the team default                                                          |
+| `backup <file>`                                            | Consistent copy of the database (`VACUUM INTO`), also while running               |
+| `migrate`                                                  | Apply migrations and exit                                                         |
+| `healthcheck`                                              | Health check probe                                                                |
+| `version`                                                  | Print the version (`dev` for local builds without a version)                      |
 
 `attendance` corrects answers through the normal save path, but without the deadline. This also works for past days and closed polls. Without `--week` it applies to the current calendar week. The DM is re-rendered and the summary updated, and a closed poll stays closed. As with a save in Slack, the change is announced in the summary thread (see change notices). `--no-notice` suppresses the notice. Example for someone who did not come to the office today after all: `docker compose exec officebot /officebot attendance remove --user U0123456 --days tue`.
 
@@ -414,7 +414,7 @@ New migrations: add a file with the next free number, e.g. `internal/storage/mig
 
 - **Single instance**: the scheduler, outbox and update worker assume that exactly one container is running (no distributed locks).
 - **Privacy of time off**: the bot stores vacation and absence periods with the Slack user ID in its database. Anyone away for a whole week is listed as "Away" in the summary channel, visible to everyone in it. The bot never asks for a reason. Inform the team beforehand and, where applicable, align with your works council or data protection officer.
-- **Privacy of statistics**: the optional statistics keep a daily status per person for `STATS_RETENTION_MONTHS` (default 24). Statistics per person are off by default (`WEB_STATS_PER_PERSON`), visible to admins only and audited. Inform the team and involve the works council and data protection officer before introducing them; see [Web interface and statistics](web-interface.md#privacy-and-co-determination).
+- **Privacy of statistics**: the optional statistics keep a daily status per person for `STATS_RETENTION_MONTHS` (default 24). Statistics per person are off by default (`WEB_STATS_PER_PERSON`), visible to analysts and admins only and audited. Inform the team and involve the works council and data protection officer before introducing them; see [Web interface and statistics](web-interface.md#privacy-and-co-determination).
 - **Privacy of the language choice**: per person, only the language code is stored, plus the Slack language (`locale`) with the participants of a poll. Both are deleted with the retention period.
 - **Time off and closed weeks**: later changes to time off only update open polls. Closed summaries stay as they are.
 - **No time off in the past**: past days count as settled. Neither the form nor `away add`/`away remove --from` enter or remove them. The only exception is **🌴 I'm away this week** for the week still being polled (see above). Only `away remove --id N` deletes a whole entry, e.g. for corrections by admins.

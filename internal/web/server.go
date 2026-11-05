@@ -112,6 +112,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /auth/callback", s.limited(s.handleAuthCallback))
 	mux.HandleFunc("GET /auth/dev", s.limited(s.handleDevLogin))
 	mux.Handle("POST /logout", s.auth(storage.RoleViewer, s.handleLogout))
+	mux.HandleFunc("GET /lang", s.handleLang)
 
 	s.routes(mux)
 	return s.secure(mux)
@@ -119,11 +120,11 @@ func (s *Server) Handler() http.Handler {
 
 // routes registers the pages behind the login.
 func (s *Server) routes(mux *http.ServeMux) {
-	viewer, admin := storage.RoleViewer, storage.RoleAdmin
+	viewer, analyst, admin := storage.RoleViewer, storage.RoleAnalyst, storage.RoleAdmin
 	mux.Handle("GET /{$}", s.auth(viewer, s.handleOverview))
 	mux.Handle("GET /stats", s.auth(viewer, s.handleStats))
 	mux.Handle("GET /stats.csv", s.auth(viewer, s.handleStatsCSV))
-	mux.Handle("GET /stats/persons.csv", s.auth(admin, s.handlePersonsCSV))
+	mux.Handle("GET /stats/persons.csv", s.auth(analyst, s.handlePersonsCSV))
 
 	mux.Handle("GET /weeks", s.auth(admin, s.handleWeeks))
 	mux.Handle("GET /weeks/go", s.auth(admin, func(w http.ResponseWriter, r *http.Request) {
@@ -240,6 +241,7 @@ type Page struct {
 	Data      any
 	DevLogin  []storage.WebUser
 	PerPerson bool
+	Return    string // current page, target of the language switch
 }
 
 // T translates a key into the page language.
@@ -256,6 +258,14 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, name
 	}
 	if p.Lang == "" {
 		p.Lang = s.lang(r)
+	}
+	if p.Return == "" {
+		// After a form submission, the switch leads to the start page: a
+		// POST target cannot be fetched with GET.
+		p.Return = "/"
+		if r.Method == http.MethodGet && r.URL.Path != "/lang" {
+			p.Return = safeReturn(r.URL.RequestURI())
+		}
 	}
 	if p.Message == "" {
 		if k := r.URL.Query().Get("msg"); k != "" && hasText(p.Lang, "msg."+k) {
@@ -312,22 +322,34 @@ func redirect(w http.ResponseWriter, r *http.Request, path, msg, errKey string) 
 	http.Redirect(w, r, path, http.StatusSeeOther)
 }
 
-// lang returns the language of the web interface for the request: German
-// for people who chose a German variant in the bot, otherwise English.
-func (s *Server) lang(r *http.Request) string {
-	if v := viewerFrom(r); v != nil {
-		return v.Lang
-	}
-	return webLang(s.Cfg.Translator.Lang())
-}
+// langCookie stores the language chosen with the switch in the header.
+const langCookie = "officebot_lang"
 
-// webLang maps a bot language (e.g. "de", "nerd_de", "fr") to "de" or "en".
-func webLang(lang string) string {
-	if i := strings.LastIndex(lang, "_"); i >= 0 {
-		lang = lang[i+1:]
-	}
-	if lang == "de" {
+// lang returns the language of the web interface for the request: the one
+// chosen with the switch, otherwise English. It is independent of the bot
+// language, so everybody gets the same interface until they switch.
+func (s *Server) lang(r *http.Request) string {
+	if c, err := r.Cookie(langCookie); err == nil && c.Value == "de" {
 		return "de"
 	}
 	return "en"
+}
+
+// handleLang switches the interface language and returns to the page. It
+// needs no login, so the switch also works on the login page.
+func (s *Server) handleLang(w http.ResponseWriter, r *http.Request) {
+	lang := r.URL.Query().Get("to")
+	if lang != "de" && lang != "en" {
+		lang = "en"
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     langCookie,
+		Value:    lang,
+		Path:     "/",
+		MaxAge:   365 * 24 * 3600,
+		Secure:   s.Cfg.WebBaseURL.Scheme == "https",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	http.Redirect(w, r, safeReturn(r.URL.Query().Get("return")), http.StatusSeeOther)
 }

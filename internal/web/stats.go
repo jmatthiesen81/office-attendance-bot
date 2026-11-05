@@ -87,7 +87,7 @@ type deskRow struct {
 
 func (s *Server) perPersonAllowed(r *http.Request) bool {
 	v := viewerFrom(r)
-	return s.Cfg.WebStatsPerPerson && v != nil && v.User.Role == storage.RoleAdmin
+	return s.Cfg.WebStatsPerPerson && v != nil && storage.RoleAtLeast(v.User.Role, storage.RoleAnalyst)
 }
 
 func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
@@ -223,7 +223,7 @@ func (s *Server) handleStatsCSV(w http.ResponseWriter, r *http.Request) {
 	cw.Flush()
 }
 
-// handlePersonsCSV exports the figures per person (admins, only with
+// handlePersonsCSV exports the figures per person (analysts and admins, only with
 // WEB_STATS_PER_PERSON); every export is audited.
 func (s *Server) handlePersonsCSV(w http.ResponseWriter, r *http.Request) {
 	if !s.perPersonAllowed(r) {

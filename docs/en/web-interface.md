@@ -17,20 +17,20 @@ The bot can optionally serve a web interface for administration and statistics. 
 
 ## What it offers
 
-| Page        | Role          | Content                                                                                  |
-| ----------- | ------------- | ---------------------------------------------------------------------------------------- |
-| Overview    | admin, viewer | Running polls: who answered, delivery status, outbox (like `officebot status`)           |
-| Statistics  | admin, viewer | Office occupancy, desks needed, distributions; per person for admins only (see below)    |
-| Day check   | admin         | Reconcile the plan with actual attendance per day and mark the day as checked            |
-| Weeks       | admin         | Correct responses of a week (optionally with a thread notice), re-render DMs and summary |
-| Time off    | admin         | Enter and delete time off (like `officebot away`)                                        |
-| Closed days | admin         | Public holidays and company holidays; they count in no statistic                         |
-| Languages   | admin         | A person's language for DMs (like `officebot lang`)                                      |
-| Access      | admin         | Who may log in and with which role                                                       |
-| Retention   | admin         | Retention periods and deleting daily data per year, cut-off date or person               |
-| Audit log   | admin         | Every change with who made it and when                                                   |
+| Page        | Role  | Content                                                                                            |
+| ----------- | ----- | -------------------------------------------------------------------------------------------------- |
+| Overview    | all   | Running polls: who answered, delivery status, outbox (like `officebot status`)                     |
+| Statistics  | all   | Office occupancy, desks needed, distributions; per person for analysts and admins only (see below) |
+| Day check   | admin | Reconcile the plan with actual attendance per day and mark the day as checked                      |
+| Weeks       | admin | Correct responses of a week (optionally with a thread notice), re-render DMs and summary           |
+| Time off    | admin | Enter and delete time off (like `officebot away`)                                                  |
+| Closed days | admin | Public holidays and company holidays; they count in no statistic                                   |
+| Languages   | admin | A person's language for DMs (like `officebot lang`)                                                |
+| Access      | admin | Who may log in and with which role                                                                 |
+| Retention   | admin | Retention periods and deleting daily data per year, cut-off date or person                         |
+| Audit log   | admin | Every change with who made it and when                                                             |
 
-The interface speaks German and English: German for people who chose a German variant in the bot, English otherwise. All changes use the same rules as the CLI and reach Slack through the running bot within 30 seconds.
+The interface speaks English and German. English is the default; the **EN | DE** switch at the top right (also on the login page) changes the language and is remembered in the browser for a year. All changes use the same rules as the CLI and reach Slack through the running bot within 30 seconds.
 
 ## Setup
 
@@ -71,7 +71,7 @@ SLACK_CLIENT_SECRET=...
 | `SLACK_CLIENT_SECRET`    | –       | Client secret of the Slack app (`.env.local`); masked in the log                                                     |
 | `WEB_SESSION_TTL`        | `12h`   | Maximum lifetime of a login                                                                                          |
 | `WEB_SESSION_IDLE`       | `2h`    | Logout after this time without activity                                                                              |
-| `WEB_STATS_PER_PERSON`   | `false` | `true`: admins see and export statistics per person                                                                  |
+| `WEB_STATS_PER_PERSON`   | `false` | `true`: analysts and admins see and export statistics per person                                                     |
 | `STATS_RETENTION_MONTHS` | `24`    | Retention of the daily status per person; `0` = no automatic deletion                                                |
 | `OFFICE_DESKS`           | empty   | Number of desks available today; shown as a reference in the statistics                                              |
 
@@ -130,19 +130,20 @@ With `DRY_RUN=true` and `WEB_BASE_URL=http://localhost:8080`, the login page off
 
 ## Access and roles
 
-| Role     | May                                                                                            |
-| -------- | ---------------------------------------------------------------------------------------------- |
-| `admin`  | Everything: administration, corrections, access, retention, statistics per person (if enabled) |
-| `viewer` | Overview and the aggregated statistics                                                         |
+| Role      | May                                                                                            |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| `admin`   | Everything: administration, corrections, access, retention, statistics per person (if enabled) |
+| `analyst` | Everything a viewer may, plus statistics and export per person (if enabled); changes nothing   |
+| `viewer`  | Overview and the aggregated statistics                                                         |
 
 CLI:
 
-| Command                                           | Effect                                     |
-| ------------------------------------------------- | ------------------------------------------ |
-| `web-user list`                                   | Everybody with access, role, last login    |
-| `web-user add --user U [--role admin\|viewer]`    | Grant access (default: admin)              |
-| `web-user set-role --user U --role admin\|viewer` | Change the role                            |
-| `web-user remove --user U`                        | Revoke access and end all sessions at once |
+| Command                                                    | Effect                                     |
+| ---------------------------------------------------------- | ------------------------------------------ |
+| `web-user list`                                            | Everybody with access, role, last login    |
+| `web-user add --user U [--role admin\|analyst\|viewer]`    | Grant access (default: admin)              |
+| `web-user set-role --user U --role admin\|analyst\|viewer` | Change the role                            |
+| `web-user remove --user U`                                 | Revoke access and end all sessions at once |
 
 The last admin can be neither removed nor downgraded, on the CLI or in the web interface. Role changes and revoked access apply at once, also to running sessions. Every change is written to the audit log.
 
@@ -167,12 +168,12 @@ The **Statistics** page shows for a range of months:
 - **Occupancy:** work days, average, median, P90, P95 and maximum of people in the office; how many desks would have been enough on 95 %, 90 % and all days, compared with `OFFICE_DESKS`.
 - **Charts:** people in the office per day, average per weekday, share of days covered by *n* desks, office days per person and month, longest time without office per person. The last two are anonymous distributions.
 - **Per month:** work days, office person-days, average, maximum, response rate, checked days.
-- **Per person** (admins, only with `WEB_STATS_PER_PERSON=true`): office days and rate, remote, away, no answer, last office day, current and longest period without office with its breakdown by reason.
+- **Per person** (analysts and admins, only with `WEB_STATS_PER_PERSON=true`): office days and rate, remote, away, no answer, last office day, current and longest period without office with its breakdown by reason.
 - **Methodology:** a definition of every figure.
 
 Closed days (public holidays, company holidays) count in no figure. A period without office ignores closed days and days on which the person was not asked.
 
-Exports: **CSV without names** (`/stats.csv`, monthly figures) for everybody with access; **CSV per person** (`/stats/persons.csv`) for admins with `WEB_STATS_PER_PERSON=true`.
+Exports: **CSV without names** (`/stats.csv`, monthly figures) for everybody with access; **CSV per person** (`/stats/persons.csv`) for analysts and admins with `WEB_STATS_PER_PERSON=true`.
 
 ## Retention and deletion
 
@@ -208,7 +209,7 @@ A high `RETENTION_WEEKS` pays off mainly once: when the web interface is introdu
 
 Evaluating attendance per person is processing of personal data and can count as a technical means of monitoring performance and behavior (§ 87 (1) no. 6 BetrVG). Therefore:
 
-- Statistics per person are **off by default** (`WEB_STATS_PER_PERSON`) and visible to admins only. Every view and export is audited.
+- Statistics per person are **off by default** (`WEB_STATS_PER_PERSON`) and visible to analysts and admins only. Every view and export is audited.
 - The case for shared desks can be made with the statistics without names.
 - Daily data per person has a fixed retention period; only figures without names are kept indefinitely.
 - Inform the team and involve the works council and data protection officer before introducing it.

@@ -17,20 +17,20 @@ Der Bot kann optional eine Weboberfläche für Verwaltung und Auswertungen berei
 
 ## Was sie bietet
 
-| Seite             | Rolle         | Inhalt                                                                                             |
-| ----------------- | ------------- | -------------------------------------------------------------------------------------------------- |
-| Übersicht         | admin, viewer | Laufende Abfragen: wer geantwortet hat, Zustellstatus, Outbox (wie `officebot status`)             |
-| Auswertungen      | admin, viewer | Belegung des Office, benötigte Plätze, Verteilungen; pro Person nur für Admins (siehe unten)       |
-| Tagesprüfung      | admin         | Planung pro Tag mit der tatsächlichen Anwesenheit abgleichen und den Tag als geprüft markieren     |
-| Wochen            | admin         | Antworten einer Woche korrigieren (wahlweise mit Hinweis im Thread), DMs und Übersicht neu rendern |
-| Abwesenheiten     | admin         | Abwesenheiten eintragen und löschen (wie `officebot away`)                                         |
-| Geschlossene Tage | admin         | Feiertage und Betriebsurlaub; sie zählen in keiner Auswertung                                      |
-| Sprachen          | admin         | Sprache der DMs einer Person (wie `officebot lang`)                                                |
-| Zugriff           | admin         | Wer sich mit welcher Rolle anmelden darf                                                           |
-| Löschfristen      | admin         | Aufbewahrung und Löschen von Tagesdaten nach Jahr, Stichtag oder Person                            |
-| Audit-Log         | admin         | Jede Änderung mit Urheber und Zeitpunkt                                                            |
+| Seite             | Rolle | Inhalt                                                                                                     |
+| ----------------- | ----- | ---------------------------------------------------------------------------------------------------------- |
+| Übersicht         | alle  | Laufende Abfragen: wer geantwortet hat, Zustellstatus, Outbox (wie `officebot status`)                     |
+| Auswertungen      | alle  | Belegung des Office, benötigte Plätze, Verteilungen; pro Person nur für Analysten und Admins (siehe unten) |
+| Tagesprüfung      | admin | Planung pro Tag mit der tatsächlichen Anwesenheit abgleichen und den Tag als geprüft markieren             |
+| Wochen            | admin | Antworten einer Woche korrigieren (wahlweise mit Hinweis im Thread), DMs und Übersicht neu rendern         |
+| Abwesenheiten     | admin | Abwesenheiten eintragen und löschen (wie `officebot away`)                                                 |
+| Geschlossene Tage | admin | Feiertage und Betriebsurlaub; sie zählen in keiner Auswertung                                              |
+| Sprachen          | admin | Sprache der DMs einer Person (wie `officebot lang`)                                                        |
+| Zugriff           | admin | Wer sich mit welcher Rolle anmelden darf                                                                   |
+| Löschfristen      | admin | Aufbewahrung und Löschen von Tagesdaten nach Jahr, Stichtag oder Person                                    |
+| Audit-Log         | admin | Jede Änderung mit Urheber und Zeitpunkt                                                                    |
 
-Die Oberfläche spricht Deutsch und Englisch: Deutsch für Personen, die im Bot eine deutsche Variante gewählt haben, sonst Englisch. Alle Änderungen folgen denselben Regeln wie die CLI und erreichen Slack über den laufenden Bot innerhalb von 30 Sekunden.
+Die Oberfläche spricht Englisch und Deutsch. Standard ist Englisch; der Umschalter **EN | DE** oben rechts (auch auf der Login-Seite) wechselt die Sprache, der Browser merkt sie sich ein Jahr lang. Alle Änderungen folgen denselben Regeln wie die CLI und erreichen Slack über den laufenden Bot innerhalb von 30 Sekunden.
 
 ## Einrichtung
 
@@ -71,7 +71,7 @@ SLACK_CLIENT_SECRET=...
 | `SLACK_CLIENT_SECRET`    | –        | Client Secret der Slack-App (`.env.local`); wird im Log maskiert                                                          |
 | `WEB_SESSION_TTL`        | `12h`    | Maximale Dauer einer Anmeldung                                                                                            |
 | `WEB_SESSION_IDLE`       | `2h`     | Abmeldung nach dieser Zeit ohne Aktivität                                                                                 |
-| `WEB_STATS_PER_PERSON`   | `false`  | `true`: Admins sehen und exportieren Auswertungen pro Person                                                              |
+| `WEB_STATS_PER_PERSON`   | `false`  | `true`: Analysten und Admins sehen und exportieren Auswertungen pro Person                                                |
 | `STATS_RETENTION_MONTHS` | `24`     | Aufbewahrung des Tagesstatus pro Person; `0` = keine automatische Löschung                                                |
 | `OFFICE_DESKS`           | leer     | Anzahl der heute vorhandenen Plätze; erscheint als Vergleichswert in den Auswertungen                                     |
 
@@ -130,19 +130,20 @@ Mit `DRY_RUN=true` und `WEB_BASE_URL=http://localhost:8080` bietet die Anmeldese
 
 ## Zugang und Rollen
 
-| Rolle    | Darf                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------- |
-| `admin`  | Alles: Verwaltung, Korrekturen, Zugriff, Löschfristen, Auswertungen pro Person (wenn aktiviert) |
-| `viewer` | Übersicht und die zusammengefassten Auswertungen                                                |
+| Rolle     | Darf                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| `admin`   | Alles: Verwaltung, Korrekturen, Zugriff, Löschfristen, Auswertungen pro Person (wenn aktiviert)     |
+| `analyst` | Alles, was ein Viewer darf, dazu Auswertungen und Export pro Person (wenn aktiviert); ändert nichts |
+| `viewer`  | Übersicht und die zusammengefassten Auswertungen                                                    |
 
 CLI:
 
-| Befehl                                            | Wirkung                                            |
-| ------------------------------------------------- | -------------------------------------------------- |
-| `web-user list`                                   | Alle mit Zugang, Rolle, letzte Anmeldung           |
-| `web-user add --user U [--role admin\|viewer]`    | Zugang freischalten (Standard: admin)              |
-| `web-user set-role --user U --role admin\|viewer` | Rolle ändern                                       |
-| `web-user remove --user U`                        | Zugang entziehen und alle Sitzungen sofort beenden |
+| Befehl                                                     | Wirkung                                            |
+| ---------------------------------------------------------- | -------------------------------------------------- |
+| `web-user list`                                            | Alle mit Zugang, Rolle, letzte Anmeldung           |
+| `web-user add --user U [--role admin\|analyst\|viewer]`    | Zugang freischalten (Standard: admin)              |
+| `web-user set-role --user U --role admin\|analyst\|viewer` | Rolle ändern                                       |
+| `web-user remove --user U`                                 | Zugang entziehen und alle Sitzungen sofort beenden |
 
 Der letzte Admin kann weder entfernt noch herabgestuft werden, weder in der CLI noch in der Oberfläche. Rollenwechsel und Entzug gelten sofort, auch für laufende Sitzungen. Jede Änderung landet im Audit-Log.
 
@@ -167,12 +168,12 @@ Die Seite **Auswertungen** zeigt für einen Zeitraum von Monaten:
 - **Belegung:** Arbeitstage, Durchschnitt, Median, P90, P95 und Maximum der Personen im Office; wie viele Plätze an 95 %, 90 % und allen Tagen gereicht hätten, verglichen mit `OFFICE_DESKS`.
 - **Diagramme:** Personen im Office pro Tag, Durchschnitt nach Wochentag, Anteil der Tage, an denen *n* Plätze gereicht hätten, Office-Tage pro Person und Monat, längste Zeit ohne Office pro Person. Die letzten beiden sind Verteilungen ohne Namen.
 - **Pro Monat:** Arbeitstage, Personentage im Office, Durchschnitt, Maximum, Antwortquote, geprüfte Tage.
-- **Pro Person** (Admins, nur mit `WEB_STATS_PER_PERSON=true`): Office-Tage und Quote, remote, abwesend, keine Antwort, letzter Office-Tag, aktueller und längster Zeitraum ohne Office mit Aufschlüsselung nach Grund.
+- **Pro Person** (Analysten und Admins, nur mit `WEB_STATS_PER_PERSON=true`): Office-Tage und Quote, remote, abwesend, keine Antwort, letzter Office-Tag, aktueller und längster Zeitraum ohne Office mit Aufschlüsselung nach Grund.
 - **Methodik:** eine Definition jeder Kennzahl.
 
 Geschlossene Tage (Feiertage, Betriebsurlaub) zählen in keiner Kennzahl. Ein Zeitraum ohne Office übergeht geschlossene Tage und Tage, an denen die Person nicht befragt wurde.
 
-Exporte: **CSV ohne Namen** (`/stats.csv`, Monatswerte) für alle mit Zugang; **CSV pro Person** (`/stats/persons.csv`) für Admins mit `WEB_STATS_PER_PERSON=true`.
+Exporte: **CSV ohne Namen** (`/stats.csv`, Monatswerte) für alle mit Zugang; **CSV pro Person** (`/stats/persons.csv`) für Analysten und Admins mit `WEB_STATS_PER_PERSON=true`.
 
 ## Aufbewahrung und Löschen
 
@@ -208,7 +209,7 @@ Ein hoher Wert für `RETENTION_WEEKS` lohnt sich vor allem einmal: Beim Einführ
 
 Eine Auswertung der Anwesenheit pro Person ist eine Verarbeitung personenbezogener Daten und kann als technische Einrichtung zur Leistungs- und Verhaltenskontrolle gelten (§ 87 Abs. 1 Nr. 6 BetrVG). Deshalb:
 
-- Auswertungen pro Person sind **standardmäßig aus** (`WEB_STATS_PER_PERSON`) und nur für Admins sichtbar. Jeder Aufruf und jeder Export landet im Audit-Log.
+- Auswertungen pro Person sind **standardmäßig aus** (`WEB_STATS_PER_PERSON`) und nur für Analysten und Admins sichtbar. Jeder Aufruf und jeder Export landet im Audit-Log.
 - Die Argumentation für Shared Desks gelingt mit den Auswertungen ohne Namen.
 - Tagesdaten pro Person haben eine feste Löschfrist; unbegrenzt bleiben nur Zahlen ohne Namen.
 - Vor der Einführung das Team informieren und Betriebsrat und Datenschutz einbinden.
