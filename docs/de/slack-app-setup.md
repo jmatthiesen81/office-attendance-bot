@@ -144,10 +144,41 @@ Für den ersten Test am besten nur die eigene ID in `SLACK_USER_IDS` eintragen u
 
 ---
 
+## Schritt 9 (optional): Anmeldung mit Slack für die Weboberfläche
+
+Nur nötig für die optionale [Weboberfläche](weboberflaeche.md). Der Bot selbst läuft weiter im Socket Mode; dieser Schritt erlaubt nur die Anmeldung an der Oberfläche mit dem Slack-Konto.
+
+1. **OAuth & Permissions** → **Redirect URLs** → **Add New Redirect URL**: die öffentliche Adresse der Oberfläche plus `/auth/callback`, z. B. `https://officebot.example.com/auth/callback`. Mit **Save URLs** speichern.
+2. **OAuth & Permissions** → **Scopes** → **User Token Scopes** → **Add an OAuth Scope**: `openid` und `profile`.
+3. **Basic Information** → **App Credentials**: **Client ID** und **Client Secret** (**Show**) kopieren.
+
+Im Manifest entspricht das:
+
+```yaml
+oauth_config:
+  redirect_urls:
+    - https://officebot.example.com/auth/callback
+  scopes:
+    user:
+      - openid
+      - profile
+    bot:
+      # unverändert, siehe Schritt 1
+```
+
+Der Bot-Token bleibt gültig; die App muss nicht neu installiert werden. Die Werte wie die Tokens in Schritt 7 über einen sicheren Weg übergeben:
+
+```dotenv
+SLACK_CLIENT_ID=1234567890.1234567890   # .env.local
+SLACK_CLIENT_SECRET=...                 # .env.local, geheim
+```
+
+---
+
 ## Häufige Probleme
 
 | Problem                                     | Lösung                                                                                                               |
-|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Log: `invalid_auth` / `not_authed`          | `SLACK_BOT_TOKEN` falsch oder unvollständig. Unter **Install App** neu kopieren.                                     |
 | Log: `socket mode: invalid app token`       | `SLACK_APP_TOKEN` falsch oder ohne `connections:write`. Neuen Token erzeugen (Schritt 2).                            |
 | Log: `missing_scope`                        | Eine Berechtigung fehlt. Mit dem Manifest abgleichen (**Features → App Manifest**) und die App **neu installieren**. |

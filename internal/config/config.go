@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -71,7 +72,25 @@ type Config struct {
 	// LanguageFromSlack uses a person's Slack language when they have not
 	// chosen one and a catalog exists for it.
 	LanguageFromSlack bool
+
+	// Web interface (ADR 0003). It is off while WebListenAddr is empty.
+	WebListenAddr     string
+	WebBaseURL        *url.URL // public address, e.g. https://officebot.example.com
+	SlackClientID     string
+	SlackClientSecret string
+	WebSessionTTL     time.Duration
+	WebSessionIdle    time.Duration
+	// WebStatsPerPerson enables statistics and exports per person for admins.
+	WebStatsPerPerson bool
+	// StatsRetentionMonths keeps the daily status per person this long;
+	// 0 turns automatic deletion off.
+	StatsRetentionMonths int
+	// OfficeDesks is the number of desks available today (0 = unknown).
+	OfficeDesks int
 }
+
+// WebEnabled reports whether the web interface runs.
+func (c *Config) WebEnabled() bool { return c.WebListenAddr != "" }
 
 // Load reads the configuration from the process environment.
 func Load() (*Config, error) { return LoadFrom(os.Getenv) }
@@ -115,6 +134,15 @@ func load(get func(string) string, requireTargets bool) (*Config, error) {
 		RefreshOnUpdate:          p.boolean("REFRESH_MESSAGES_ON_UPDATE", false),
 		Translator:               p.language("BOT_LANGUAGE", i18n.DefaultLanguage),
 		LanguageFromSlack:        p.boolean("BOT_LANGUAGE_FROM_SLACK", false),
+		WebListenAddr:            p.str("WEB_LISTEN_ADDR", ""),
+		WebBaseURL:               p.baseURL("WEB_BASE_URL"),
+		SlackClientID:            p.str("SLACK_CLIENT_ID", ""),
+		SlackClientSecret:        p.str("SLACK_CLIENT_SECRET", ""),
+		WebSessionTTL:            p.duration("WEB_SESSION_TTL", 12*time.Hour),
+		WebSessionIdle:           p.duration("WEB_SESSION_IDLE", 2*time.Hour),
+		WebStatsPerPerson:        p.boolean("WEB_STATS_PER_PERSON", false),
+		StatsRetentionMonths:     p.integer("STATS_RETENTION_MONTHS", 24),
+		OfficeDesks:              p.integer("OFFICE_DESKS", 0),
 	}
 	c.validate(&p)
 	if len(p.errs) > 0 {
@@ -159,9 +187,39 @@ func (c *Config) validate(p *parser) {
 	if c.DatabasePath == "" {
 		p.fail("DATABASE_PATH is required")
 	}
+	if c.StatsRetentionMonths < 0 {
+		p.fail("STATS_RETENTION_MONTHS must be >= 0 (0 = no automatic deletion)")
+	}
+	if c.OfficeDesks < 0 {
+		p.fail("OFFICE_DESKS must be >= 0")
+	}
+	if c.WebEnabled() {
+		c.validateWeb(p)
+	}
 	if c.Location != nil && !c.DeadlineAfterStart() {
 		p.fail("POLL_DEADLINE_WEEKDAY/POLL_DEADLINE_TIME must lie after POLL_WEEKDAY/POLL_TIME (deadline is relative to the polled week)")
 	}
+}
+
+func (c *Config) validateWeb(p *parser) {
+	switch {
+	case c.WebBaseURL == nil:
+		p.fail("WEB_BASE_URL is required when WEB_LISTEN_ADDR is set")
+	case c.WebBaseURL.Scheme != "https" && !IsLocalhost(c.WebBaseURL):
+		p.fail("WEB_BASE_URL must start with https:// (http:// is only allowed for localhost)")
+	}
+	if c.SlackClientID == "" || c.SlackClientSecret == "" {
+		p.fail("SLACK_CLIENT_ID and SLACK_CLIENT_SECRET are required when WEB_LISTEN_ADDR is set")
+	}
+	if c.WebSessionTTL < time.Minute || c.WebSessionIdle < time.Minute {
+		p.fail("WEB_SESSION_TTL and WEB_SESSION_IDLE must be at least 1m")
+	}
+}
+
+// IsLocalhost reports whether u points to the local machine.
+func IsLocalhost(u *url.URL) bool {
+	h := u.Hostname()
+	return h == "localhost" || h == "127.0.0.1" || h == "::1"
 }
 
 // DeadlineAfterStart reports whether the deadline of a polled week comes
@@ -205,10 +263,19 @@ func (c *Config) LogValue() slog.Value {
 		slog.String("change_notices", changeNotices(c)),
 		slog.Bool("refresh_on_update", c.RefreshOnUpdate),
 		slog.String("database", c.DatabasePath),
+		slog.String("web", webSummary(c)),
 		slog.Bool("dry_run", c.DryRun),
 		slog.String("bot_token", mask(c.SlackBotToken)),
 		slog.String("app_token", mask(c.SlackAppToken)),
 	)
+}
+
+func webSummary(c *Config) string {
+	if !c.WebEnabled() {
+		return "off"
+	}
+	return fmt.Sprintf("listen=%s base=%s client_id=%s client_secret=%s per_person=%t", c.WebListenAddr, c.WebBaseURL,
+		c.SlackClientID, mask(c.SlackClientSecret), c.WebStatsPerPerson)
 }
 
 func changeNotices(c *Config) string {
@@ -348,6 +415,19 @@ func (p *parser) location(key, def string) *time.Location {
 		return nil
 	}
 	return loc
+}
+
+func (p *parser) baseURL(key string) *url.URL {
+	v := p.str(key, "")
+	if v == "" {
+		return nil
+	}
+	u, err := url.Parse(strings.TrimRight(v, "/"))
+	if err != nil || u.Host == "" || (u.Scheme != "https" && u.Scheme != "http") || u.RawQuery != "" || u.Fragment != "" || u.Path != "" {
+		p.fail("%s: invalid URL %q (scheme and host only, e.g. https://officebot.example.com)", key, v)
+		return nil
+	}
+	return u
 }
 
 func (p *parser) language(key, def string) *i18n.Translator {

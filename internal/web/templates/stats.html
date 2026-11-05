@@ -1,0 +1,144 @@
+{{define "content"}}
+{{$d := .Data}}{{$r := $d.R}}{{$s := $r.Summary}}{{$lang := .Lang}}
+<h1>{{.T "stats.title"}}</h1>
+<form method="get" action="/stats" class="card row">
+  <label>{{.T "stats.from"}} <input type="month" name="from" value="{{$d.Q.From}}" required></label>
+  <label>{{.T "stats.to"}} <input type="month" name="to" value="{{$d.Q.To}}" required></label>
+  <label class="check"><input type="checkbox" name="checked" value="1" {{if $d.Q.Checked}}checked{{end}}> {{.T "stats.only_checked"}}</label>
+  {{if $d.PerPerson}}<label class="check"><input type="checkbox" name="persons" value="1" {{if $d.Q.Persons}}checked{{end}}> {{.T "stats.show_persons"}}</label>{{end}}
+  <button type="submit" class="primary">{{.T "week.go"}}</button>
+  <a href="/stats.csv?{{$d.Query}}">{{.T "stats.export"}}</a>
+  {{if $d.PerPerson}}<a href="/stats/persons.csv?{{$d.Query}}">{{.T "stats.export_persons"}}</a>{{end}}
+</form>
+
+{{if eq $s.WorkDays 0}}
+<p class="card">{{.T "stats.no_data"}}{{if $r.FirstData}} {{.T "stats.first_data" $r.FirstData}}{{end}}</p>
+{{else}}
+<section class="card">
+  <h2>{{.T "stats.quality"}}</h2>
+  <dl class="facts">
+    <div><dt>{{.T "stats.checked_share"}}</dt><dd>{{pct $s.VerifiedShare}}</dd></div>
+    <div><dt>{{.T "stats.response_rate"}}</dt><dd>{{pct $s.ResponseRate}}</dd></div>
+    <div><dt>{{.T "stats.corrected_share"}}</dt><dd>{{if $s.CheckedEntries}}{{pct $s.CorrectedShare}}{{else}}–{{end}}</dd></div>
+  </dl>
+  {{if and (not $d.Q.Checked) (gt $d.Unchecked 0.0)}}<p class="muted">{{.T "stats.unchecked_note" (pct $d.Unchecked)}}</p>{{end}}
+  {{if $d.LowResponse}}<p class="notice warn">{{.T "stats.low_response"}}</p>{{end}}
+  {{if $r.StoredMonths}}<p class="muted">{{.T "stats.stored_months" $r.StoredMonths}}</p>{{end}}
+  {{if $r.SkippedMonths}}<p class="notice warn">{{.T "stats.skipped_months" $r.SkippedMonths}}</p>{{end}}
+</section>
+
+<section class="card">
+  <h2>{{.T "stats.occupancy"}}</h2>
+  <dl class="facts">
+    <div><dt>{{.T "stats.work_days"}}</dt><dd>{{$s.WorkDays}}</dd></div>
+    <div><dt>{{.T "stats.average"}}</dt><dd>{{num $s.Average}}</dd></div>
+    <div><dt>{{.T "stats.median"}}</dt><dd>{{$s.Median}}</dd></div>
+    <div><dt>P90</dt><dd>{{$s.P90}}</dd></div>
+    <div><dt>P95</dt><dd>{{$s.P95}}</dd></div>
+    <div><dt>{{.T "stats.max"}}</dt><dd>{{$s.Max}}</dd></div>
+  </dl>
+  <p><strong>{{.T "stats.desks_sentence" $d.Desks95 $d.Desks90 $d.DesksMax}}</strong>
+  {{if $r.Desks}} {{.T "stats.desks_compare" $r.Desks}}{{end}}</p>
+  <h3>{{.T "stats.chart_days"}}</h3>
+  {{$d.DaysChart}}
+</section>
+
+<div class="grid2">
+  <section class="card">
+    <h3>{{.T "stats.chart_weekdays"}}</h3>
+    {{$d.WeekdayChart}}
+    <table><tbody><tr>{{range $i, $v := $s.WeekdayAverage}}<td class="num">{{index $d.Weekdays $i}}: {{num $v}}</td>{{end}}</tr></tbody></table>
+  </section>
+  <section class="card">
+    <h3>{{.T "stats.chart_desks"}}</h3>
+    {{$d.DesksChart}}
+    <p class="muted">{{.T "stats.desks_hint"}}</p>
+  </section>
+  <section class="card">
+    <h3>{{.T "stats.chart_office"}}</h3>
+    {{$d.OfficeChart}}
+    <p class="muted">{{.T "stats.office_hint" $s.PersonMonths}}</p>
+  </section>
+  <section class="card">
+    <h3>{{.T "stats.chart_runs"}}</h3>
+    {{$d.RunChart}}
+    <p class="muted">{{.T "stats.runs_hint" $r.RunPeople}}</p>
+  </section>
+</div>
+
+<section class="card">
+  <h2>{{.T "stats.per_month"}}</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>{{.T "stats.month"}}</th><th class="num">{{.T "stats.work_days"}}</th><th class="num">{{.T "stats.office_person_days"}}</th>
+      <th class="num">{{.T "stats.average"}}</th><th class="num">{{.T "stats.max"}}</th><th class="num">{{.T "stats.response_rate"}}</th>
+      <th class="num">{{.T "stats.checked_share"}}</th><th class="num">{{.T "stats.people"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range $d.Months}}
+    <tr>
+      <td>{{.Name}}{{if .Stored}} <span class="tag" title="{{$.T "stats.stored_hint"}}">{{$.T "stats.stored"}}</span>{{end}}</td>
+      <td class="num">{{.WorkDays}}</td><td class="num">{{.OfficePersonDays}}</td><td class="num">{{num .Average}}</td>
+      <td class="num">{{.Max}}</td><td class="num">{{pct .ResponseRate}}</td><td class="num">{{pct .CheckedShare}}</td><td class="num">{{.People}}</td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{{if $d.Q.Persons}}
+<section class="card">
+  <h2>{{.T "stats.persons"}}</h2>
+  <p class="notice warn">{{.T "stats.persons_note"}}</p>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>{{.T "overview.person"}}</th><th class="num">{{.T "status.office"}}</th><th class="num">{{.T "stats.rate"}}</th>
+      <th class="num">{{.T "status.remote"}}</th><th class="num">{{.T "status.away"}}</th><th class="num">{{.T "status.no_answer"}}</th>
+      <th>{{.T "stats.last_office"}}</th><th>{{.T "stats.current_run"}}</th><th>{{.T "stats.longest_run"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range $r.People}}
+    <tr>
+      <td>{{.Name}}</td>
+      <td class="num">{{.Total.Office}}</td><td class="num">{{pct .Total.Rate}}</td><td class="num">{{.Total.Remote}}</td>
+      <td class="num">{{.Total.Away}}</td><td class="num">{{.Total.NoAnswer}}</td>
+      <td>{{if .LastOffice.IsZero}}–{{else}}{{.LastOffice}}{{end}}</td>
+      <td>{{if .Current.WorkDays}}{{$.T "stats.run_text" .Current.WorkDays (num .Current.Weeks)}}{{else}}–{{end}}</td>
+      <td>{{if .Longest.WorkDays}}{{.Longest.Start}} – {{.Longest.End}}: {{$.T "stats.run_text" .Longest.WorkDays (num .Longest.Weeks)}}
+        <br><span class="muted">{{$.T "stats.run_breakdown" .Longest.Remote .Longest.Away .Longest.NoAnswer}}</span>{{else}}–{{end}}</td>
+    </tr>
+    <tr><td colspan="9">
+      <details><summary>{{$.T "stats.per_month"}}</summary>
+      <table><tbody>
+      {{range .Months}}<tr><td>{{.Month}}</td><td class="num">{{$.T "status.office"}} {{.Office}}</td><td class="num">{{pct .Rate}}</td>
+        <td class="num">{{$.T "status.remote"}} {{.Remote}}</td><td class="num">{{$.T "status.away"}} {{.Away}}</td><td class="num">{{$.T "status.no_answer"}} {{.NoAnswer}}</td></tr>{{end}}
+      </tbody></table>
+      </details>
+    </td></tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+</section>
+{{end}}
+{{end}}
+
+<section class="card">
+  <details>
+    <summary>{{.T "stats.method"}}</summary>
+    <dl class="defs">
+      <dt>{{.T "stats.m_status"}}</dt><dd>{{.T "stats.m_status_text"}}</dd>
+      <dt>{{.T "stats.m_workdays"}}</dt><dd>{{.T "stats.m_workdays_text"}}</dd>
+      <dt>{{.T "stats.m_checked"}}</dt><dd>{{.T "stats.m_checked_text"}}</dd>
+      <dt>{{.T "stats.m_percentiles"}}</dt><dd>{{.T "stats.m_percentiles_text"}}</dd>
+      <dt>{{.T "stats.m_desks"}}</dt><dd>{{.T "stats.m_desks_text"}}</dd>
+      <dt>{{.T "stats.m_office"}}</dt><dd>{{.T "stats.m_office_text"}}</dd>
+      <dt>{{.T "stats.m_runs"}}</dt><dd>{{.T "stats.m_runs_text"}}</dd>
+      <dt>{{.T "stats.m_stored"}}</dt><dd>{{.T "stats.m_stored_text"}}</dd>
+    </dl>
+  </details>
+</section>
+{{end}}

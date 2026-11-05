@@ -22,7 +22,7 @@ func TestSetAttendance(t *testing.T) {
 	}
 	e.drain()
 	before := len(e.api.UpdatesTo("DU1"))
-	_, after, changed, err := e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceRemove, domain.Days{false, true}, true)
+	_, after, changed, err := e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceRemove, domain.Days{false, true}, true, "cli")
 	if err != nil || !changed || after.Days != (domain.Days{true, false, true}) {
 		t.Fatalf("remove: %+v changed=%v err=%v", after, changed, err)
 	}
@@ -42,15 +42,15 @@ func TestSetAttendance(t *testing.T) {
 	}
 
 	// same change again: nothing happens
-	if _, _, changed, err = e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceRemove, domain.Days{false, true}, true); err != nil || changed {
+	if _, _, changed, err = e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceRemove, domain.Days{false, true}, true, "cli"); err != nil || changed {
 		t.Errorf("repeat: changed=%v err=%v", changed, err)
 	}
 
 	// add and set; --no-notice posts nothing
-	if _, after, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceAdd, domain.Days{4: true}, false); err != nil || after.Days != (domain.Days{true, false, true, false, true}) {
+	if _, after, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceAdd, domain.Days{4: true}, false, "cli"); err != nil || after.Days != (domain.Days{true, false, true, false, true}) {
 		t.Fatalf("add: %+v err=%v", after, err)
 	}
-	if _, after, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceSet, domain.Days{}, false); err != nil || after.Days.Count() != 0 {
+	if _, after, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U1", AttendanceSet, domain.Days{}, false, "cli"); err != nil || after.Days.Count() != 0 {
 		t.Fatalf("set none: %+v err=%v", after, err)
 	}
 	e.after(2 * time.Minute)
@@ -59,14 +59,14 @@ func TestSetAttendance(t *testing.T) {
 	}
 
 	// errors
-	if _, _, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U2", AttendanceRemove, domain.Days{true}, true); err == nil {
+	if _, _, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U2", AttendanceRemove, domain.Days{true}, true, "cli"); err == nil {
 		t.Error("remove without answer accepted")
 	}
-	if _, _, _, err = e.svc.SetAttendance(e.ctx, p.ID, "UX", AttendanceSet, domain.Days{true}, true); err == nil {
+	if _, _, _, err = e.svc.SetAttendance(e.ctx, p.ID, "UX", AttendanceSet, domain.Days{true}, true, "cli"); err == nil {
 		t.Error("non participant accepted")
 	}
 	// add for someone who has not answered creates the answer
-	if _, after, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U2", AttendanceAdd, domain.Days{true}, true); err != nil || after.Days != (domain.Days{true}) {
+	if _, after, _, err = e.svc.SetAttendance(e.ctx, p.ID, "U2", AttendanceAdd, domain.Days{true}, true, "cli"); err != nil || after.Days != (domain.Days{true}) {
 		t.Errorf("add without answer: %+v err=%v", after, err)
 	}
 }

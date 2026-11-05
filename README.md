@@ -9,15 +9,16 @@ A small, self-contained Slack app for weekly office attendance planning.
 - Messages in English (default), German, French, Spanish, Italian, Portuguese, Dutch, Danish, Swedish, Norwegian, Polish, Czech, Turkish or Ukrainian – each also, for fun, in nerd and pirate speak, e.g. `nerd_de`, `pirate_en` (`BOT_LANGUAGE`).
 - Missed or lost the DM? A button below the summary sends it again, and people who joined the team after the weekly start can add themselves.
 - On vacation? People mark time off in Slack (or an admin via the CLI). Whoever is away all week gets no poll or reminders and is listed as away in the summary.
+- Optional web interface with Slack login: admins correct attendance, check days against actual attendance and manage time off and access; statistics show office occupancy and how many desks are really needed.
 
-Go · Slack Socket Mode (no public endpoint) · SQLite · one Docker container · no paid services.
+Go · Slack Socket Mode (no public endpoint; the optional web interface sits behind Caddy) · SQLite · one Docker container · no paid services.
 
 ## Documentation
 
 Full documentation (architecture, Slack app setup, all configuration options, CLI, backup, troubleshooting, limitations):
 
-- 🇬🇧 English: [docs/en/README.md](docs/en/README.md) · [Creating the Slack app](docs/en/slack-app-setup.md)
-- 🇩🇪 Deutsch: [docs/de/README.md](docs/de/README.md) · [Slack-App anlegen](docs/de/slack-app-setup.md)
+- 🇬🇧 English: [docs/en/README.md](docs/en/README.md) · [Creating the Slack app](docs/en/slack-app-setup.md) · [Web interface and statistics](docs/en/web-interface.md)
+- 🇩🇪 Deutsch: [docs/de/README.md](docs/de/README.md) · [Slack-App anlegen](docs/de/slack-app-setup.md) · [Weboberfläche und Auswertungen](docs/de/weboberflaeche.md)
 
 ## Quick start
 

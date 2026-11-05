@@ -1,0 +1,66 @@
+{{define "content"}}
+{{$d := .Data}}
+<div class="pager">
+  <a href="/weeks/{{$d.Prev}}">← {{$d.Prev}}</a>
+  <h1>{{.Title}}</h1>
+  <a href="/weeks/{{$d.Next}}">{{$d.Next}} →</a>
+  {{if $d.Recent}}
+  <form method="get" action="/weeks/go" class="inline">
+    <select name="week" aria-label="{{.T "nav.weeks"}}">
+      {{range $d.Recent}}<option value="{{.}}" {{if eq . $d.Week}}selected{{end}}>{{.}}</option>{{end}}
+    </select>
+    <button type="submit">{{.T "week.go"}}</button>
+  </form>
+  {{end}}
+</div>
+{{if not $d.Poll}}
+<p class="card">{{.T "week.no_poll"}}</p>
+{{else}}
+<p>{{if $d.Open}}{{.T "week.intro_open"}}{{else}}{{.T "week.intro_closed"}}{{end}}</p>
+<section class="card">
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>{{.T "overview.person"}}</th>
+    {{range $d.DayLabels}}<th>{{.}}</th>{{end}}
+    <th>{{.T "week.notice"}}</th><th></th>
+  </tr></thead>
+  <tbody>
+  {{range $d.Rows}}
+  {{$row := .}}
+  <tr>
+    <td>{{.Name}}{{if not .Answered}} <span class="tag">{{$.T "overview.open"}}</span>{{end}}</td>
+    {{range $i, $k := $d.DayKeys}}
+    <td>
+      <label class="check"><input type="checkbox" name="day" value="{{$k}}" form="f-{{$row.UserID}}" {{if index $row.Days $i}}checked{{end}} aria-label="{{index $d.DayLabels $i}}">
+      {{if index $row.Away $i}}<span class="tag">{{$.T "week.away"}}</span>{{end}}</label>
+    </td>
+    {{end}}
+    <td><label class="check"><input type="checkbox" name="notice" value="1" form="f-{{.UserID}}" {{if $d.Open}}checked{{end}}></label></td>
+    <td>
+      <form id="f-{{.UserID}}" method="post" action="/weeks/{{$d.Week}}/attendance" class="inline">
+        <input type="hidden" name="csrf" value="{{$.CSRF}}">
+        <input type="hidden" name="user" value="{{.UserID}}">
+        <button type="submit">{{$.T "week.save"}}</button>
+      </form>
+    </td>
+  </tr>
+  {{end}}
+  </tbody>
+</table>
+</div>
+<p class="muted">{{.T "week.hint"}}</p>
+</section>
+<section class="card row">
+  <form method="post" action="/weeks/{{$d.Week}}/refresh" class="inline">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <button type="submit">{{.T "week.refresh"}}</button>
+  </form>
+  <form method="post" action="/weeks/{{$d.Week}}/resync" class="inline">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <button type="submit">{{.T "week.resync"}}</button>
+  </form>
+  <span class="muted">{{.T "week.refresh_hint"}}</span>
+</section>
+{{end}}
+{{end}}

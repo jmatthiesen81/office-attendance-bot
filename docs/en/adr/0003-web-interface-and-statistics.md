@@ -1,6 +1,6 @@
 # ADR 0003: Web interface for administration and statistics
 
-- **Status:** Proposed
+- **Status:** Accepted, implemented on 2026-11-05
 - **Date:** 2026-11-05
 
 ## Context
@@ -351,6 +351,22 @@ Each step is its own commit:
 - `stats purge`: preview without `--yes`, `monthly_stats` written before deleting, statistics without names unchanged afterwards, `--user` also deletes responses and time off, `STATS_RETENTION_MONTHS=0`
 - periods without office across week and month boundaries and across closed days
 - percentiles and distributions with fixed test data
+
+### Implementation notes
+
+Where the implementation differs from or refines the plan above:
+
+- **Recalculation via triggers:** instead of every change triggering a recalculation itself, database triggers mark a closed week as changed (`polls.stats_dirty`) as soon as its summary version or the time off of a participant changes. The scheduler and the web interface recalculate marked weeks. This covers every path, including the CLI.
+- **Backfill:** the migration marks all closed weeks; the scheduler's first run calculates them. The result is the same as backfilling in the migration itself.
+- **Keeping the plan:** before a closed week is corrected (`attendance`, day check, `away remove --id`), the bot calculates its daily status if that has not happened yet. A correction never ends up as the plan in `attendance_days`.
+- **Day check and past time off:** "Away" in the day check enters time off for that one day, also in the past. "No answer" cannot be set there. Someone without an answer gets one for the whole week with the first correction.
+- **Monthly figures:** `monthly_stats` stores a month's figures as JSON, including the histogram of daily occupancy. Percentiles and the desk curve can thus be combined exactly for any period. Months from which daily data was deleted are frozen (`frozen`) and no longer recalculated; the statistics always use the stored figures for them.
+- **Retention in whole months:** `STATS_RETENTION_MONTHS` always deletes whole months, so no month has only part of its daily data.
+- **Interface language:** the web interface has its own small catalog for German and English; otherwise all 45 bot catalogs would have to grow by the interface texts. German applies to every German variant (`de`, `nerd_de`, `pirate_de`).
+- **Development login:** with `DRY_RUN=true` and a `WEB_BASE_URL` on localhost, people with access can log in without Slack. This allows trying the interface locally.
+- **Charts:** the SVG charts show exact values as native tooltips (`<title>`), and the numbers are in tables next to them.
+- **Caddy as root in the container:** Caddy runs as root inside the container so it can bind ports 80 and 443, but without any other capability (`cap_drop: ALL`, only `NET_BIND_SERVICE`). With `no-new-privileges`, a regular user would not get the file capability of the Caddy binary. The files in `./volumes/caddy/` are therefore owned by root.
+- **Additionally:** `/weeks` for correcting whole weeks, a per-person export (`/stats/persons.csv`, admins with `WEB_STATS_PER_PERSON` only) and logins in the audit log (`login`, `login.denied`).
 
 ## Alternatives considered
 

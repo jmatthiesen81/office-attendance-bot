@@ -1,0 +1,22 @@
+{{define "content"}}
+<h1>{{.T "nav.audit"}}</h1>
+{{$lang := .Lang}}
+<section class="card">
+  {{if .Data.Rows}}
+  <div class="scroll">
+  <table>
+    <thead><tr><th>{{.T "audit.at"}}</th><th>{{.T "audit.actor"}}</th><th>{{.T "audit.action"}}</th><th>{{.T "audit.details"}}</th></tr></thead>
+    <tbody>
+    {{range .Data.Rows}}
+    <tr><td>{{datetime $lang .At}}</td><td>{{.ActorName}}</td><td><code>{{.Action}}</code></td><td class="muted">{{.Text}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+  {{else}}<p class="muted">{{.T "audit.none"}}</p>{{end}}
+  <div class="pager">
+    {{if gt .Data.PrevPage 0}}<a href="/audit?page={{.Data.PrevPage}}">← {{.T "audit.newer"}}</a>{{end}}
+    {{if .Data.NextPage}}<a href="/audit?page={{.Data.NextPage}}">{{.T "audit.older"}} →</a>{{end}}
+  </div>
+</section>
+{{end}}

@@ -1,0 +1,60 @@
+{{define "content"}}
+{{$d := .Data}}
+<div class="pager">
+  <a href="/days/{{$d.Prev}}">← {{.T "day.prev"}}</a>
+  <h1>{{.T "nav.days"}}: {{$d.Label}}</h1>
+  <a href="/days/{{$d.Next}}">{{.T "day.next"}} →</a>
+  <form method="get" action="/days/go" class="inline">
+    <input type="date" name="date" value="{{$d.Day}}" aria-label="{{.T "closed.day"}}">
+    <button type="submit">{{.T "week.go"}}</button>
+  </form>
+</div>
+<p>{{.T "day.intro"}}</p>
+{{if $d.IsClosed}}<p class="notice warn">{{.T "day.closed" $d.Closed}}</p>{{end}}
+{{if eq $d.State "future"}}<p class="card">{{.T "err.future"}}</p>
+{{else if eq $d.State "no_poll"}}<p class="card">{{.T "err.no_poll"}}</p>
+{{else if eq $d.State "open"}}<p class="card">{{.T "err.poll_open"}}</p>
+{{else}}
+{{if $d.Verified}}
+<p class="notice ok">{{.T "day.verified_by" $d.VerifiedBy (datetime .Lang $d.Verified.At)}}</p>
+{{end}}
+<section class="card">
+  <div class="legend">
+    <span><span class="swatch s-office"></span>{{.T "status.office"}}: {{index $d.Counts "office"}}</span>
+    <span><span class="swatch s-remote"></span>{{.T "status.remote"}}: {{index $d.Counts "remote"}}</span>
+    <span><span class="swatch s-away"></span>{{.T "status.away"}}: {{index $d.Counts "away"}}</span>
+    <span><span class="swatch s-no_answer"></span>{{.T "status.no_answer"}}: {{index $d.Counts "no_answer"}}</span>
+  </div>
+  <form method="post" action="/days/{{$d.Day}}">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="scroll">
+    <table>
+      <thead><tr><th>{{.T "overview.person"}}</th><th>{{.T "status.office"}}</th><th>{{.T "status.remote"}}</th><th>{{.T "status.away"}}</th><th>{{.T "day.plan"}}</th></tr></thead>
+      <tbody>
+      {{range $d.Rows}}
+      <tr>
+        <td>{{.Name}}{{if eq .Status "no_answer"}} <span class="tag">{{$.T "status.no_answer"}}</span>{{end}}</td>
+        <td><input type="radio" name="s_{{.UserID}}" value="office" {{if eq .Status "office"}}checked{{end}} aria-label="{{$.T "status.office"}}"></td>
+        <td><input type="radio" name="s_{{.UserID}}" value="remote" {{if eq .Status "remote"}}checked{{end}} aria-label="{{$.T "status.remote"}}"></td>
+        <td><input type="radio" name="s_{{.UserID}}" value="away" {{if eq .Status "away"}}checked{{end}} aria-label="{{$.T "status.away"}}"></td>
+        <td class="muted">{{if .Corrected}}{{$.T "day.corrected_from" ($.T (printf "status.%s" .Planned))}}{{end}}</td>
+      </tr>
+      {{end}}
+      </tbody>
+    </table>
+    </div>
+    <p class="muted">{{.T "day.hint"}}</p>
+    <div class="row">
+      <label class="check"><input type="checkbox" name="verify" value="1" {{if not $d.Verified}}checked{{end}}> {{.T "day.verify"}}</label>
+      <button type="submit" class="primary">{{.T "week.save"}}</button>
+    </div>
+  </form>
+  {{if $d.Verified}}
+  <form method="post" action="/days/{{$d.Day}}/unverify" class="inline">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <button type="submit" class="link">{{.T "day.unverify"}}</button>
+  </form>
+  {{end}}
+</section>
+{{end}}
+{{end}}

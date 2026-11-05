@@ -7,6 +7,11 @@ Vollständiger Soll-Stand der beiden Dateien, zum Übernehmen in die echten Date
 Gemeinsame, nicht geheime Standardwerte. Diese Datei wird committet, also niemals Tokens eintragen.
 
 ```dotenv
+# Shared, non-secret defaults for the Docker Compose setup (committed).
+# Workspace-specific values and secrets belong in .env.local (not committed),
+# which is loaded after this file and overrides any value set here.
+# Template: .env.local.example
+
 # --- Poll schedule -------------------------------------------------------
 # When the poll is sent (weekday MONDAY…SUNDAY, time HH:MM, IANA time zone).
 # A poll sent on MONDAY asks about the current week, a poll sent on any
@@ -59,12 +64,41 @@ SUMMARY_CHANGE_NOTICE_GRACE=10m
 REFRESH_MESSAGES_ON_UPDATE=false
 DRY_RUN=false
 
+# --- Web interface and statistics (optional) ----------------------------
+# See docs/en/web-interface.md (German: docs/de/weboberflaeche.md).
+# Address of the web server in the container; empty = no web interface.
+WEB_LISTEN_ADDR=
+# Public address (scheme and host), also the base of the Slack redirect URL.
+WEB_BASE_URL=
+# Maximum lifetime of a login and logout after inactivity
+WEB_SESSION_TTL=12h
+WEB_SESSION_IDLE=2h
+# Let admins see and export statistics per person (check with the works
+# council and data protection first)
+WEB_STATS_PER_PERSON=false
+# Keep the daily status per person this many months; 0 = delete manually only.
+# Monthly figures without names are kept indefinitely.
+STATS_RETENTION_MONTHS=24
+# Number of desks available today, shown as a reference (empty = unknown)
+OFFICE_DESKS=
+
 # --- Docker Compose ------------------------------------------------------
 # UID/GID the container runs as (= owner of ./volumes/officebot); see `id -u` / `id -g`.
 # Compose substitutes ${...} in compose.yaml only from this file, so change
 # these two values here (or export them in your shell), not in .env.local.
 OFFICEBOT_UID=1000
 OFFICEBOT_GID=1000
+# Reverse proxy for the web interface (profile "web":
+# docker compose --profile web up -d). Host name of the interface:
+OFFICEBOT_DOMAIN=
+# auto = Let's Encrypt via ports 80/443, files = certificate from CADDY_CERT_DIR
+CADDY_TLS=auto
+# Contact address for the Let's Encrypt account (auto)
+ACME_EMAIL=
+PROXY_HTTP_PORT=80
+PROXY_HTTPS_PORT=443
+# Directory with fullchain.pem and privkey.pem (files)
+CADDY_CERT_DIR=./volumes/certs
 ```
 
 ## `.env.local.example`
@@ -72,6 +106,10 @@ OFFICEBOT_GID=1000
 Vorlage für die lokale, nicht committete `.env.local` (`cp .env.local.example .env.local`). Werte hier überschreiben `.env`.
 
 ```dotenv
+# Local, workspace-specific settings and secrets.
+# Copy to .env.local (ignored by git) and fill in. Values here override .env.
+#   cp .env.local.example .env.local
+
 # --- Slack credentials ---------------------------------------------------
 # Required unless DRY_RUN=true: Bot User OAuth Token (xoxb-…) and
 # app-level token with connections:write (xapp-…).
@@ -90,6 +128,11 @@ SLACK_PARTICIPANTS_CHANNEL_ID=
 SLACK_USER_IDS=U123,U456,U789
 # Never ask these people (optional, comma separated)
 SLACK_EXCLUDE_USER_IDS=
+
+# --- Web interface (optional) --------------------------------------------
+# Client ID and secret of the Slack app (Basic Information → App Credentials)
+SLACK_CLIENT_ID=
+SLACK_CLIENT_SECRET=
 
 # --- Local overrides of .env (optional) ----------------------------------
 # DRY_RUN=true

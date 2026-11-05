@@ -1,0 +1,10 @@
+# Web interface behind Caddy with an automatic Let's Encrypt certificate
+# (CADDY_TLS=auto, the default). Ports 80 or 443 must be reachable from the
+# internet for the HTTP-01 or TLS-ALPN-01 challenge. See ADR 0003, section 9.
+{
+	email {$ACME_EMAIL}
+}
+
+{$OFFICEBOT_DOMAIN} {
+	reverse_proxy officebot:8080
+}
