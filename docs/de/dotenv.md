@@ -7,6 +7,11 @@ Vollständiger Soll-Stand der beiden Dateien, zum Übernehmen in die echten Date
 Gemeinsame, nicht geheime Standardwerte. Diese Datei wird committet, also niemals Tokens eintragen.
 
 ```dotenv
+# Shared, non-secret defaults for the Docker Compose setup (committed).
+# Workspace-specific values and secrets belong in .env.local (not committed),
+# which is loaded after this file and overrides any value set here.
+# Template: .env.local.example
+
 # --- Poll schedule -------------------------------------------------------
 # When the poll is sent (weekday MONDAY…SUNDAY, time HH:MM, IANA time zone).
 # A poll sent on MONDAY asks about the current week, a poll sent on any
@@ -59,7 +64,8 @@ SUMMARY_CHANGE_NOTICE_GRACE=10m
 REFRESH_MESSAGES_ON_UPDATE=false
 DRY_RUN=false
 
-# --- Web interface and statistics (optional, see web-interface.md) ------
+# --- Web interface and statistics (optional) ----------------------------
+# See docs/en/web-interface.md (German: docs/de/weboberflaeche.md).
 # Address of the web server in the container; empty = no web interface.
 WEB_LISTEN_ADDR=
 # Public address (scheme and host), also the base of the Slack redirect URL.
@@ -100,6 +106,10 @@ CADDY_CERT_DIR=./volumes/certs
 Vorlage für die lokale, nicht committete `.env.local` (`cp .env.local.example .env.local`). Werte hier überschreiben `.env`.
 
 ```dotenv
+# Local, workspace-specific settings and secrets.
+# Copy to .env.local (ignored by git) and fill in. Values here override .env.
+#   cp .env.local.example .env.local
+
 # --- Slack credentials ---------------------------------------------------
 # Required unless DRY_RUN=true: Bot User OAuth Token (xoxb-…) and
 # app-level token with connections:write (xapp-…).
