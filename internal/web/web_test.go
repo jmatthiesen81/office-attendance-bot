@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -444,5 +445,75 @@ func TestTextFormats(t *testing.T) {
 				t.Errorf("%s %s: %q", lang, k, out)
 			}
 		}
+	}
+}
+
+func TestAnalystRole(t *testing.T) {
+	for _, perPerson := range []bool{true, false} {
+		t.Run(fmt.Sprintf("per_person=%v", perPerson), func(t *testing.T) {
+			e := newTestEnv(t, map[string]string{"WEB_STATS_PER_PERSON": fmt.Sprint(perPerson)})
+			e.addWebUser("U1", storage.RoleAdmin)
+			e.addWebUser("U2", storage.RoleAnalyst)
+			e.addWebUser("U3", storage.RoleViewer)
+
+			analyst := e.client()
+			e.login(analyst, "U2", nil)
+			for _, p := range []string{"/", "/stats", "/stats.csv"} {
+				if res := e.get(analyst, p); res.StatusCode != http.StatusOK {
+					t.Errorf("analyst on %s: %d", p, res.StatusCode)
+				}
+			}
+			for _, p := range []string{"/weeks", "/days", "/access", "/audit", "/retention", "/absences"} {
+				if res := e.get(analyst, p); res.StatusCode != http.StatusForbidden {
+					t.Errorf("analyst on admin page %s: %d", p, res.StatusCode)
+				}
+			}
+			want := http.StatusForbidden
+			if perPerson {
+				want = http.StatusOK
+			}
+			if res := e.get(analyst, "/stats/persons.csv"); res.StatusCode != want {
+				t.Errorf("analyst per-person export: %d, want %d", res.StatusCode, want)
+			}
+			if body := e.body(e.get(analyst, "/stats")); strings.Contains(body, `name="persons"`) != perPerson {
+				t.Errorf("per-person switch shown = %v, want %v", !perPerson, perPerson)
+			}
+
+			viewer := e.client()
+			e.login(viewer, "U3", nil)
+			if res := e.get(viewer, "/stats/persons.csv"); res.StatusCode != http.StatusForbidden {
+				t.Errorf("viewer per-person export: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
+func TestLanguageSwitch(t *testing.T) {
+	e := newTestEnv(t, map[string]string{"BOT_LANGUAGE": "de"})
+	e.addWebUser("U1", storage.RoleAdmin)
+	c := e.client()
+
+	// English by default, even with a German bot language.
+	if body := e.body(e.get(c, "/login")); !strings.Contains(body, `<html lang="en">`) {
+		t.Error("login page not English by default")
+	}
+	res := e.get(c, "/lang?to=de&return="+url.QueryEscape("/login?return=%2Fstats"))
+	if res.StatusCode != http.StatusSeeOther || res.Header.Get("Location") != "/login?return=%2Fstats" {
+		t.Fatalf("switch: %d %s", res.StatusCode, res.Header.Get("Location"))
+	}
+	if body := e.body(e.get(c, "/login")); !strings.Contains(body, `<html lang="de">`) {
+		t.Error("login page not German after the switch")
+	}
+	e.login(c, "U1", nil)
+	if body := e.body(e.get(c, "/stats")); !strings.Contains(body, `<html lang="de">`) || !strings.Contains(body, "return=%2fstats") && !strings.Contains(body, "return=%2Fstats") {
+		t.Error("German not kept after login or switch does not return to the page")
+	}
+
+	// Only local targets and known languages.
+	if loc := e.get(c, "/lang?to=xx&return=https://evil.example").Header.Get("Location"); loc != "/" {
+		t.Errorf("foreign return target: %s", loc)
+	}
+	if body := e.body(e.get(c, "/")); !strings.Contains(body, `<html lang="en">`) {
+		t.Error("unknown language does not fall back to English")
 	}
 }

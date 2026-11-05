@@ -10,12 +10,33 @@ import (
 
 // Roles of people who may log in to the web interface (ADR 0003).
 const (
-	RoleAdmin  = "admin"  // everything
-	RoleViewer = "viewer" // aggregated statistics only
+	RoleAdmin   = "admin"   // everything
+	RoleAnalyst = "analyst" // all statistics, also per person; no changes
+	RoleViewer  = "viewer"  // aggregated statistics only
 )
 
+// Roles lists the roles from the most to the least privileged.
+var Roles = []string{RoleAdmin, RoleAnalyst, RoleViewer}
+
+func roleRank(r string) int {
+	switch r {
+	case RoleAdmin:
+		return 3
+	case RoleAnalyst:
+		return 2
+	case RoleViewer:
+		return 1
+	}
+	return 0
+}
+
 // ValidRole reports whether r is a known role.
-func ValidRole(r string) bool { return r == RoleAdmin || r == RoleViewer }
+func ValidRole(r string) bool { return roleRank(r) > 0 }
+
+// RoleAtLeast reports whether role have includes the rights of role need.
+func RoleAtLeast(have, need string) bool {
+	return roleRank(have) > 0 && roleRank(have) >= roleRank(need)
+}
 
 // Errors of the access management.
 var (
@@ -58,7 +79,7 @@ func (s *Store) GetWebUser(ctx context.Context, workspaceID, userID string) (*We
 // ListWebUsers returns everybody with web access, admins first.
 func (s *Store) ListWebUsers(ctx context.Context, workspaceID string) ([]WebUser, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT `+webUserCols+` FROM web_users WHERE workspace_id = ?
-		ORDER BY role = 'admin' DESC, lower(display_name), slack_user_id`, workspaceID)
+		ORDER BY CASE role WHEN 'admin' THEN 0 WHEN 'analyst' THEN 1 ELSE 2 END, lower(display_name), slack_user_id`, workspaceID)
 	if err != nil {
 		return nil, err
 	}

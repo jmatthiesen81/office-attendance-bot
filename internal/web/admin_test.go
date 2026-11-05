@@ -25,6 +25,7 @@ func adminEnv(t *testing.T, extra map[string]string) (*testEnv, *http.Client, st
 	}
 	e.addWebUser("U1", storage.RoleAdmin)
 	c := e.client()
+	e.get(c, "/lang?to=de") // the tests check German texts
 	e.login(c, "U1", nil)
 	return e, c, e.csrf(c, "/access"), p
 }
@@ -226,6 +227,7 @@ func TestStatsPage(t *testing.T) {
 	e.login(admin, "U1", nil)
 	e.addWebUser("U2", storage.RoleViewer)
 	viewer := e.client()
+	e.get(viewer, "/lang?to=de")
 	e.login(viewer, "U2", nil)
 
 	body := e.body(e.get(viewer, "/stats?from=2026-11&to=2026-11&persons=1"))

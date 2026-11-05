@@ -307,37 +307,37 @@ docker restart officebot-dry      # erzeugt keine neue Abstimmung, keine neuen D
 
 Alle Befehle laufen im Container mit derselben Konfiguration: `docker compose exec officebot /officebot <befehl>`. Sie schreiben nur in die Datenbank. Den Versand übernimmt der laufende Bot innerhalb von 30 s. So spricht immer nur ein Prozess mit Slack, und es entstehen keine Doppelnachrichten.
 
-| Befehl                                                    | Wirkung                                                                                   |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `run`                                                     | Bot starten (Standard)                                                                    |
-| `start-week [--week 2026-W43]`                            | Abstimmung jetzt starten. Existiert sie schon, passiert nichts.                           |
-| `resync [--week 2026-W43]`                                | Übersicht neu schreiben (ohne `--week`: alle offenen)                                     |
-| `refresh [--week 2026-W43]`                               | DMs und Übersicht neu rendern (ohne `--week`: offene und letzte Abstimmung)               |
-| `status`                                                  | Offene Abstimmungen, Antworten, Zustellstatus, Outbox                                     |
-| `list-users [--channel C…] [--all]`                       | Benutzer mit IDs auflisten und eine fertige Zeile `SLACK_USER_IDS=` ausgeben (nur lesend) |
-| `delete-week --week W --yes`                              | Abstimmung einer Woche aus der DB löschen (für Tests)                                     |
-| `simulate-save --user U --days mon,wed [--week W]`        | Nur bei `DRY_RUN=true`: Antwort simulieren                                                |
-| `simulate-request --user U [--week W]`                    | Nur bei `DRY_RUN=true`: Klick auf „Abfrage an mich senden“ simulieren                     |
-| `away list [--user U]`                                    | Kommende Abwesenheiten anzeigen (mit ID)                                                  |
-| `away add --user U --from D --to D`                       | Abwesenheit eintragen (`YYYY-MM-DD`, beide Tage inklusive, `--from` ab heute)             |
-| `away remove --user U --from D --to D`                    | Tage aus Abwesenheiten entfernen (kürzt oder teilt Einträge, `--from` ab heute)           |
-| `away remove --id N`                                      | Einen Eintrag löschen                                                                     |
-| `attendance remove --user U --days tue [--week W]`        | Tage aus der Antwort einer Person austragen, z. B. wenn sie doch nicht da war             |
-| `attendance add --user U --days tue [--week W]`           | Tage zur Antwort hinzufügen (ohne bisherige Antwort: neue Antwort)                        |
-| `attendance set --user U --days mon,wed\|none [--week W]` | Antwort ersetzen, `none` = kein Bürotag                                                   |
-| `attendance verify --date D [--undo]`                     | Tag als geprüft markieren: Der Status aller entspricht der tatsächlichen Anwesenheit      |
-| `stats purge --year Y\|--before D\|--user U [--yes]`      | Tagesstatus pro Person löschen (ohne `--yes` nur Vorschau); Monatswerte bleiben           |
-| `web-user list`                                           | Alle mit Zugang zur Weboberfläche                                                         |
-| `web-user add --user U [--role admin\|viewer]`            | Zugang zur Weboberfläche freischalten (Standard: admin)                                   |
-| `web-user set-role --user U --role admin\|viewer`         | Rolle ändern                                                                              |
-| `web-user remove --user U`                                | Zugang entziehen und alle Sitzungen beenden                                               |
-| `lang list`                                               | Sprachwahl der Personen anzeigen                                                          |
-| `lang set --user U <sprache>`                             | Sprache einer Person setzen, z. B. `de` oder `pirate_en`; offene DMs werden neu gerendert |
-| `lang reset --user U`                                     | Zurück zum Teamstandard                                                                   |
-| `backup <datei>`                                          | Konsistente Kopie der DB (`VACUUM INTO`), auch im laufenden Betrieb                       |
-| `migrate`                                                 | Migrationen anwenden und beenden                                                          |
-| `healthcheck`                                             | Healthcheck-Probe                                                                         |
-| `version`                                                 | Version ausgeben (`dev` bei lokalen Builds ohne Version)                                  |
+| Befehl                                                     | Wirkung                                                                                   |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `run`                                                      | Bot starten (Standard)                                                                    |
+| `start-week [--week 2026-W43]`                             | Abstimmung jetzt starten. Existiert sie schon, passiert nichts.                           |
+| `resync [--week 2026-W43]`                                 | Übersicht neu schreiben (ohne `--week`: alle offenen)                                     |
+| `refresh [--week 2026-W43]`                                | DMs und Übersicht neu rendern (ohne `--week`: offene und letzte Abstimmung)               |
+| `status`                                                   | Offene Abstimmungen, Antworten, Zustellstatus, Outbox                                     |
+| `list-users [--channel C…] [--all]`                        | Benutzer mit IDs auflisten und eine fertige Zeile `SLACK_USER_IDS=` ausgeben (nur lesend) |
+| `delete-week --week W --yes`                               | Abstimmung einer Woche aus der DB löschen (für Tests)                                     |
+| `simulate-save --user U --days mon,wed [--week W]`         | Nur bei `DRY_RUN=true`: Antwort simulieren                                                |
+| `simulate-request --user U [--week W]`                     | Nur bei `DRY_RUN=true`: Klick auf „Abfrage an mich senden“ simulieren                     |
+| `away list [--user U]`                                     | Kommende Abwesenheiten anzeigen (mit ID)                                                  |
+| `away add --user U --from D --to D`                        | Abwesenheit eintragen (`YYYY-MM-DD`, beide Tage inklusive, `--from` ab heute)             |
+| `away remove --user U --from D --to D`                     | Tage aus Abwesenheiten entfernen (kürzt oder teilt Einträge, `--from` ab heute)           |
+| `away remove --id N`                                       | Einen Eintrag löschen                                                                     |
+| `attendance remove --user U --days tue [--week W]`         | Tage aus der Antwort einer Person austragen, z. B. wenn sie doch nicht da war             |
+| `attendance add --user U --days tue [--week W]`            | Tage zur Antwort hinzufügen (ohne bisherige Antwort: neue Antwort)                        |
+| `attendance set --user U --days mon,wed\|none [--week W]`  | Antwort ersetzen, `none` = kein Bürotag                                                   |
+| `attendance verify --date D [--undo]`                      | Tag als geprüft markieren: Der Status aller entspricht der tatsächlichen Anwesenheit      |
+| `stats purge --year Y\|--before D\|--user U [--yes]`       | Tagesstatus pro Person löschen (ohne `--yes` nur Vorschau); Monatswerte bleiben           |
+| `web-user list`                                            | Alle mit Zugang zur Weboberfläche                                                         |
+| `web-user add --user U [--role admin\|analyst\|viewer]`    | Zugang zur Weboberfläche freischalten (Standard: admin)                                   |
+| `web-user set-role --user U --role admin\|analyst\|viewer` | Rolle ändern                                                                              |
+| `web-user remove --user U`                                 | Zugang entziehen und alle Sitzungen beenden                                               |
+| `lang list`                                                | Sprachwahl der Personen anzeigen                                                          |
+| `lang set --user U <sprache>`                              | Sprache einer Person setzen, z. B. `de` oder `pirate_en`; offene DMs werden neu gerendert |
+| `lang reset --user U`                                      | Zurück zum Teamstandard                                                                   |
+| `backup <datei>`                                           | Konsistente Kopie der DB (`VACUUM INTO`), auch im laufenden Betrieb                       |
+| `migrate`                                                  | Migrationen anwenden und beenden                                                          |
+| `healthcheck`                                              | Healthcheck-Probe                                                                         |
+| `version`                                                  | Version ausgeben (`dev` bei lokalen Builds ohne Version)                                  |
 
 `attendance` korrigiert Antworten über die normale Speicherlogik, aber ohne Frist. So lassen sich auch vergangene Tage und geschlossene Abstimmungen korrigieren. Ohne `--week` gilt die aktuelle Kalenderwoche. Die DM wird neu gerendert, die Übersicht aktualisiert, und eine geschlossene Abstimmung bleibt geschlossen. Eine Änderung wird wie in Slack im Thread der Übersicht angekündigt (siehe Änderungshinweise). Mit `--no-notice` unterbleibt der Hinweis. Beispiel, wenn jemand heute doch nicht im Büro war: `docker compose exec officebot /officebot attendance remove --user U0123456 --days tue`.
 
@@ -412,7 +412,7 @@ Neue Migrationen: Datei mit der nächsten freien Nummer anlegen, z. B. `internal
 
 - **Eine Instanz**: Scheduler, Outbox und Update-Worker gehen davon aus, dass genau ein Container läuft (keine verteilten Locks).
 - **Datenschutz bei Abwesenheiten**: Der Bot speichert Urlaubs- und Abwesenheitszeiträume mit Slack-User-ID in der Datenbank. Wer eine ganze Woche abwesend ist, steht für alle sichtbar im Übersichts-Channel unter „Abwesend“. Einen Grund fragt der Bot nie ab. Bitte das Team vorab informieren und gegebenenfalls intern (Betriebsrat, Datenschutz) abstimmen.
-- **Datenschutz bei Auswertungen**: Die optionalen Auswertungen speichern einen Tagesstatus pro Person für `STATS_RETENTION_MONTHS` (Standard 24). Auswertungen pro Person sind standardmäßig aus (`WEB_STATS_PER_PERSON`), nur für Admins sichtbar und werden protokolliert. Vor der Einführung das Team informieren und Betriebsrat und Datenschutz einbinden, siehe [Weboberfläche und Auswertungen](weboberflaeche.md#datenschutz-und-mitbestimmung).
+- **Datenschutz bei Auswertungen**: Die optionalen Auswertungen speichern einen Tagesstatus pro Person für `STATS_RETENTION_MONTHS` (Standard 24). Auswertungen pro Person sind standardmäßig aus (`WEB_STATS_PER_PERSON`), nur für Analysten und Admins sichtbar und werden protokolliert. Vor der Einführung das Team informieren und Betriebsrat und Datenschutz einbinden, siehe [Weboberfläche und Auswertungen](weboberflaeche.md#datenschutz-und-mitbestimmung).
 - **Datenschutz bei der Sprachwahl**: Pro Person wird nur der Sprachcode gespeichert, dazu die Slack-Sprache (`locale`) bei den Teilnehmenden einer Abfrage. Beides wird mit der Aufbewahrungsfrist gelöscht.
 - **Abwesenheiten bei geschlossenen Wochen**: Spätere Änderungen an Abwesenheiten aktualisieren nur offene Abstimmungen. Geschlossene Übersichten bleiben, wie sie sind.
 - **Keine Abwesenheiten in der Vergangenheit**: Vergangene Tage gelten als erledigt. Weder Formular noch `away add`/`away remove --from` tragen sie ein oder entfernen sie. Einzige Ausnahme ist **🌴 Ich bin diese Woche abwesend** für die noch offene Woche (siehe oben). Nur `away remove --id N` löscht einen ganzen Eintrag, etwa zur Korrektur durch Admins.
