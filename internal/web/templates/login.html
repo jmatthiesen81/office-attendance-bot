@@ -1,0 +1,13 @@
+{{define "content"}}
+<section class="card narrow">
+  <h1>{{.T "login.title"}}</h1>
+  <p>{{.T "login.intro"}}</p>
+  <p><a class="button primary" href="/auth/start?return={{.Data}}">{{.T "login.button"}}</a></p>
+  {{if .DevLogin}}
+  <p class="muted">{{.T "login.dev"}}</p>
+  <ul>
+    {{range .DevLogin}}<li><a href="/auth/dev?user={{.SlackUserID}}&return={{$.Data}}">{{.DisplayName}} ({{.SlackUserID}}, {{.Role}})</a></li>{{end}}
+  </ul>
+  {{end}}
+</section>
+{{end}}

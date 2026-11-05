@@ -179,3 +179,53 @@ func TestLogValueMasksTokens(t *testing.T) {
 		t.Errorf("token leaked: %s", s)
 	}
 }
+
+func TestWebConfig(t *testing.T) {
+	m := valid()
+	c, err := LoadFrom(env(m))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.WebEnabled() || c.StatsRetentionMonths != 24 || c.WebSessionTTL != 12*time.Hour || c.WebSessionIdle != 2*time.Hour {
+		t.Errorf("unexpected web defaults: %+v", c)
+	}
+
+	m["WEB_LISTEN_ADDR"] = ":8080"
+	if _, err := LoadFrom(env(m)); err == nil || !strings.Contains(err.Error(), "WEB_BASE_URL is required") ||
+		!strings.Contains(err.Error(), "SLACK_CLIENT_ID") {
+		t.Errorf("missing web settings not reported: %v", err)
+	}
+
+	m["SLACK_CLIENT_ID"], m["SLACK_CLIENT_SECRET"] = "123.456", "s3cret"
+	for url, ok := range map[string]bool{
+		"https://officebot.example.com":  true,
+		"https://officebot.example.com/": true,
+		"http://localhost:8080":          true,
+		"http://officebot.example.com":   false,
+		"https://example.com/officebot":  false,
+		"officebot.example.com":          false,
+	} {
+		m["WEB_BASE_URL"] = url
+		c, err := LoadFrom(env(m))
+		if (err == nil) != ok {
+			t.Errorf("WEB_BASE_URL=%s: ok=%v, err=%v", url, ok, err)
+		}
+		if err == nil && c.WebBaseURL.Path != "" {
+			t.Errorf("WEB_BASE_URL=%s: path %q not trimmed", url, c.WebBaseURL.Path)
+		}
+	}
+
+	m["WEB_BASE_URL"] = "https://officebot.example.com"
+	m["STATS_RETENTION_MONTHS"] = "-1"
+	if _, err := LoadFrom(env(m)); err == nil || !strings.Contains(err.Error(), "STATS_RETENTION_MONTHS") {
+		t.Errorf("negative retention not reported: %v", err)
+	}
+	m["STATS_RETENTION_MONTHS"] = "0"
+	c, err = LoadFrom(env(m))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.StatsRetentionMonths != 0 {
+		t.Errorf("retention 0 not accepted")
+	}
+}

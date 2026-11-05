@@ -1,0 +1,48 @@
+{{define "content"}}
+<h1>{{.T "nav.languages"}}</h1>
+<p>{{.T "languages.intro" .Data.Default}}</p>
+{{$lang := .Lang}}
+<section class="card">
+  <h2>{{.T "languages.set_title"}}</h2>
+  <form method="post" action="/languages/set" class="row">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>{{.T "overview.person"}}
+      <select name="user" required>
+        <option value=""></option>
+        {{range .Data.People}}<option value="{{.SlackUserID}}">{{.Name}}</option>{{end}}
+      </select>
+    </label>
+    <label>{{.T "languages.language"}}
+      <select name="language" required>
+        {{range .Data.Languages}}<option value="{{.Code}}">{{.Name}} ({{.Code}})</option>{{end}}
+      </select>
+    </label>
+    <button type="submit" class="primary">{{.T "week.save"}}</button>
+  </form>
+</section>
+<section class="card">
+  {{if .Data.Rows}}
+  <div class="scroll">
+  <table>
+    <thead><tr><th>{{.T "overview.person"}}</th><th>{{.T "languages.language"}}</th><th>{{.T "languages.changed"}}</th><th></th></tr></thead>
+    <tbody>
+    {{range .Data.Rows}}
+    <tr>
+      <td>{{.Name}}</td>
+      <td>{{if .LanguageName}}{{.LanguageName}}{{else}}<span class="muted">{{$.T "languages.unavailable"}}</span>{{end}} <span class="muted">{{.Language}}</span></td>
+      <td>{{datetime $lang .UpdatedAt}}</td>
+      <td>
+        <form method="post" action="/languages/reset" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input type="hidden" name="user" value="{{.UserID}}">
+          <button type="submit">{{$.T "languages.reset"}}</button>
+        </form>
+      </td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+  {{else}}<p class="muted">{{.T "languages.none"}}</p>{{end}}
+</section>
+{{end}}

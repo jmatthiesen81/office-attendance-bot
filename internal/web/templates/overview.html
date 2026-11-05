@@ -1,0 +1,33 @@
+{{define "content"}}
+<h1>{{.T "overview.title"}}</h1>
+{{$lang := .Lang}}
+{{range .Data.Polls}}
+<section class="card">
+  <h2>{{$.T "overview.poll" .Poll.ISOWeek .Poll.ISOYear}}</h2>
+  <dl class="facts">
+    <div><dt>{{$.T "overview.deadline"}}</dt><dd>{{datetime $lang .Deadline}}</dd></div>
+    <div><dt>{{$.T "overview.answered"}}</dt><dd>{{.Answered}}/{{.Total}}</dd></div>
+    <div><dt>{{$.T "overview.summary"}}</dt><dd>{{if .Synced}}{{$.T "overview.synced"}}{{else}}{{$.T "overview.outdated"}}{{end}}</dd></div>
+  </dl>
+  {{if $.IsAdmin}}<p><a href="/weeks/{{.Week}}">{{$.T "overview.edit_week"}}</a></p>{{end}}
+  <div class="scroll">
+  <table>
+    <thead><tr><th>{{$.T "overview.person"}}</th><th>{{$.T "overview.answer"}}</th><th>{{$.T "overview.delivery"}}</th><th class="num">{{$.T "overview.reminders"}}</th></tr></thead>
+    <tbody>
+    {{range .Rows}}
+      <tr>
+        <td>{{.Name}} <span class="muted">{{.UserID}}</span></td>
+        <td>{{if eq .Answer ""}}<span class="muted">{{$.T "overview.open"}}</span>{{else if eq .Answer "away"}}{{$.T "overview.away"}}{{else if eq .Answer "none"}}{{$.T "overview.no_office"}}{{else}}{{.Answer}}{{end}}</td>
+        <td>{{.Delivery}}</td>
+        <td class="num">{{.Reminders}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+</section>
+{{else}}
+<p class="card">{{.T "overview.no_polls"}}</p>
+{{end}}
+<p class="muted">{{.T "overview.outbox"}}: {{if .Data.Outbox}}{{join .Data.Outbox ", "}}{{else}}{{.T "overview.outbox_none"}}{{end}}</p>
+{{end}}

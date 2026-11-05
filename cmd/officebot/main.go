@@ -12,6 +12,12 @@
 //	officebot lang list                                          list the language choices of people
 //	officebot lang set --user U <language>                       set a person's language, e.g. de or pirate_en
 //	officebot lang reset --user U                                back to the team default
+//	officebot attendance verify --date D [--undo]                mark a day as checked: statuses match actual attendance
+//	officebot stats purge --year Y | --before D | --user U [--yes] delete daily status (monthly figures are kept)
+//	officebot web-user list                                      list who may log in to the web interface
+//	officebot web-user add --user U [--role admin|viewer]        grant web access (default role: admin)
+//	officebot web-user set-role --user U --role admin|viewer     change the role
+//	officebot web-user remove --user U                           revoke web access and end all sessions
 //	officebot delete-week --week W --yes                         delete a week's poll from the database (testing)
 //	officebot simulate-save --user U --days mon,wed [--week W]   dry-run only: answer as a user
 //	officebot simulate-request --user U [--week W]               dry-run only: click "Abfrage an mich senden"
@@ -46,8 +52,10 @@ import (
 	"officebot/internal/participants"
 	"officebot/internal/poll"
 	"officebot/internal/slack"
+	"officebot/internal/stats"
 	"officebot/internal/storage"
 	"officebot/internal/summary"
+	"officebot/internal/web"
 	"officebot/internal/worker"
 )
 
@@ -84,7 +92,7 @@ func main() {
 	switch cmd {
 	case "run":
 		err = run(ctx, cfg, log)
-	case "start-week", "resync", "refresh", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away", "lang", "attendance":
+	case "start-week", "resync", "refresh", "status", "delete-week", "simulate-save", "simulate-request", "migrate", "backup", "list-users", "away", "lang", "attendance", "web-user", "stats":
 		err = cli(ctx, cmd, args, cfg, log)
 	default:
 		err = fmt.Errorf("unknown command %q", cmd)
@@ -101,6 +109,7 @@ type app struct {
 	api     slack.API
 	raw     *goslack.Client
 	svc     *poll.Service
+	stats   *stats.Service
 	people  *participants.Service
 	teamID  string
 	botUser string
@@ -154,6 +163,8 @@ func setup(ctx context.Context, cfg *config.Config, log *slog.Logger) (*app, err
 		return nil, fmt.Errorf("open database: %w", err)
 	}
 	a.svc = poll.NewService(a.store, a.api, a.people, cfg, a.teamID, nil, nil, log)
+	a.stats = stats.New(a.store, cfg, a.teamID, log.With("component", "stats"))
+	a.svc.SyncStats = a.stats.SyncPolls
 	return a, nil
 }
 
@@ -176,6 +187,7 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 		}
 	}
 	sched := poll.NewScheduler(a.svc, log)
+	sched.Extra = append(sched.Extra, poll.Step{Name: "statistics", Fn: a.stats.Sync})
 
 	ctx, cancel := context.WithCancelCause(ctx)
 	defer cancel(nil)
@@ -196,6 +208,18 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 	goRun(func() { updater.Run(ctx) })
 	goRun(func() { sched.Run(ctx) })
 	goRun(func() { healthWriter(ctx, cfg.HealthFile, a.store, connected, cancel, log) })
+	if cfg.WebEnabled() {
+		srv, err := web.New(web.Deps{Store: a.store, Svc: a.svc, Stats: a.stats, People: a.people, Slack: a.api, Cfg: cfg, TeamID: a.teamID, Log: log.With("component", "web")})
+		if err != nil {
+			cancel(err)
+		} else {
+			goRun(func() {
+				if err := srv.Run(ctx); err != nil {
+					cancel(err)
+				}
+			})
+		}
+	}
 
 	<-ctx.Done()
 	log.Info("shutting down")
@@ -289,13 +313,17 @@ func healthcheck() int {
 
 func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log *slog.Logger) error {
 	var sub string
-	if cmd == "away" || cmd == "lang" || cmd == "attendance" {
+	if cmd == "away" || cmd == "lang" || cmd == "attendance" || cmd == "web-user" || cmd == "stats" {
 		if len(args) == 0 || strings.HasPrefix(args[0], "-") {
 			switch cmd {
+			case "stats":
+				return errors.New("usage: officebot stats purge --year Y | --before YYYY-MM-DD | --user U [--yes]")
+			case "web-user":
+				return errors.New("usage: officebot web-user list|add|set-role|remove [--user U] [--role admin|viewer]")
 			case "lang":
 				return errors.New("usage: officebot lang list|set|reset [flags]")
 			case "attendance":
-				return errors.New("usage: officebot attendance set|add|remove --user U --days mon,tue [--week W] [--no-notice]")
+				return errors.New("usage: officebot attendance set|add|remove --user U --days mon,tue [--week W] [--no-notice] | verify --date D [--undo]")
 			}
 			return errors.New("usage: officebot away list|add|remove [flags]")
 		}
@@ -312,6 +340,11 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 	noNotice := fs.Bool("no-notice", false, "do not announce the change in the summary thread (attendance)")
 	channel := fs.String("channel", "", "only members of this channel ID (list-users)")
 	all := fs.Bool("all", false, "also show bots, deactivated and excluded users (list-users)")
+	role := fs.String("role", "", "role in the web interface: admin or viewer (web-user)")
+	date := fs.String("date", "", "day, YYYY-MM-DD (attendance verify)")
+	undo := fs.Bool("undo", false, "remove the checked mark (attendance verify)")
+	year := fs.Int("year", 0, "calendar year (stats purge)")
+	before := fs.String("before", "", "delete everything before this day, YYYY-MM-DD (stats purge)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -409,7 +442,14 @@ func cli(ctx context.Context, cmd string, args []string, cfg *config.Config, log
 		return away(ctx, a, sub, *user, *from, *to, *id, cfg.Location)
 	case "lang":
 		return lang(ctx, a, sub, *user, fs.Arg(0), cfg.Location)
+	case "web-user":
+		return webUser(ctx, a, sub, *user, *role, cfg.Location)
+	case "stats":
+		return statsPurge(ctx, a, cfg, sub, *year, *before, *user, *yes, log)
 	case "attendance":
+		if sub == "verify" {
+			return verifyDay(ctx, a, *date, *undo)
+		}
 		if *weekFlag == "" {
 			week = isoweek.Of(time.Now().In(cfg.Location)) // corrections are about the current week
 		}
@@ -501,7 +541,7 @@ func attendance(ctx context.Context, a *app, p *domain.Poll, sub, user, dayList 
 			return errors.New("--days is empty; use --days none with 'set' for no office day")
 		}
 	}
-	before, after, changed, err := a.svc.SetAttendance(ctx, p.ID, user, op, days, notice)
+	before, after, changed, err := a.svc.SetAttendance(ctx, p.ID, user, op, days, notice, "cli")
 	if err != nil {
 		return err
 	}
@@ -596,9 +636,7 @@ func status(ctx context.Context, a *app, loc *time.Location) error {
 // away manages time off. Changes are only written to the database; the
 // running bot updates DMs and the summary within 30 s.
 func away(ctx context.Context, a *app, sub, user, fromFlag, toFlag string, id int64, loc *time.Location) error {
-	now := time.Now()
-	// Past days are a record: time off is only added or removed from today on.
-	today := domain.DateOf(now.In(loc))
+	today := domain.DateOf(time.Now().In(loc))
 	dates := func() (domain.Date, domain.Date, error) {
 		if user == "" || fromFlag == "" || toFlag == "" {
 			return domain.Date{}, domain.Date{}, fmt.Errorf("usage: officebot away %s --user U --from YYYY-MM-DD --to YYYY-MM-DD", sub)
@@ -607,13 +645,7 @@ func away(ctx context.Context, a *app, sub, user, fromFlag, toFlag string, id in
 		if err != nil {
 			return from, from, err
 		}
-		if from.Before(today) {
-			return from, from, fmt.Errorf("--from must not be in the past (today is %s)", today)
-		}
 		to, err := domain.ParseDate(toFlag)
-		if err == nil && to.Before(from) {
-			err = errors.New("--to must not be before --from")
-		}
 		return from, to, err
 	}
 	switch sub {
@@ -637,29 +669,28 @@ func away(ctx context.Context, a *app, sub, user, fromFlag, toFlag string, id in
 		if err != nil {
 			return err
 		}
-		ab, err := a.store.AddAbsence(ctx, a.teamID, user, from, to, "cli", now)
+		ab, err := a.svc.AddTimeOff(ctx, user, from, to, "cli")
 		if err != nil {
 			return err
 		}
 		fmt.Printf("time off of %s: %s to %s (entry %d, merged with overlapping or adjacent entries)\n", user, ab.Start, ab.End, ab.ID)
 	case "remove":
 		if id > 0 {
-			ab, err := a.store.DeleteAbsence(ctx, a.teamID, "", id)
+			ab, err := a.svc.DeleteTimeOff(ctx, id, "cli")
 			if errors.Is(err, storage.ErrNotFound) {
 				return fmt.Errorf("no time-off entry %d", id)
 			}
 			if err != nil {
 				return err
 			}
-			user = ab.SlackUserID
-			fmt.Printf("time off of %s from %s to %s deleted\n", user, ab.Start, ab.End)
+			fmt.Printf("time off of %s from %s to %s deleted\n", ab.SlackUserID, ab.Start, ab.End)
 			break
 		}
 		from, to, err := dates()
 		if err != nil {
 			return err
 		}
-		changed, err := a.store.RemoveAbsenceDays(ctx, a.teamID, user, from, to, now)
+		changed, err := a.svc.RemoveTimeOff(ctx, user, from, to, "cli")
 		if err != nil {
 			return err
 		}
@@ -670,9 +701,6 @@ func away(ctx context.Context, a *app, sub, user, fromFlag, toFlag string, id in
 		fmt.Printf("%s is no longer away from %s to %s\n", user, from, to)
 	default:
 		return fmt.Errorf("unknown away command %q (use list, add or remove)", sub)
-	}
-	if err := a.svc.AbsencesChanged(ctx, user); err != nil {
-		return err
 	}
 	fmt.Println("the running bot updates DMs and the summary within 30 s")
 	return nil
@@ -706,11 +734,8 @@ func lang(ctx context.Context, a *app, sub, user, language string, loc *time.Loc
 		if user == "" || language == "" {
 			return errors.New("usage: officebot lang set --user U <language>")
 		}
-		tr, err := i18n.New(language)
+		tr, err := a.svc.SetLanguage(ctx, user, language, "cli")
 		if err != nil {
-			return err
-		}
-		if err := a.store.SetUserLanguage(ctx, a.teamID, user, tr.Lang(), time.Now()); err != nil {
 			return err
 		}
 		fmt.Printf("language of %s set to %s (%s)\n", user, tr.Lang(), tr.T("language.name"))
@@ -718,7 +743,7 @@ func lang(ctx context.Context, a *app, sub, user, language string, loc *time.Loc
 		if user == "" {
 			return errors.New("usage: officebot lang reset --user U")
 		}
-		changed, err := a.store.ResetUserLanguage(ctx, a.teamID, user)
+		changed, err := a.svc.ResetLanguage(ctx, user, "cli")
 		if err != nil {
 			return err
 		}
@@ -730,9 +755,183 @@ func lang(ctx context.Context, a *app, sub, user, language string, loc *time.Loc
 	default:
 		return fmt.Errorf("unknown lang command %q (use list, set or reset)", sub)
 	}
-	if err := a.svc.LanguageChanged(ctx, user); err != nil {
+	fmt.Println("the running bot updates open poll DMs within 30 s")
+	return nil
+}
+
+// webUser manages who may log in to the web interface (ADR 0003). The first
+// admin can only be added here; afterwards admins can also use the web
+// interface.
+func webUser(ctx context.Context, a *app, sub, user, role string, loc *time.Location) error {
+	now := time.Now()
+	needUser := func() error {
+		if user == "" {
+			return fmt.Errorf("usage: officebot web-user %s --user U", sub)
+		}
+		return nil
+	}
+	switch sub {
+	case "list":
+		users, err := a.store.ListWebUsers(ctx, a.teamID)
+		if err != nil {
+			return err
+		}
+		if len(users) == 0 {
+			fmt.Println("nobody has access to the web interface; add the first admin with: officebot web-user add --user U")
+			return nil
+		}
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "USER\tNAME\tROLE\tADDED BY\tADDED\tLAST LOGIN")
+		for _, u := range users {
+			last := "never"
+			if !u.LastLoginAt.IsZero() {
+				last = u.LastLoginAt.In(loc).Format(time.DateTime)
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", u.SlackUserID, u.DisplayName, u.Role, u.AddedBy, u.AddedAt.In(loc).Format(time.DateTime), last)
+		}
+		return w.Flush()
+	case "add":
+		if err := needUser(); err != nil {
+			return err
+		}
+		if role == "" {
+			role = storage.RoleAdmin
+		}
+		if !storage.ValidRole(role) {
+			return fmt.Errorf("unknown role %q (use admin or viewer)", role)
+		}
+		name := ""
+		info, err := a.api.UserInfo(ctx, user)
+		if err != nil {
+			return fmt.Errorf("slack user %s: %w", user, err)
+		}
+		if info.TeamID != "" && info.TeamID != a.teamID {
+			return fmt.Errorf("%s belongs to another workspace", user)
+		}
+		name = info.Name
+		err = a.store.AddWebUser(ctx, a.teamID, storage.WebUser{SlackUserID: user, Role: role, DisplayName: name}, "cli", now)
+		if errors.Is(err, storage.ErrExists) {
+			return fmt.Errorf("%s already has web access; change the role with: officebot web-user set-role --user %s --role %s", user, user, role)
+		}
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s (%s) may now log in to the web interface as %s\n", user, name, role)
+	case "set-role":
+		if err := needUser(); err != nil {
+			return err
+		}
+		if !storage.ValidRole(role) {
+			return errors.New("usage: officebot web-user set-role --user U --role admin|viewer")
+		}
+		changed, err := a.store.SetWebUserRole(ctx, a.teamID, user, role, "cli", now)
+		if errors.Is(err, storage.ErrNotFound) {
+			return fmt.Errorf("%s has no web access", user)
+		}
+		if err != nil {
+			return err
+		}
+		if !changed {
+			fmt.Printf("%s already has the role %s\n", user, role)
+			return nil
+		}
+		fmt.Printf("role of %s set to %s; it applies to running sessions at once\n", user, role)
+	case "remove":
+		if err := needUser(); err != nil {
+			return err
+		}
+		err := a.store.RemoveWebUser(ctx, a.teamID, user, "cli", now)
+		if errors.Is(err, storage.ErrNotFound) {
+			return fmt.Errorf("%s has no web access", user)
+		}
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s can no longer log in to the web interface; open sessions were ended\n", user)
+	default:
+		return fmt.Errorf("unknown web-user command %q (use list, add, set-role or remove)", sub)
+	}
+	return nil
+}
+
+// verifyDay marks a day as checked (ADR 0003): the status of everybody asked
+// on that day matches actual attendance.
+func verifyDay(ctx context.Context, a *app, dateFlag string, undo bool) error {
+	day, err := domain.ParseDate(dateFlag)
+	if err != nil {
+		return errors.New("usage: officebot attendance verify --date YYYY-MM-DD [--undo]")
+	}
+	if undo {
+		err := a.store.UnverifyDay(ctx, a.teamID, day, "cli", time.Now())
+		if errors.Is(err, storage.ErrNotFound) {
+			fmt.Printf("%s is not marked as checked\n", day)
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s is no longer marked as checked\n", day)
+		return nil
+	}
+	if err := a.store.VerifyDay(ctx, a.teamID, day, "cli", time.Now()); err != nil {
 		return err
 	}
-	fmt.Println("the running bot updates open poll DMs within 30 s")
+	fmt.Printf("%s marked as checked\n", day)
+	return nil
+}
+
+// statsPurge deletes daily status per person (ADR 0003). The monthly figures
+// without names are frozen first and kept. Without --yes it only shows what
+// would be deleted.
+func statsPurge(ctx context.Context, a *app, cfg *config.Config, sub string, year int, beforeFlag, user string, yes bool, log *slog.Logger) error {
+	usage := errors.New("usage: officebot stats purge --year Y | --before YYYY-MM-DD | --user U [--yes]")
+	if sub != "purge" {
+		return usage
+	}
+	var scope storage.PurgeScope
+	set := 0
+	if year > 0 {
+		scope.From, scope.To = domain.NewDate(year, 1, 1), domain.NewDate(year, 12, 31)
+		set++
+	}
+	if beforeFlag != "" {
+		d, err := domain.ParseDate(beforeFlag)
+		if err != nil {
+			return err
+		}
+		scope.To = d.AddDays(-1)
+		set++
+	}
+	if user != "" {
+		scope.UserID = user
+		set++
+	}
+	if set != 1 {
+		return usage
+	}
+	svc := a.stats
+	p, err := svc.PreviewPurge(ctx, scope)
+	if err != nil {
+		return err
+	}
+	what := fmt.Sprintf("%d daily entries of %d person(s)", p.Rows, p.People)
+	if p.Rows > 0 {
+		what += fmt.Sprintf(" from %s to %s", p.First, p.Last)
+	}
+	if user != "" {
+		what += fmt.Sprintf(", %d response(s) and %d time-off entry(ies) of %s, their participation in stored polls and their language choice", p.Responses, p.Absences, user)
+	}
+	if !yes {
+		fmt.Printf("this would delete %s; monthly figures without names are kept. Repeat with --yes\n", what)
+		return nil
+	}
+	if p.Rows == 0 && user == "" {
+		fmt.Println("nothing to delete")
+		return nil
+	}
+	if _, err := svc.Purge(ctx, scope, "cli"); err != nil {
+		return err
+	}
+	fmt.Printf("deleted %s; monthly figures without names are kept\n", what)
 	return nil
 }

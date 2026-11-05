@@ -144,10 +144,41 @@ For a first test, it is best to set `SLACK_USER_IDS` to your own ID only, and to
 
 ---
 
+## Step 9 (optional): Sign in with Slack for the web interface
+
+Only needed for the optional [web interface](web-interface.md). The bot itself keeps running in Socket Mode; this only lets people log in to the interface with their Slack account.
+
+1. **OAuth & Permissions** → **Redirect URLs** → **Add New Redirect URL**: the public address of the interface plus `/auth/callback`, e.g. `https://officebot.example.com/auth/callback`. Click **Save URLs**.
+2. **OAuth & Permissions** → **Scopes** → **User Token Scopes** → **Add an OAuth Scope**: `openid` and `profile`.
+3. **Basic Information** → **App Credentials**: copy **Client ID** and **Client Secret** (**Show**).
+
+In the manifest, this corresponds to:
+
+```yaml
+oauth_config:
+  redirect_urls:
+    - https://officebot.example.com/auth/callback
+  scopes:
+    user:
+      - openid
+      - profile
+    bot:
+      # unchanged, see step 1
+```
+
+The bot token stays valid; the app does not need to be reinstalled. Hand over the values like the tokens in step 7, through a secure channel:
+
+```dotenv
+SLACK_CLIENT_ID=1234567890.1234567890   # .env.local
+SLACK_CLIENT_SECRET=...                 # .env.local, secret
+```
+
+---
+
 ## Common problems
 
 | Problem                                     | Fix                                                                                                           |
-|---------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Log: `invalid_auth` / `not_authed`          | Wrong or truncated `SLACK_BOT_TOKEN`. Copy it again from **Install App**.                                     |
 | Log: `socket mode: invalid app token`       | `SLACK_APP_TOKEN` is wrong or lacks `connections:write`. Generate a new one (step 2).                         |
 | Log: `missing_scope`                        | A permission is missing. Compare with the manifest (**Features → App Manifest**), then **reinstall** the app. |

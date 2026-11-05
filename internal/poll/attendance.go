@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"officebot/internal/domain"
@@ -19,19 +20,27 @@ const (
 	AttendanceRemove                         // deselect these days
 )
 
-// SetAttendance changes a participant's response as an admin (CLI). Unlike
+// SetAttendance changes a participant's response as an admin (CLI or web
+// interface; actor is recorded in the audit log). Unlike
 // HandleSave it does not check the deadline, so past days and closed polls
 // can be corrected too. The change goes through the normal save path: the
 // summary is marked outdated and a change notice is scheduled like for a
 // save in Slack, unless notice is false. Nothing is sent from here; the
 // running bot updates the DM, the summary and posts the notice.
-func (s *Service) SetAttendance(ctx context.Context, pollID int64, userID string, op AttendanceChange, days domain.Days, notice bool) (before *domain.Response, after *domain.Response, changed bool, err error) {
+func (s *Service) SetAttendance(ctx context.Context, pollID int64, userID string, op AttendanceChange, days domain.Days, notice bool, actor string) (before *domain.Response, after *domain.Response, changed bool, err error) {
 	part, err := s.store.GetParticipant(ctx, pollID, userID)
 	if errors.Is(err, storage.ErrNotFound) {
 		return nil, nil, false, fmt.Errorf("%s is not a participant of this poll", userID)
 	}
 	if err != nil {
 		return nil, nil, false, err
+	}
+	if p, err := s.store.GetPoll(ctx, pollID); err != nil {
+		return nil, nil, false, err
+	} else if !p.IsAcceptingResponses(s.Now()) {
+		if err := s.recordPlan(ctx); err != nil {
+			return nil, nil, false, err
+		}
 	}
 	before, err = s.store.GetResponse(ctx, pollID, userID)
 	if err != nil {
@@ -67,6 +76,7 @@ func (s *Service) SetAttendance(ctx context.Context, pollID int64, userID string
 	if err != nil || !changed {
 		return before, after, changed, err
 	}
+	s.audit(ctx, actor, "attendance.set", map[string]any{"user": userID, "poll": pollID, "from": daysKeys(before), "to": daysKeys(after), "notice": notice})
 	if part.DMMessageTS != "" {
 		if err := s.store.EnqueueJob(ctx, storage.JobUpdateDM, pollID, part.ID, "", now); err != nil {
 			return before, after, changed, err
@@ -75,4 +85,19 @@ func (s *Service) SetAttendance(ctx context.Context, pollID int64, userID string
 	s.summary.Trigger()
 	s.outbox.Notify()
 	return before, after, changed, nil
+}
+
+// daysKeys returns the selected days of a response as "mon,wed", "" for no
+// office day and "-" for no answer.
+func daysKeys(r *domain.Response) string {
+	if r == nil {
+		return "-"
+	}
+	var keys []string
+	for i, on := range r.Days {
+		if on {
+			keys = append(keys, domain.DayKeys[i])
+		}
+	}
+	return strings.Join(keys, ",")
 }

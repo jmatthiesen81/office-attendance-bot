@@ -1,0 +1,22 @@
+{{define "content"}}
+{{$d := .Data}}
+<h1>{{.T "purge.title"}}</h1>
+<section class="card">
+  {{if eq $d.Kind "user"}}<p>{{.T "purge.person" $d.Name}}</p>{{end}}
+  {{if $d.Preview.Rows}}
+  <p>{{.T "purge.rows" $d.Preview.Rows $d.Preview.People $d.Preview.First $d.Preview.Last}}</p>
+  {{else}}<p>{{.T "purge.no_rows"}}</p>{{end}}
+  {{if eq $d.Kind "user"}}<p>{{.T "purge.user_extra" $d.Preview.Responses $d.Preview.Absences}}</p>{{end}}
+  <p class="muted">{{.T "purge.kept"}}</p>
+  {{if or $d.Preview.Rows (eq $d.Kind "user")}}
+  <form method="post" action="/retention/purge" class="row">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <input type="hidden" name="kind" value="{{$d.Kind}}">
+    <input type="hidden" name="value" value="{{$d.Value}}">
+    <input type="hidden" name="confirm" value="1">
+    <button type="submit" class="danger">{{.T "purge.confirm"}}</button>
+    <a href="/retention">{{.T "purge.cancel"}}</a>
+  </form>
+  {{else}}<p><a href="/retention">{{.T "purge.cancel"}}</a></p>{{end}}
+</section>
+{{end}}

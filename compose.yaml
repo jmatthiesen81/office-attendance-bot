@@ -34,6 +34,51 @@ services:
       timeout: 5s
       start_period: 60s
       retries: 3
+    # Web interface (ADR 0003, WEB_LISTEN_ADDR=:8080): reachable only within
+    # the Compose network, i.e. through Caddy or another reverse proxy.
+    expose:
+      - "8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional reverse proxy with TLS for the web interface (ADR 0003, section 9).
+  # Starts only with the profile: docker compose --profile web up -d
+  caddy:
+    image: caddy:2
+    container_name: officebot-caddy
+    profiles: ["web"]
+    restart: unless-stopped
+    depends_on:
+      - officebot
+    ports:
+      - "${PROXY_HTTP_PORT:-80}:80"
+      - "${PROXY_HTTPS_PORT:-443}:443"
+      - "${PROXY_HTTPS_PORT:-443}:443/udp"
+    environment:
+      OFFICEBOT_DOMAIN: ${OFFICEBOT_DOMAIN:-}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      # auto (default) or files, see deploy/caddy/
+      - ./deploy/caddy/Caddyfile.${CADDY_TLS:-auto}:/etc/caddy/Caddyfile:ro
+      # Certificates of the auto mode live here and must be kept.
+      - ./volumes/caddy/data:/data
+      - ./volumes/caddy/config:/config
+      # Certificate and key of the files mode (written by an external service).
+      - ${CADDY_CERT_DIR:-./volumes/certs}:/certs:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    # Caddy runs as root inside the container to bind 80/443, with every
+    # capability dropped except that one.
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: json-file
       options:

@@ -1,0 +1,37 @@
+{{define "content"}}
+<h1>{{.T "nav.closed_days"}}</h1>
+<p>{{.T "closed.intro"}}</p>
+<section class="card">
+  <h2>{{.T "closed.add_title"}}</h2>
+  <form method="post" action="/closed-days/add" class="row">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>{{.T "absences.from"}} <input type="date" name="from" required></label>
+    <label>{{.T "closed.to_optional"}} <input type="date" name="to"></label>
+    <label>{{.T "closed.reason"}} <input name="reason" maxlength="200" placeholder="{{.T "closed.reason_example"}}"></label>
+    <button type="submit" class="primary">{{.T "access.add"}}</button>
+  </form>
+</section>
+<section class="card">
+  {{if .Data.Days}}
+  <div class="scroll">
+  <table>
+    <thead><tr><th>{{.T "closed.day"}}</th><th>{{.T "closed.reason"}}</th><th>{{.T "absences.by"}}</th><th></th></tr></thead>
+    <tbody>
+    {{range .Data.Days}}
+    <tr>
+      <td>{{.Day}}</td><td>{{.Reason}}</td><td class="muted">{{.CreatedBy}}</td>
+      <td>
+        <form method="post" action="/closed-days/remove" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input type="hidden" name="day" value="{{.Day}}">
+          <button type="submit" class="danger">{{$.T "access.remove"}}</button>
+        </form>
+      </td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+  {{else}}<p class="muted">{{.T "closed.none"}}</p>{{end}}
+</section>
+{{end}}

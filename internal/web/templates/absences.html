@@ -1,0 +1,44 @@
+{{define "content"}}
+<h1>{{.T "nav.absences"}}</h1>
+<p>{{.T "absences.intro"}}</p>
+{{$lang := .Lang}}
+<section class="card">
+  <h2>{{.T "absences.add_title"}}</h2>
+  <form method="post" action="/absences/add" class="row">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>{{.T "overview.person"}}
+      <select name="user" required>
+        <option value=""></option>
+        {{range .Data.People}}<option value="{{.SlackUserID}}">{{.Name}}</option>{{end}}
+      </select>
+    </label>
+    <label>{{.T "absences.from"}} <input type="date" name="from" min="{{.Data.Today}}" required></label>
+    <label>{{.T "absences.to"}} <input type="date" name="to" min="{{.Data.Today}}" required></label>
+    <button type="submit" class="primary">{{.T "access.add"}}</button>
+  </form>
+</section>
+<section class="card">
+  <h2>{{.T "absences.upcoming"}}</h2>
+  {{if .Data.Rows}}
+  <div class="scroll">
+  <table>
+    <thead><tr><th>{{.T "overview.person"}}</th><th>{{.T "absences.from"}}</th><th>{{.T "absences.to"}}</th><th>{{.T "absences.by"}}</th><th></th></tr></thead>
+    <tbody>
+    {{range .Data.Rows}}
+    <tr>
+      <td>{{.Name}}</td><td>{{.Start}}</td><td>{{.End}}</td><td class="muted">{{.CreatedBy}}</td>
+      <td>
+        <form method="post" action="/absences/delete" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input type="hidden" name="id" value="{{.ID}}">
+          <button type="submit" class="danger">{{$.T "access.remove"}}</button>
+        </form>
+      </td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+  {{else}}<p class="muted">{{.T "absences.none"}}</p>{{end}}
+</section>
+{{end}}

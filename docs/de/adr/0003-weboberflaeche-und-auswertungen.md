@@ -1,6 +1,6 @@
 # ADR 0003: Weboberfläche für Verwaltung und Auswertungen
 
-- **Status:** Vorgeschlagen
+- **Status:** Angenommen, umgesetzt am 2026-11-05
 - **Datum:** 2026-11-05
 
 ## Kontext
@@ -351,6 +351,22 @@ Jeder Schritt ist ein eigener Commit:
 - `stats purge`: Vorschau ohne `--yes`, `monthly_stats` vor dem Löschen geschrieben, Auswertungen ohne Namen danach unverändert, `--user` löscht auch Antworten und Abwesenheiten, `STATS_RETENTION_MONTHS=0`
 - Zeiträume ohne Office über Wochen- und Monatsgrenzen sowie über geschlossene Tage hinweg
 - Perzentile und Verteilungen mit festen Testdaten
+
+### Hinweise zur Umsetzung
+
+Wo die Umsetzung vom Plan oben abweicht oder ihn genauer fasst:
+
+- **Neuberechnung über Trigger:** Statt jede Änderung einzeln eine Neuberechnung anstoßen zu lassen, markieren Datenbank-Trigger eine geschlossene Woche als geändert (`polls.stats_dirty`), sobald sich ihre Übersichtsversion oder eine Abwesenheit einer teilnehmenden Person ändert. Der Scheduler und die Weboberfläche berechnen markierte Wochen neu. So ist jeder Weg abgedeckt, auch die CLI.
+- **Erstes Befüllen:** Die Migration markiert alle geschlossenen Wochen; der erste Lauf des Schedulers berechnet sie. Das Ergebnis ist dasselbe wie ein Befüllen in der Migration selbst.
+- **Planung festhalten:** Bevor eine geschlossene Woche korrigiert wird (`attendance`, Tagesprüfung, `away remove --id`), berechnet der Bot ihren Tagesstatus, falls das noch nicht geschehen ist. So landet nie eine Korrektur als Planung in `attendance_days`.
+- **Tagesprüfung und vergangene Abwesenheiten:** „Abwesend“ in der Tagesprüfung trägt eine Abwesenheit für diesen einen Tag ein, auch in der Vergangenheit. „Keine Antwort“ lässt sich dort nicht setzen. Wer keine Antwort hatte, bekommt mit der ersten Korrektur eine Antwort für die ganze Woche.
+- **Monatswerte:** `monthly_stats` speichert die Werte eines Monats als JSON, darunter das Histogramm der täglichen Belegung. Daraus lassen sich Perzentile und die Kurve der ausreichenden Plätze für beliebige Zeiträume exakt zusammensetzen. Monate, aus denen Tagesdaten gelöscht wurden, sind eingefroren (`frozen`) und werden nicht mehr neu berechnet; die Auswertung nimmt für sie immer die gespeicherten Werte.
+- **Löschfrist in ganzen Monaten:** `STATS_RETENTION_MONTHS` löscht immer ganze Monate, damit kein Monat nur teilweise Tagesdaten hat.
+- **Sprache der Oberfläche:** Die Weboberfläche hat einen eigenen kleinen Katalog für Deutsch und Englisch, weil die 45 Kataloge des Bots sonst alle um die Texte der Oberfläche wachsen müssten. Deutsch gilt für jede deutsche Variante (`de`, `nerd_de`, `pirate_de`).
+- **Entwicklungs-Login:** Mit `DRY_RUN=true` und einer `WEB_BASE_URL` auf localhost gibt es einen Login ohne Slack für Personen mit Zugang. Damit lässt sich die Oberfläche lokal ausprobieren.
+- **Diagramme:** Die SVG-Diagramme zeigen exakte Werte als native Tooltips (`<title>`), daneben stehen die Zahlen in Tabellen.
+- **Caddy als root im Container:** Caddy läuft im Container als root, damit er die Ports 80 und 443 öffnen kann, aber ohne weitere Capabilities (`cap_drop: ALL`, nur `NET_BIND_SERVICE`). Mit `no-new-privileges` würde ein normaler Benutzer die Datei-Capability des Caddy-Binaries nicht bekommen. Die Dateien unter `./volumes/caddy/` gehören deshalb root.
+- **Zusätzlich:** `/weeks` zum Korrigieren ganzer Wochen, ein Export pro Person (`/stats/persons.csv`, nur Admins mit `WEB_STATS_PER_PERSON`) und die Anmeldungen im Audit-Log (`login`, `login.denied`).
 
 ## Betrachtete Alternativen
 

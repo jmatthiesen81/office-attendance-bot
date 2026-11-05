@@ -11,8 +11,9 @@ Kleine, eigenständige Slack-App zur wöchentlichen Büro-Anwesenheitsplanung.
 - **Sprache pro Person**: Über **🌐 Sprache** (in DM, Übersicht und Abwesenheitsformular) wählt jede Person die Sprache ihrer eigenen DM, Erinnerungen und Antworten. Die Übersicht im Channel bleibt in `BOT_LANGUAGE`. Optional nimmt der Bot die Slack-Sprache der Person, solange sie keine gewählt hat (`BOT_LANGUAGE_FROM_SLACK`).
 - Unter der Übersicht schickt der Button **📩 Abfrage an mich senden** die DM erneut an alle, die sie nicht bekommen oder nicht mehr gefunden haben. Wer nach dem Wochenstart zur Zielgruppe hinzukommt, kann sich darüber selbst eintragen.
 - **Abwesenheiten**: Wer eine ganze Woche weg ist, bekommt weder Abfrage noch Erinnerungen und steht in der Übersicht unter „Abwesend“. Eintragen geht per **🌴 Ich bin diese Woche abwesend** in der DM, per Formular **🌴 Abwesenheit planen** (in DM und Übersicht) oder für Admins per CLI.
+- **Weboberfläche und Auswertungen (optional)**: Im Browser korrigieren Admins Antworten, gleichen Tage mit der tatsächlichen Anwesenheit ab und verwalten Abwesenheiten, Sprachen, geschlossene Tage und Zugänge. Alle mit Zugang sehen die Belegung des Office und wie viele Plätze nötig gewesen wären. Angemeldet wird mit Slack. Siehe [Weboberfläche und Auswertungen](weboberflaeche.md).
 
-Technik: Go, Slack Socket Mode (kein öffentlicher HTTP-Endpunkt), SQLite (WAL), ein einziger Docker-Container. Externe Go-Abhängigkeiten: nur `slack-go/slack` und `modernc.org/sqlite`.
+Technik: Go, Slack Socket Mode (kein öffentlicher HTTP-Endpunkt; nur die optionale Weboberfläche braucht eine HTTPS-Adresse), SQLite (WAL), ein einziger Docker-Container. Externe Go-Abhängigkeiten: nur `slack-go/slack` und `modernc.org/sqlite`.
 
 > **Hinweis zu den Übersetzungen:** Die Sprachkataloge wurden mit KI erstellt und können Fehler enthalten, etwa ungewohnte Formulierungen, falsche Anrede oder unpassende Begriffe. Das gilt besonders für die Nerd- und Piratenvarianten: Wortspiele, Fachjargon und Piratensprache lassen sich nicht wörtlich übertragen, und in vielen Sprachen sind sie bisher nur leicht abgewandelt. Korrekturen sind willkommen, siehe [Entwicklung](#entwicklung).
 
@@ -30,6 +31,7 @@ Technik: Go, Slack Socket Mode (kein öffentlicher HTTP-Endpunkt), SQLite (WAL),
 8. [Fehlerdiagnose](#fehlerdiagnose)
 9. [Entwicklung](#entwicklung)
 10. [Bekannte Einschränkungen](#bekannte-einschränkungen)
+11. [Weboberfläche und Auswertungen](weboberflaeche.md) (eigene Seite)
 
 ---
 
@@ -230,6 +232,8 @@ OFFICEBOT_GID=1000
 
 ¹ Nicht nötig bei `DRY_RUN=true`.
 
+Die optionale Weboberfläche und die Auswertungen haben eigene Einstellungen (`WEB_LISTEN_ADDR`, `WEB_BASE_URL`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `WEB_SESSION_TTL`, `WEB_SESSION_IDLE`, `WEB_STATS_PER_PERSON`, `STATS_RETENTION_MONTHS`, `OFFICE_DESKS`, für den Reverse Proxy Caddy außerdem `OFFICEBOT_DOMAIN`, `CADDY_TLS`, `ACME_EMAIL`, `PROXY_HTTP_PORT`, `PROXY_HTTPS_PORT`, `CADDY_CERT_DIR`). Sie sind unter [Weboberfläche und Auswertungen](weboberflaeche.md#2-konfigurieren) beschrieben.
+
 **Zeitpunkte für Tests:** Anfrage, Frist und Erinnerungen sind frei einstellbar. Um sofort zu testen, setze `POLL_WEEKDAY` auf heute und `POLL_TIME` ein paar Minuten in die Zukunft. Außer am Montag fragt der Bot dann die kommende Woche ab. Liegt der Zeitpunkt dieser Woche schon zurück, holt der Bot die Abfrage beim Start sofort nach, sofern die Frist noch nicht vorbei ist. Alternativ startet `officebot start-week` die Woche sofort.
 
 **Welche Woche wird abgefragt?** Die Arbeitswoche beginnt am Montag. Eine Abfrage, die am Montag startet, gilt für die laufende Woche. Startet sie an einem anderen Tag (Dienstag bis Sonntag), gilt sie für die kommende Woche, also ab dem nächsten Montag. Die Frist bezieht sich immer auf die abgefragte Woche. Beispiel für eine Abfrage am Freitag für die Folgewoche:
@@ -321,6 +325,12 @@ Alle Befehle laufen im Container mit derselben Konfiguration: `docker compose ex
 | `attendance remove --user U --days tue [--week W]`        | Tage aus der Antwort einer Person austragen, z. B. wenn sie doch nicht da war             |
 | `attendance add --user U --days tue [--week W]`           | Tage zur Antwort hinzufügen (ohne bisherige Antwort: neue Antwort)                        |
 | `attendance set --user U --days mon,wed\|none [--week W]` | Antwort ersetzen, `none` = kein Bürotag                                                   |
+| `attendance verify --date D [--undo]`                     | Tag als geprüft markieren: Der Status aller entspricht der tatsächlichen Anwesenheit      |
+| `stats purge --year Y\|--before D\|--user U [--yes]`      | Tagesstatus pro Person löschen (ohne `--yes` nur Vorschau); Monatswerte bleiben           |
+| `web-user list`                                           | Alle mit Zugang zur Weboberfläche                                                         |
+| `web-user add --user U [--role admin\|viewer]`            | Zugang zur Weboberfläche freischalten (Standard: admin)                                   |
+| `web-user set-role --user U --role admin\|viewer`         | Rolle ändern                                                                              |
+| `web-user remove --user U`                                | Zugang entziehen und alle Sitzungen beenden                                               |
 | `lang list`                                               | Sprachwahl der Personen anzeigen                                                          |
 | `lang set --user U <sprache>`                             | Sprache einer Person setzen, z. B. `de` oder `pirate_en`; offene DMs werden neu gerendert |
 | `lang reset --user U`                                     | Zurück zum Teamstandard                                                                   |
@@ -402,6 +412,7 @@ Neue Migrationen: Datei mit der nächsten freien Nummer anlegen, z. B. `internal
 
 - **Eine Instanz**: Scheduler, Outbox und Update-Worker gehen davon aus, dass genau ein Container läuft (keine verteilten Locks).
 - **Datenschutz bei Abwesenheiten**: Der Bot speichert Urlaubs- und Abwesenheitszeiträume mit Slack-User-ID in der Datenbank. Wer eine ganze Woche abwesend ist, steht für alle sichtbar im Übersichts-Channel unter „Abwesend“. Einen Grund fragt der Bot nie ab. Bitte das Team vorab informieren und gegebenenfalls intern (Betriebsrat, Datenschutz) abstimmen.
+- **Datenschutz bei Auswertungen**: Die optionalen Auswertungen speichern einen Tagesstatus pro Person für `STATS_RETENTION_MONTHS` (Standard 24). Auswertungen pro Person sind standardmäßig aus (`WEB_STATS_PER_PERSON`), nur für Admins sichtbar und werden protokolliert. Vor der Einführung das Team informieren und Betriebsrat und Datenschutz einbinden, siehe [Weboberfläche und Auswertungen](weboberflaeche.md#datenschutz-und-mitbestimmung).
 - **Datenschutz bei der Sprachwahl**: Pro Person wird nur der Sprachcode gespeichert, dazu die Slack-Sprache (`locale`) bei den Teilnehmenden einer Abfrage. Beides wird mit der Aufbewahrungsfrist gelöscht.
 - **Abwesenheiten bei geschlossenen Wochen**: Spätere Änderungen an Abwesenheiten aktualisieren nur offene Abstimmungen. Geschlossene Übersichten bleiben, wie sie sind.
 - **Keine Abwesenheiten in der Vergangenheit**: Vergangene Tage gelten als erledigt. Weder Formular noch `away add`/`away remove --from` tragen sie ein oder entfernen sie. Einzige Ausnahme ist **🌴 Ich bin diese Woche abwesend** für die noch offene Woche (siehe oben). Nur `away remove --id N` löscht einen ganzen Eintrag, etwa zur Korrektur durch Admins.

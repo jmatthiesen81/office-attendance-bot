@@ -1,0 +1,9 @@
+# Web interface behind Caddy with a certificate issued elsewhere
+# (CADDY_TLS=files), e.g. via DNS-01 for other ports, internal-only access or
+# wildcards. The issuing service writes fullchain.pem and privkey.pem to
+# CADDY_CERT_DIR and reloads Caddy after every renewal:
+#   docker exec officebot-caddy caddy reload --config /etc/caddy/Caddyfile --force
+{$OFFICEBOT_DOMAIN} {
+	tls /certs/fullchain.pem /certs/privkey.pem
+	reverse_proxy officebot:8080
+}

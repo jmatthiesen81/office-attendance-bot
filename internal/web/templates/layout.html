@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} · {{.T "app.name"}}</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">{{.T "app.name"}}</a>
+  {{if .User}}
+  <nav>
+    <a href="/" {{if eq .Nav "overview"}}aria-current="page"{{end}}>{{.T "nav.overview"}}</a>
+    <a href="/stats" {{if eq .Nav "stats"}}aria-current="page"{{end}}>{{.T "nav.stats"}}</a>
+    {{- if .IsAdmin}}
+    <a href="/days" {{if eq .Nav "days"}}aria-current="page"{{end}}>{{.T "nav.days"}}</a>
+    <a href="/weeks" {{if eq .Nav "weeks"}}aria-current="page"{{end}}>{{.T "nav.weeks"}}</a>
+    <a href="/absences" {{if eq .Nav "absences"}}aria-current="page"{{end}}>{{.T "nav.absences"}}</a>
+    <a href="/closed-days" {{if eq .Nav "closed_days"}}aria-current="page"{{end}}>{{.T "nav.closed_days"}}</a>
+    <a href="/languages" {{if eq .Nav "languages"}}aria-current="page"{{end}}>{{.T "nav.languages"}}</a>
+    <a href="/access" {{if eq .Nav "access"}}aria-current="page"{{end}}>{{.T "nav.access"}}</a>
+    <a href="/retention" {{if eq .Nav "retention"}}aria-current="page"{{end}}>{{.T "nav.retention"}}</a>
+    <a href="/audit" {{if eq .Nav "audit"}}aria-current="page"{{end}}>{{.T "nav.audit"}}</a>
+    {{- end}}
+  </nav>
+  <form class="logout" method="post" action="/logout">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <span class="who">{{.User.DisplayName}} · {{.T (printf "role.%s" .User.Role)}}</span>
+    <button type="submit" class="link">{{.T "nav.logout"}}</button>
+  </form>
+  {{end}}
+</header>
+<main>
+  {{if .Message}}<p class="notice ok" role="status">{{.Message}}</p>{{end}}
+  {{if .Error}}<p class="notice err" role="alert">{{.Error}}</p>{{end}}
+  {{template "content" .}}
+</main>
+</body>
+</html>

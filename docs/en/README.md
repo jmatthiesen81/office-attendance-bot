@@ -11,8 +11,9 @@ A small, self-contained Slack app for weekly office attendance planning.
 - **Language per person**: with **🌐 Language** (in the DM, the summary and the time-off form), everyone chooses the language of their own DM, reminders and replies. The channel summary stays in `BOT_LANGUAGE`. Optionally, the bot uses a person's Slack language until they choose one (`BOT_LANGUAGE_FROM_SLACK`).
 - Below the summary, a **📩 Abfrage an mich senden** (*send the poll to me*) button re-sends the DM to anyone who missed or lost it. People who joined the target group after the weekly start can use it to add themselves.
 - **Time off**: people who are away for a whole week get neither the poll nor reminders, and the summary lists them as away. They enter it with **🌴 I'm away this week** in the DM, with the **🌴 Plan time off** form (in the DM and the summary), or an admin does it via the CLI.
+- **Web interface and statistics (optional)**: in the browser, admins correct answers, check days against actual attendance and manage time off, languages, closed days and access. Everybody with access sees the office occupancy and how many desks would have been needed. People log in with Slack. See [Web interface and statistics](web-interface.md).
 
-Technology: Go, Slack Socket Mode (no public HTTP endpoint), SQLite (WAL), a single Docker container. External Go dependencies: only `slack-go/slack` and `modernc.org/sqlite`.
+Technology: Go, Slack Socket Mode (no public HTTP endpoint; only the optional web interface needs an HTTPS address), SQLite (WAL), a single Docker container. External Go dependencies: only `slack-go/slack` and `modernc.org/sqlite`.
 
 > **Note on the translations:** the language catalogs were created with AI and may contain mistakes, such as unusual wording, the wrong form of address or unfitting terms. This applies in particular to the nerd and pirate variants: puns, tech jargon and pirate speak do not translate literally, and in many languages they are only lightly adapted so far. Corrections are welcome, see [Development](#development).
 
@@ -32,6 +33,7 @@ Technology: Go, Slack Socket Mode (no public HTTP endpoint), SQLite (WAL), a sin
 8. [Troubleshooting](#troubleshooting)
 9. [Development](#development)
 10. [Known limitations](#known-limitations)
+11. [Web interface and statistics](web-interface.md) (separate page)
 
 ---
 
@@ -232,6 +234,8 @@ OFFICEBOT_GID=1000
 
 ¹ Not needed with `DRY_RUN=true`.
 
+The optional web interface and statistics have their own settings (`WEB_LISTEN_ADDR`, `WEB_BASE_URL`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `WEB_SESSION_TTL`, `WEB_SESSION_IDLE`, `WEB_STATS_PER_PERSON`, `STATS_RETENTION_MONTHS`, `OFFICE_DESKS`, and for the Caddy reverse proxy `OFFICEBOT_DOMAIN`, `CADDY_TLS`, `ACME_EMAIL`, `PROXY_HTTP_PORT`, `PROXY_HTTPS_PORT`, `CADDY_CERT_DIR`). They are described in [Web interface and statistics](web-interface.md#2-configure).
+
 **Times for testing:** the poll start, deadline and reminders are freely configurable. To test right away, set `POLL_WEEKDAY` to today and `POLL_TIME` a few minutes into the future. Unless today is Monday, the bot then polls the next week. If this week's start time has already passed, the bot catches up on startup, provided the deadline has not passed. Alternatively, `officebot start-week` starts the week immediately.
 
 **Which week is polled?** The work week starts on Monday. A poll that starts on Monday is for the current week. A poll that starts on any other day (Tuesday to Sunday) is for the next week, starting the following Monday. The deadline always refers to the polled week. Example of a Friday poll for the following week:
@@ -323,6 +327,12 @@ All commands run inside the container with the same configuration: `docker compo
 | `attendance remove --user U --days tue [--week W]`        | Remove days from a person's answer, e.g. when they did not show up after all      |
 | `attendance add --user U --days tue [--week W]`           | Add days to the answer (no answer yet: creates one)                               |
 | `attendance set --user U --days mon,wed\|none [--week W]` | Replace the answer, `none` = no office day                                        |
+| `attendance verify --date D [--undo]`                     | Mark a day as checked: the status of everybody matches actual attendance          |
+| `stats purge --year Y\|--before D\|--user U [--yes]`      | Delete daily status per person (preview without `--yes`); monthly figures stay    |
+| `web-user list`                                           | Everybody with access to the web interface                                        |
+| `web-user add --user U [--role admin\|viewer]`            | Grant access to the web interface (default: admin)                                |
+| `web-user set-role --user U --role admin\|viewer`         | Change the role                                                                   |
+| `web-user remove --user U`                                | Revoke access and end all sessions                                                |
 | `lang list`                                               | List the language choices of people                                               |
 | `lang set --user U <language>`                            | Set a person's language, e.g. `de` or `pirate_en`; open DMs are re-rendered       |
 | `lang reset --user U`                                     | Back to the team default                                                          |
@@ -404,6 +414,7 @@ New migrations: add a file with the next free number, e.g. `internal/storage/mig
 
 - **Single instance**: the scheduler, outbox and update worker assume that exactly one container is running (no distributed locks).
 - **Privacy of time off**: the bot stores vacation and absence periods with the Slack user ID in its database. Anyone away for a whole week is listed as "Away" in the summary channel, visible to everyone in it. The bot never asks for a reason. Inform the team beforehand and, where applicable, align with your works council or data protection officer.
+- **Privacy of statistics**: the optional statistics keep a daily status per person for `STATS_RETENTION_MONTHS` (default 24). Statistics per person are off by default (`WEB_STATS_PER_PERSON`), visible to admins only and audited. Inform the team and involve the works council and data protection officer before introducing them; see [Web interface and statistics](web-interface.md#privacy-and-co-determination).
 - **Privacy of the language choice**: per person, only the language code is stored, plus the Slack language (`locale`) with the participants of a poll. Both are deleted with the retention period.
 - **Time off and closed weeks**: later changes to time off only update open polls. Closed summaries stay as they are.
 - **No time off in the past**: past days count as settled. Neither the form nor `away add`/`away remove --from` enter or remove them. The only exception is **🌴 I'm away this week** for the week still being polled (see above). Only `away remove --id N` deletes a whole entry, e.g. for corrections by admins.

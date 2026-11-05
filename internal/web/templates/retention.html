@@ -1,0 +1,46 @@
+{{define "content"}}
+{{$d := .Data}}
+<h1>{{.T "nav.retention"}}</h1>
+<section class="card">
+  <dl class="defs">
+    <dt>{{.T "retention.daily"}}</dt>
+    <dd>{{if eq $d.RetentionMonths 0}}{{.T "retention.manual"}}{{else}}{{.T "retention.months" $d.RetentionMonths}}{{end}}
+      {{if $d.HasDaily}}· {{.T "retention.range" $d.First $d.Last}}{{else}}· {{.T "retention.no_daily"}}{{end}}</dd>
+    <dt>{{.T "retention.monthly"}}</dt>
+    <dd>{{.T "retention.monthly_text"}}{{if $d.FirstMonthly}} · {{.T "retention.since" $d.FirstMonthly}}{{end}}</dd>
+    <dt>{{.T "retention.polls"}}</dt>
+    <dd>{{.T "retention.polls_text" $d.RetentionWeeks}}</dd>
+  </dl>
+</section>
+<section class="card">
+  <h2>{{.T "retention.purge_title"}}</h2>
+  <p>{{.T "retention.purge_intro"}}</p>
+  <div class="grid2">
+    <form method="post" action="/retention/preview" class="row">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <input type="hidden" name="kind" value="year">
+      <label>{{.T "retention.year"}}
+        <select name="value" required>{{range $d.Years}}<option value="{{.}}">{{.}}</option>{{end}}</select>
+      </label>
+      <button type="submit">{{.T "retention.preview"}}</button>
+    </form>
+    <form method="post" action="/retention/preview" class="row">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <input type="hidden" name="kind" value="before">
+      <label>{{.T "retention.before"}} <input type="date" name="value" required></label>
+      <button type="submit">{{.T "retention.preview"}}</button>
+    </form>
+    <form method="post" action="/retention/preview" class="row">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <input type="hidden" name="kind" value="user">
+      <label>{{.T "retention.person"}}
+        <select name="value" required>
+          <option value=""></option>
+          {{range $d.People}}<option value="{{.SlackUserID}}">{{.Name}}</option>{{end}}
+        </select>
+      </label>
+      <button type="submit">{{.T "retention.preview"}}</button>
+    </form>
+  </div>
+</section>
+{{end}}

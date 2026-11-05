@@ -50,6 +50,10 @@ type Service struct {
 	summary      Trigger
 	log          *slog.Logger
 	Now          func() time.Time
+	// SyncStats records the daily status of closed polls (stats.Service).
+	// Corrections after the deadline call it first, so that the status at
+	// the deadline is kept as the plan. It may be nil.
+	SyncStats func(context.Context) error
 
 	// dmLocks serialise DM updates per participant so that a slower, older
 	// render can never overwrite a newer one.

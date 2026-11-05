@@ -1,0 +1,62 @@
+{{define "content"}}
+<h1>{{.T "access.title"}}</h1>
+<p>{{.T "access.intro"}}</p>
+{{$lang := .Lang}}
+<section class="card">
+<div class="scroll">
+<table>
+  <thead><tr><th>{{.T "access.person"}}</th><th>{{.T "access.role"}}</th><th>{{.T "access.added"}}</th><th>{{.T "access.last_login"}}</th><th></th></tr></thead>
+  <tbody>
+  {{range .Data.Users}}
+    <tr>
+      <td>{{.DisplayName}} <span class="muted">{{.SlackUserID}}</span>{{if eq .SlackUserID $.Data.Me}} <span class="tag">{{$.T "access.you"}}</span>{{end}}</td>
+      <td>
+        <form method="post" action="/access/role" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input type="hidden" name="user" value="{{.SlackUserID}}">
+          <select name="role" aria-label="{{$.T "access.role"}}">
+            <option value="admin" {{if eq .Role "admin"}}selected{{end}}>{{$.T "role.admin"}}</option>
+            <option value="viewer" {{if eq .Role "viewer"}}selected{{end}}>{{$.T "role.viewer"}}</option>
+          </select>
+          <button type="submit">{{$.T "access.change"}}</button>
+        </form>
+      </td>
+      <td>{{date $lang .AddedAt}} <span class="muted">{{$.T "access.added_by"}} {{.AddedBy}}</span></td>
+      <td>{{if .LastLoginAt.IsZero}}{{$.T "access.never"}}{{else}}{{datetime $lang .LastLoginAt}}{{end}}</td>
+      <td>
+        <form method="post" action="/access/remove" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input type="hidden" name="user" value="{{.SlackUserID}}">
+          <button type="submit" class="danger">{{$.T "access.remove"}}</button>
+        </form>
+      </td>
+    </tr>
+  {{end}}
+  </tbody>
+</table>
+</div>
+</section>
+<section class="card">
+  <h2>{{.T "access.add_title"}}</h2>
+  {{if .Data.DirectoryFailed}}<p class="notice err">{{.T "err.directory"}}</p>{{end}}
+  <form method="post" action="/access/add" class="row">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    {{if .Data.Candidates}}
+    <label>{{.T "access.select"}}
+      <select name="user">
+        <option value=""></option>
+        {{range .Data.Candidates}}<option value="{{.ID}}">{{.Name}} ({{.ID}})</option>{{end}}
+      </select>
+    </label>
+    {{end}}
+    <label>{{.T "access.user_id"}} <input name="user_id" pattern="[UW][A-Z0-9]+" placeholder="U0123ABC"></label>
+    <label>{{.T "access.role"}}
+      <select name="role">
+        <option value="viewer">{{.T "role.viewer"}}</option>
+        <option value="admin">{{.T "role.admin"}}</option>
+      </select>
+    </label>
+    <button type="submit" class="primary">{{.T "access.add"}}</button>
+  </form>
+</section>
+{{end}}

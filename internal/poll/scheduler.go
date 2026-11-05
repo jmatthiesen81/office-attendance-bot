@@ -19,6 +19,14 @@ type Scheduler struct {
 	MaxSleep time.Duration
 	// ErrorRetry is the delay after a failed tick (e.g. Slack unreachable).
 	ErrorRetry time.Duration
+	// Extra steps run after the built-in ones on every tick.
+	Extra []Step
+}
+
+// Step is a unit of scheduled work. It must be idempotent.
+type Step struct {
+	Name string
+	Fn   func(context.Context, time.Time) error
 }
 
 // NewScheduler creates the scheduler.
@@ -53,18 +61,15 @@ func (s *Scheduler) Run(ctx context.Context) {
 func (s *Scheduler) Tick(ctx context.Context) bool {
 	now := s.svc.Now()
 	ok := true
-	steps := []struct {
-		name string
-		fn   func(context.Context, time.Time) error
-	}{
+	steps := append([]Step{
 		{"close due polls", s.svc.CloseDue},
 		{"start weekly poll", s.svc.EnsureCurrentPoll},
 		{"reminders", s.svc.RunDueReminders},
 		{"cleanup", s.svc.Cleanup},
-	}
+	}, s.Extra...)
 	for _, st := range steps {
-		if err := st.fn(ctx, now); err != nil {
-			s.log.Error("scheduler: "+st.name, "err", err)
+		if err := st.Fn(ctx, now); err != nil {
+			s.log.Error("scheduler: "+st.Name, "err", err)
 			ok = false
 		}
 	}
