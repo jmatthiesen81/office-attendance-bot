@@ -3,7 +3,7 @@ module officebot
 go 1.27.0
 
 require (
-	github.com/slack-go/slack v0.30.1
+	github.com/slack-go/slack v0.36.0
 	modernc.org/sqlite v1.60.1
 )
 
