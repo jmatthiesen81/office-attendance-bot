@@ -4,15 +4,15 @@
 #
 # publishes ghcr.io/jmatthiesen81/office-attendance-bot with the tags 1.0.0,
 # 1.0, 1 and latest (pre-releases such as 1.1.0-rc.1 only get their own tag).
-# Every push to a version branch (1.0, 1.1, 2.0, …) publishes the untested
-# state as edge and sha-<commit>, e.g. for a test server. Pull requests only
-# run the tests and a test build.
+# Every push to the trunk branch canon publishes the untested state as edge
+# and sha-<commit>, e.g. for a test server (ADR 0004). Pull requests only run
+# the tests and a test build.
 name: release
 
 on:
   push:
-    # Version branches such as 1.0 (quoted: unquoted 1.0 would be a number).
-    branches: ["[0-9]+.[0-9]+"]
+    # Trunk branch (ADR 0004); feature branches are only tested via pull requests.
+    branches: [canon]
     # Release tags without a "v" prefix: 1.0.0, 1.1.0-rc.1, …
     tags: ["[0-9]+.[0-9]+.[0-9]+*"]
   pull_request:
@@ -58,7 +58,7 @@ jobs:
             echo "value=edge-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
 
-      # Pushes (release tags and version branches) publish, pull requests don't.
+      # Pushes (release tags and canon) publish, pull requests don't.
       - name: Log in to ghcr.io
         if: github.event_name == 'push'
         uses: docker/login-action@v4
