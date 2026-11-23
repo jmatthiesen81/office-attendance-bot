@@ -80,6 +80,9 @@ type Config struct {
 	SlackClientSecret string
 	WebSessionTTL     time.Duration
 	WebSessionIdle    time.Duration
+	// WebVerifyIDToken checks the signature of Slack's ID token against
+	// Slack's published keys at login.
+	WebVerifyIDToken bool
 	// WebStatsPerPerson enables statistics and exports per person for admins.
 	WebStatsPerPerson bool
 	// StatsRetentionMonths keeps the daily status per person this long;
@@ -140,6 +143,7 @@ func load(get func(string) string, requireTargets bool) (*Config, error) {
 		SlackClientSecret:        p.str("SLACK_CLIENT_SECRET", ""),
 		WebSessionTTL:            p.duration("WEB_SESSION_TTL", 12*time.Hour),
 		WebSessionIdle:           p.duration("WEB_SESSION_IDLE", 2*time.Hour),
+		WebVerifyIDToken:         p.boolean("WEB_VERIFY_ID_TOKEN", true),
 		WebStatsPerPerson:        p.boolean("WEB_STATS_PER_PERSON", false),
 		StatsRetentionMonths:     p.integer("STATS_RETENTION_MONTHS", 24),
 		OfficeDesks:              p.integer("OFFICE_DESKS", 0),

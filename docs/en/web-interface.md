@@ -71,6 +71,7 @@ SLACK_CLIENT_SECRET=...
 | `SLACK_CLIENT_SECRET`    | –       | Client secret of the Slack app (`.env.local`); masked in the log                                                     |
 | `WEB_SESSION_TTL`        | `12h`   | Maximum lifetime of a login                                                                                          |
 | `WEB_SESSION_IDLE`       | `2h`    | Logout after this time without activity                                                                              |
+| `WEB_VERIFY_ID_TOKEN`    | `true`  | `false`: do not check the Slack ID token signature against Slack's keys at login                                     |
 | `WEB_STATS_PER_PERSON`   | `false` | `true`: analysts and admins see and export statistics per person                                                     |
 | `STATS_RETENTION_MONTHS` | `24`    | Retention of the daily status per person; `0` = no automatic deletion                                                |
 | `OFFICE_DESKS`           | empty   | Number of desks available today; shown as a reference in the statistics                                              |

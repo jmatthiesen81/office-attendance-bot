@@ -232,7 +232,7 @@ OFFICEBOT_GID=1000
 
 ¹ Nicht nötig bei `DRY_RUN=true`.
 
-Die optionale Weboberfläche und die Auswertungen haben eigene Einstellungen (`WEB_LISTEN_ADDR`, `WEB_BASE_URL`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `WEB_SESSION_TTL`, `WEB_SESSION_IDLE`, `WEB_STATS_PER_PERSON`, `STATS_RETENTION_MONTHS`, `OFFICE_DESKS`, für den Reverse Proxy Caddy außerdem `OFFICEBOT_DOMAIN`, `CADDY_TLS`, `ACME_EMAIL`, `PROXY_HTTP_PORT`, `PROXY_HTTPS_PORT`, `CADDY_CERT_DIR`). Sie sind unter [Weboberfläche und Auswertungen](weboberflaeche.md#2-konfigurieren) beschrieben.
+Die optionale Weboberfläche und die Auswertungen haben eigene Einstellungen (`WEB_LISTEN_ADDR`, `WEB_BASE_URL`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `WEB_SESSION_TTL`, `WEB_SESSION_IDLE`, `WEB_VERIFY_ID_TOKEN`, `WEB_STATS_PER_PERSON`, `STATS_RETENTION_MONTHS`, `OFFICE_DESKS`, für den Reverse Proxy Caddy außerdem `OFFICEBOT_DOMAIN`, `CADDY_TLS`, `ACME_EMAIL`, `PROXY_HTTP_PORT`, `PROXY_HTTPS_PORT`, `CADDY_CERT_DIR`). Sie sind unter [Weboberfläche und Auswertungen](weboberflaeche.md#2-konfigurieren) beschrieben.
 
 **Zeitpunkte für Tests:** Anfrage, Frist und Erinnerungen sind frei einstellbar. Um sofort zu testen, setze `POLL_WEEKDAY` auf heute und `POLL_TIME` ein paar Minuten in die Zukunft. Außer am Montag fragt der Bot dann die kommende Woche ab. Liegt der Zeitpunkt dieser Woche schon zurück, holt der Bot die Abfrage beim Start sofort nach, sofern die Frist noch nicht vorbei ist. Alternativ startet `officebot start-week` die Woche sofort.
 

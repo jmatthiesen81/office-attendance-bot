@@ -51,7 +51,7 @@ Der Bot bekommt eine optionale Weboberfläche im selben Prozess. Die Anmeldung l
    - prüft im ID-Token `iss = https://slack.com`, `aud = SLACK_CLIENT_ID`, `exp` und `nonce`,
    - prüft, dass `https://slack.com/team_id` dem Workspace des Bots entspricht.
 
-   Die Signatur des ID-Tokens wird nicht geprüft. Nach OIDC Core §3.1.3.7 ist das zulässig, weil das Token direkt vom Token-Endpunkt über TLS kommt.
+   Die Signatur des ID-Tokens wird gegen Slacks veröffentlichte Schlüssel (`https://slack.com/openid/connect/keys`, RS256) geprüft. *Nachtrag:* Ursprünglich wurde sie nicht geprüft, was nach OIDC Core §3.1.3.7 zulässig ist, weil das Token direkt vom Token-Endpunkt über TLS kommt. Mit `WEB_VERIFY_ID_TOKEN=false` lässt sich dieses Verhalten wiederherstellen.
 4. **Autorisierung:** `https://slack.com/user_id` muss in `web_users` stehen. Wenn nicht, erscheint eine 403-Seite „Kein Zugang“, und es wird keine Session angelegt.
 5. **Session:**
    - Die Session-ID ist ein zufälliger 256-Bit-Wert. In `web_sessions` liegt nur ihr SHA-256-Hash.

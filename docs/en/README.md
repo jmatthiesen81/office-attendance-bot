@@ -234,7 +234,7 @@ OFFICEBOT_GID=1000
 
 ¹ Not needed with `DRY_RUN=true`.
 
-The optional web interface and statistics have their own settings (`WEB_LISTEN_ADDR`, `WEB_BASE_URL`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `WEB_SESSION_TTL`, `WEB_SESSION_IDLE`, `WEB_STATS_PER_PERSON`, `STATS_RETENTION_MONTHS`, `OFFICE_DESKS`, and for the Caddy reverse proxy `OFFICEBOT_DOMAIN`, `CADDY_TLS`, `ACME_EMAIL`, `PROXY_HTTP_PORT`, `PROXY_HTTPS_PORT`, `CADDY_CERT_DIR`). They are described in [Web interface and statistics](web-interface.md#2-configure).
+The optional web interface and statistics have their own settings (`WEB_LISTEN_ADDR`, `WEB_BASE_URL`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `WEB_SESSION_TTL`, `WEB_SESSION_IDLE`, `WEB_VERIFY_ID_TOKEN`, `WEB_STATS_PER_PERSON`, `STATS_RETENTION_MONTHS`, `OFFICE_DESKS`, and for the Caddy reverse proxy `OFFICEBOT_DOMAIN`, `CADDY_TLS`, `ACME_EMAIL`, `PROXY_HTTP_PORT`, `PROXY_HTTPS_PORT`, `CADDY_CERT_DIR`). They are described in [Web interface and statistics](web-interface.md#2-configure).
 
 **Times for testing:** the poll start, deadline and reminders are freely configurable. To test right away, set `POLL_WEEKDAY` to today and `POLL_TIME` a few minutes into the future. Unless today is Monday, the bot then polls the next week. If this week's start time has already passed, the bot catches up on startup, provided the deadline has not passed. Alternatively, `officebot start-week` starts the week immediately.
 

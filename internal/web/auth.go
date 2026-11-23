@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -241,9 +242,10 @@ func (s *Server) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	s.startSession(w, r, claims.UserID, claims.Name, returnTo, "slack")
 }
 
-// checkClaims validates the ID token. Its signature is not verified: the
-// token comes directly from Slack's token endpoint over TLS (OIDC Core
-// 3.1.3.7), so issuer, audience, expiry, nonce and workspace are checked.
+// checkClaims validates the claims of the ID token: issuer, audience, expiry,
+// nonce and workspace. The signature is checked before, in exchangeCode,
+// unless WEB_VERIFY_ID_TOKEN=false (the token comes directly from Slack's
+// token endpoint over TLS, which OIDC Core 3.1.3.7 accepts as well).
 func (s *Server) checkClaims(c *idClaims, nonce string) error {
 	switch {
 	case c.Iss != "https://slack.com":
@@ -295,13 +297,19 @@ func (s *Server) exchangeCode(ctx context.Context, code string) (*idClaims, erro
 	if !body.OK || body.IDToken == "" {
 		return nil, fmt.Errorf("token request refused: %s", body.Error)
 	}
-	parts := strings.Split(body.IDToken, ".")
-	if len(parts) != 3 {
-		return nil, errors.New("malformed ID token")
-	}
-	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return nil, fmt.Errorf("ID token payload: %w", err)
+	var payload []byte
+	if s.OIDC.KeysURL != "" && s.Cfg.WebVerifyIDToken {
+		if payload, err = s.verifyIDToken(ctx, body.IDToken); err != nil {
+			return nil, err
+		}
+	} else {
+		parts := strings.Split(body.IDToken, ".")
+		if len(parts) != 3 {
+			return nil, errors.New("malformed ID token")
+		}
+		if payload, err = base64.RawURLEncoding.DecodeString(parts[1]); err != nil {
+			return nil, fmt.Errorf("ID token payload: %w", err)
+		}
 	}
 	var c idClaims
 	if err := json.Unmarshal(payload, &c); err != nil {
@@ -388,9 +396,108 @@ func (l *limiter) allow(now time.Time) bool {
 	return true
 }
 
+// full reports whether the bucket has refilled completely at now, i.e. it
+// behaves exactly like a new one and can be dropped.
+func (l *limiter) full(now time.Time) bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.last.IsZero() || l.tokens+float64(now.Sub(l.last))/float64(l.every) >= l.burst
+}
+
+// maxClientBuckets bounds the memory of the per-client limiter. When it is
+// reached and no idle bucket can be dropped, new clients share the global
+// limit only.
+const maxClientBuckets = 10000
+
+// clientLimiter keeps one token bucket per client IP, so a single client
+// cannot use up the global login budget of everyone else.
+type clientLimiter struct {
+	mu      sync.Mutex
+	burst   int
+	every   time.Duration
+	buckets map[string]*limiter
+}
+
+func newClientLimiter(burst int, every time.Duration) *clientLimiter {
+	return &clientLimiter{burst: burst, every: every, buckets: map[string]*limiter{}}
+}
+
+func (c *clientLimiter) allow(key string, now time.Time) bool {
+	c.mu.Lock()
+	b, ok := c.buckets[key]
+	if !ok {
+		if len(c.buckets) >= maxClientBuckets {
+			for k, old := range c.buckets {
+				if old.full(now) {
+					delete(c.buckets, k)
+				}
+			}
+		}
+		if len(c.buckets) >= maxClientBuckets {
+			c.mu.Unlock()
+			return true
+		}
+		b = newLimiter(c.burst, c.every)
+		c.buckets[key] = b
+	}
+	c.mu.Unlock()
+	return b.allow(now)
+}
+
+// prune drops the buckets of clients that have been quiet long enough to be
+// full again.
+func (c *clientLimiter) prune(now time.Time) int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	n := 0
+	for k, b := range c.buckets {
+		if b.full(now) {
+			delete(c.buckets, k)
+			n++
+		}
+	}
+	return n
+}
+
+// clientIP returns the IP of the client. X-Forwarded-For is only trusted when
+// the request comes from a private or loopback address, i.e. from the reverse
+// proxy in front of the bot (Caddy in compose.yaml), and then only its last
+// entry: the one that proxy appended itself. A client reaching the bot
+// directly cannot pick its own key this way.
+func clientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		host = r.RemoteAddr
+	}
+	ip := net.ParseIP(host)
+	if ip == nil || !(ip.IsLoopback() || ip.IsPrivate()) {
+		return host
+	}
+	xff := r.Header.Values("X-Forwarded-For")
+	if len(xff) == 0 {
+		return host
+	}
+	last := xff[len(xff)-1]
+	if i := strings.LastIndexByte(last, ','); i >= 0 {
+		last = last[i+1:]
+	}
+	if fwd := net.ParseIP(strings.TrimSpace(last)); fwd != nil {
+		return fwd.String()
+	}
+	return host
+}
+
+// limited applies the per-client limit first, so a client that is refused
+// does not use up tokens of the global limit.
 func (s *Server) limited(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !s.limiter.allow(s.Now()) {
+		now := s.Now()
+		if !s.clientLimiter.allow(clientIP(r), now) {
+			s.Log.Warn("login rate limit reached", "client", clientIP(r), "path", r.URL.Path)
+			s.fail(w, r, http.StatusTooManyRequests, "err.rate_limited", nil)
+			return
+		}
+		if !s.limiter.allow(now) {
 			s.fail(w, r, http.StatusTooManyRequests, "err.rate_limited", nil)
 			return
 		}

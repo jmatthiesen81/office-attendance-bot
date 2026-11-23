@@ -51,7 +51,7 @@ The bot gets an optional web interface in the same process. Login uses **"Sign i
    - checks `iss = https://slack.com`, `aud = SLACK_CLIENT_ID`, `exp` and `nonce` in the ID token,
    - checks that `https://slack.com/team_id` matches the bot's workspace.
 
-   The ID token's signature is not verified. OIDC Core §3.1.3.7 allows this because the token comes directly from the token endpoint over TLS.
+   The ID token's signature is checked against Slack's published keys (`https://slack.com/openid/connect/keys`, RS256). *Amendment:* Originally it was not verified, which OIDC Core §3.1.3.7 allows because the token comes directly from the token endpoint over TLS. `WEB_VERIFY_ID_TOKEN=false` restores that behaviour.
 4. **Authorization:** `https://slack.com/user_id` must be listed in `web_users`. If it is not, a 403 page "No access" appears and no session is created.
 5. **Session:**
    - The session ID is a random 256-bit value. `web_sessions` stores only its SHA-256 hash.

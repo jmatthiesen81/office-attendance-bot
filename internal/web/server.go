@@ -52,6 +52,7 @@ type Deps struct {
 type OIDC struct {
 	AuthorizeURL string
 	TokenURL     string
+	KeysURL      string // JWKS; empty skips the signature check
 	Client       *http.Client
 }
 
@@ -59,6 +60,7 @@ type OIDC struct {
 var SlackOIDC = OIDC{
 	AuthorizeURL: "https://slack.com/openid/connect/authorize",
 	TokenURL:     "https://slack.com/api/openid.connect.token",
+	KeysURL:      "https://slack.com/openid/connect/keys",
 	Client:       &http.Client{Timeout: 15 * time.Second},
 }
 
@@ -68,13 +70,17 @@ type Server struct {
 	OIDC OIDC
 	Now  func() time.Time
 
-	pages   map[string]*template.Template
-	limiter *limiter
+	pages         map[string]*template.Template
+	limiter       *limiter       // all login requests together
+	clientLimiter *clientLimiter // login requests per client IP
+	keys          keyCache       // Slack's ID token signing keys
 }
 
 // New creates the web interface.
 func New(d Deps) (*Server, error) {
-	s := &Server{Deps: d, OIDC: SlackOIDC, Now: time.Now, limiter: newLimiter(30, 2*time.Second)}
+	s := &Server{Deps: d, OIDC: SlackOIDC, Now: time.Now,
+		limiter:       newLimiter(30, 2*time.Second),
+		clientLimiter: newClientLimiter(20, 6*time.Second)}
 	if err := s.parseTemplates(); err != nil {
 		return nil, err
 	}
@@ -200,6 +206,7 @@ func (s *Server) Run(ctx context.Context) error {
 			} else if n > 0 {
 				s.Log.Debug("deleted expired web sessions", "count", n)
 			}
+			s.clientLimiter.prune(s.Now())
 		case <-ctx.Done():
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
