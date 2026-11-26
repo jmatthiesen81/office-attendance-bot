@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/slack-go/slack v0.36.0
-	modernc.org/sqlite v1.62.0
+	modernc.org/sqlite v1.63.0
 )
 
 require (
